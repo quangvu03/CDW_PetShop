@@ -34,10 +34,12 @@ public class UserserviceImpl implements Userservice {
             users.setStatus((byte) 0);
             String securytyCode = RandomHepler.random();
             users.setSecurityCode(securytyCode);
-            Users savedUser = userRepository.save(users);
+            if (usersDTO.getPassword() != null && !usersDTO.getPassword().isEmpty()) {
+                String hashedPassword = BCrypt.hashpw(usersDTO.getPassword(), BCrypt.gensalt());
+                users.setPassword(hashedPassword);
+            }            Users savedUser = userRepository.save(users);
 
             if (savedUser != null) {
-                /*Gui emal kich hoat tai khoan*/
 
                 String content = "Nhan vao <a href='" + environment.getProperty("BASE_URL") + "api/account/verify?email=" + users.getEmail() + "&securitycode=" + securytyCode + "'>day<a/>";
                 String from = environment.getProperty("spring.mail.username");
@@ -65,6 +67,7 @@ public class UserserviceImpl implements Userservice {
             return null;
         }
     }
+
 
     @Override
     public boolean login(String username, String password) {

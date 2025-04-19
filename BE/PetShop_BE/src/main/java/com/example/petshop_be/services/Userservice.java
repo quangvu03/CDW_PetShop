@@ -5,7 +5,6 @@ public interface Userservice {
 
     boolean save(UsersDTO usersDTO) ;
 
-
     UsersDTO findByEmail(String email);
 
     boolean login(String username, String password);

@@ -1,5 +1,8 @@
 package com.example.petshop_be.controllers;
 
+import com.example.petshop_be.configurations.Usermapper;
+import com.example.petshop_be.entities.Users;
+import com.example.petshop_be.repositories.UserRepository;
 import com.example.petshop_be.services.Userservice;
 import com.example.petshop_be.dtos.UsersDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +21,21 @@ public class UserController {
     @Autowired
     private Userservice userservice;
 
-    @PostMapping(value = "login",consumes = MimeTypeUtils.APPLICATION_JSON_VALUE,
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private Usermapper usermapper;
+
+    @PostMapping(value = "/login",consumes = MimeTypeUtils.APPLICATION_JSON_VALUE,
             produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> login(@RequestBody UsersDTO usersDTO) {
         Map<String, Object> response = new HashMap<>();
+        Users users = userRepository.findByUserName(usersDTO.getUserName());
+        if(users.getStatus()<1){
+            response.put("result", "Vui lòng xác thực tài khoản để đăng nhập");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
         try {
             boolean loginResult = userservice.login(usersDTO.getUserName(), usersDTO.getPassword());
             response.put("result", loginResult);
@@ -34,38 +48,53 @@ public class UserController {
     }
 
 
-    @PostMapping(value = {"register"}, consumes = MimeTypeUtils.APPLICATION_JSON_VALUE,
+    @PostMapping(value = {"/register"}, consumes = MimeTypeUtils.APPLICATION_JSON_VALUE,
             produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> register(@RequestBody UsersDTO users) {
-        Map<String, Boolean> result = new HashMap<>();
-        try {
-            result.put("result", userservice.save(users));
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (Exception e) {
-            result.put("error", userservice.save(users));
+    public ResponseEntity<Map<String, Object>> register(@RequestBody UsersDTO users) {
+        Map<String, Object> result = new HashMap<>();
+
+        UsersDTO existingUser = userservice.findByEmail(users.getEmail());
+        if (existingUser != null) {
+            result.put("error", "Tài khoản với email này đã tồn tại");
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            boolean saved = userservice.save(users);
+            if (saved) {
+                result.put("success", true);
+                return new ResponseEntity<>(result, HttpStatus.OK);
+            } else {
+                result.put("error", "Không thể đăng ký tài khoản");
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("error", "Lỗi server: " + e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
 
     @GetMapping("/verify")
     public ResponseEntity<Map<String, String>> verify(@RequestParam("email") String email,
-                                                      @RequestParam("scurity") String code) {
+                                                      @RequestParam("securitycode") String code) {
         Map<String, String> result = new HashMap<>();
-        UsersDTO account = userservice.findByEmail(email);
+        UsersDTO accountDTO = userservice.findByEmail(email);
 
-        if (account == null) {
+        if (accountDTO == null) {
             result.put("err", "Email không tồn tại");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
         }
 
-        if (!account.getSecurityCode().equals(code)) {
+        if (!accountDTO.getSecurityCode().equals(code)) {
             result.put("err", "Không thể kích hoạt tài khoản");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
         }
 
-        account.setStatus((byte) 1);
-        userservice.save(account);
+        Users users = usermapper.convertToUsersEntity(accountDTO);
+        users.setStatus((byte) 1);
+        userRepository.save(users);
         result.put("successfully", "done!");
         return ResponseEntity.ok(result);
     }
