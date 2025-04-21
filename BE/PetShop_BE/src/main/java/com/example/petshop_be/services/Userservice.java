@@ -1,6 +1,7 @@
 package com.example.petshop_be.services;
 import com.example.petshop_be.dtos.ChangepassRequetsDTO;
 import com.example.petshop_be.dtos.UsersDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface Userservice {
 
@@ -15,5 +16,9 @@ public interface Userservice {
     String changePassword(ChangepassRequetsDTO changepassRequetsDTO);
 
     String updateUser(UsersDTO usersDTO);
+
+    String forgotPassword(String password, String email);
+
+    String uploadImage(MultipartFile file);
 
 }

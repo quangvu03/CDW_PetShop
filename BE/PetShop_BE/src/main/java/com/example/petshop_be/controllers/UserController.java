@@ -9,17 +9,25 @@ import com.example.petshop_be.services.MailService;
 import com.example.petshop_be.services.Userservice;
 import com.example.petshop_be.dtos.UsersDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/account")
 public class UserController {
+
 
     @Autowired
     private Userservice userservice;
@@ -32,6 +40,9 @@ public class UserController {
 
     @Autowired
     private MailService mailService;
+
+    @Autowired
+    Environment environment;
 
     @PostMapping(value = "/login",consumes = MimeTypeUtils.APPLICATION_JSON_VALUE,
             produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
@@ -52,7 +63,6 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
-
 
     @PostMapping(value = {"/register"}, consumes = MimeTypeUtils.APPLICATION_JSON_VALUE,
             produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
@@ -81,7 +91,6 @@ public class UserController {
         }
     }
 
-
     @GetMapping("/verify")
     public ResponseEntity<Map<String, String>> verify(@RequestParam("email") String email,
                                                       @RequestParam("securitycode") String code) {
@@ -104,7 +113,6 @@ public class UserController {
         result.put("successfully", "done!");
         return ResponseEntity.ok(result);
     }
-
     @GetMapping("/findByEmail")
     public ResponseEntity<Object> findByEmail(@RequestParam("email") String email) {
         try {
@@ -181,5 +189,44 @@ public class UserController {
         }
     }
 
+    @PostMapping("/forgotpassword")
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestParam("email") String email,
+                                                              @RequestParam("password") String password) {
+        System.out.println("email: "+email);
+        System.out.println("password: "+password);
 
+        try {
+            String result = userservice.forgotPassword(password, email);
+            if(result.equals("done")){
+                return new ResponseEntity<>(Map.of("result", result), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(Map.of("result", result), HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Lỗi khi thay đổi mật khẩu: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @PostMapping("/user/{userName}")
+    public ResponseEntity<?> updateUserAvatar(
+            @PathVariable String userName,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Vui lòng chọn file để upload");
+            }
+            Users user = userRepository.findByUserName(userName);
+            if(user == null){
+                return new ResponseEntity<>(Map.of("result","User không tồn tại"), HttpStatus.OK);
+            }
+            String newFileName = userservice.uploadImage(file);
+            user.setImage(newFileName);
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("result", newFileName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Lỗi khi cập nhật avatar: " + e.getMessage());
+        }
+    }
 }

@@ -12,6 +12,17 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 @Service
 public class UserserviceImpl implements Userservice {
@@ -107,11 +118,12 @@ public class UserserviceImpl implements Userservice {
             if (user == null) {
                 return "User không tồn tại";
             }
-
             if (changepassRequetsDTO.getNewPassword().trim().length() < 2) {
                 return "Mật khẩu mới phải hơn 2 kí tự";
             }
-
+            if (changepassRequetsDTO.getNewPassword().matches(".*\\s+.*")) {
+                return "Mật khẩu không được chứa khoảng trắng";
+            }
             if (!BCrypt.checkpw(changepassRequetsDTO.getOldPassword(), user.getPassword())) {
                 return "Mật khẩu cũ không đúng";
             }
@@ -135,9 +147,7 @@ public class UserserviceImpl implements Userservice {
             if (usersDTO.getFullName() == null || usersDTO.getFullName().trim().length() < 2) {
                 return "Full name phải có ít nhất 2 ký tự";
             }
-            if (usersDTO.getPhoneNumber() == null ||
-                    usersDTO.getPhoneNumber().trim().length() < 9 ||
-                    !usersDTO.getPhoneNumber().matches("^0[0-9]{9}$")) {
+            if (usersDTO.getPhoneNumber() == null || usersDTO.getPhoneNumber().trim().length() < 9 || !usersDTO.getPhoneNumber().matches("^0[0-9]{9}$")) {
                 return "Số điện thoại không hợp lệ. Vui lòng nhập 10 chữ số và bắt đầu bằng số 0";
             }
             if (usersDTO.getGender() == null || usersDTO.getGender().trim().length() < 2) {
@@ -158,7 +168,57 @@ public class UserserviceImpl implements Userservice {
         }
     }
 
+    @Override
+    public String forgotPassword(String password, String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        Pattern emailPattern = Pattern.compile(emailRegex);
+        Matcher emailMatcher = emailPattern.matcher(email);
 
+        if (!emailMatcher.matches()) {
+            return ("Email không đúng định dạng.");
+        }
+        if (password.length() < 6) {
+            return ("Mật khẩu phải có ít nhất 6 ký tự.");
+        }
+        if (password.matches(".*\\s+.*")) {
+            return ("Mật khẩu không được chứa khoảng trắng.");
+        }
+        Users users = userRepository.findByEmail(email);
+        System.out.println("users: " + users);
+        if (users == null) {
+            return "Tài khoản không tồn tại";
+        }
+        users.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
+        userRepository.save(users);
+        return "done";
+    }
+
+    @Override
+    public String uploadImage(MultipartFile file) {
+        if (file.isEmpty()) {
+            return "Vui lòng chọn file để upload";
+        }
+        File directory = new File(environment.getProperty("UPLOAD_DIR"));
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String newFileName = UUID.randomUUID().toString() + fileExtension;
+        Path filePath = Paths.get(environment.getProperty("UPLOAD_DIR") + newFileName);
+        System.out.println("Đường dẫn lưu file: " + filePath.toString());
+        try {
+            Files.write(filePath, file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String fileUrl = "http://localhost:8081/images/" + newFileName;
+        System.out.println("URL trả về: " + fileUrl);
+        return newFileName;
+    }
 }
+
+
+
 
 
