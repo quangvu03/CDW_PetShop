@@ -1,5 +1,8 @@
 package com.example.petshop_be.services;
 
 public interface MailService {
-	public boolean send(String from, String to,String subject, String content);
+	 boolean send(String from, String to,String subject, String content);
+
+	boolean sendOtpEmail(String to, String otpCode);
+
 }

@@ -1,8 +1,11 @@
 package com.example.petshop_be.controllers;
 
 import com.example.petshop_be.configurations.Usermapper;
+import com.example.petshop_be.dtos.ChangepassRequetsDTO;
 import com.example.petshop_be.entities.Users;
+import com.example.petshop_be.helpers.RandomHepler;
 import com.example.petshop_be.repositories.UserRepository;
+import com.example.petshop_be.services.MailService;
 import com.example.petshop_be.services.Userservice;
 import com.example.petshop_be.dtos.UsersDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,9 @@ public class UserController {
 
     @Autowired
     private Usermapper usermapper;
+
+    @Autowired
+    private MailService mailService;
 
     @PostMapping(value = "/login",consumes = MimeTypeUtils.APPLICATION_JSON_VALUE,
             produces = MimeTypeUtils.APPLICATION_JSON_VALUE)
@@ -117,4 +123,63 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> changpassWord( @RequestBody ChangepassRequetsDTO changepassRequetsDTO) {
+        try {
+            String result = userservice.changePassword(changepassRequetsDTO);
+            if(result.equals("done")){
+                return new ResponseEntity<>(Map.of("result", result), HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>(Map.of("result", result), HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Lỗi server khi đổi mật khẩu");
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping ("/updateUser")
+    public ResponseEntity<?> changpassWord( @RequestBody UsersDTO usersDTO) {
+        try {
+            String result = userservice.updateUser(usersDTO);
+            if(result.equals("done")){
+                return new ResponseEntity<>(Map.of("result", result), HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>(Map.of("result", result), HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Lỗi server khi thay đổi thông tin");
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @GetMapping("/sendOTP")
+    public ResponseEntity<Map<String, String>> sendOTP(@RequestParam String email) {
+
+        boolean result;
+        try {
+            Users users = userRepository.findByEmail(email);
+            String otp = RandomHepler.generateOTP();
+
+            if(users == null){
+                return new ResponseEntity<>(Map.of("otp", "Tài khoản chưa được đăng kí"), HttpStatus.OK);
+            }
+            result = mailService.sendOtpEmail(email, otp);
+            if (result) {
+                return new ResponseEntity<>(Map.of("otp", otp), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(Map.of("otp", "Gửi OTP thất bại"), HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Lỗi server khi gửi OTP: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 }

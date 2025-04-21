@@ -1,5 +1,9 @@
 package com.example.petshop_be.dtos;
 
+import com.example.petshop_be.helpers.Datehelper;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import java.time.LocalDate;
 
 public class UsersDTO {
@@ -9,10 +13,13 @@ public class UsersDTO {
     private String email;
     private String phoneNumber;
     private String image;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private Integer roleId;
     private Byte status;
     private String gender;
+
+    @JsonDeserialize(using = Datehelper.class)
     private LocalDate birthday;
     private String securityCode;
 
