@@ -208,7 +208,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/user/{userName}")
+    @PostMapping("/uploadAvatar/{userName}")
     public ResponseEntity<?> updateUserAvatar(
             @PathVariable String userName,
             @RequestParam("file") MultipartFile file) {
