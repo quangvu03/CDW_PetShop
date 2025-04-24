@@ -1,0 +1,156 @@
+.auth-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 40px;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px 30px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.auth-logo {
+  width: 120px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.auth-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.auth-input {
+  width: 90%;
+  padding: 12px 15px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #ff6600;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s ease;
+}
+
+.auth-button:hover {
+  background-color: #e65c00;
+}
+
+.auth-options {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.auth-link {
+  color: #ff6600;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.auth-divider {
+  margin: 25px 0 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.auth-social-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.auth-social {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.auth-social.google {
+  background-color: #db4437;
+  color: white;
+}
+
+.auth-social.facebook {
+  background-color: #4267B2;
+  color: white;
+}
+
+.auth-social:hover {
+  opacity: 0.9;
+}
+
+.icon {
+  font-size: 16px;
+}
+.otp-box {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.otp-input {
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  text-align: center;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.otp-input:focus {
+  border-color: #4CAF50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+.password-rules {
+  list-style: none;
+  padding: 0 10px;
+  margin: 10px 0;
+  font-size: 14px;
+  color: #888;
+}
+
+.password-rules li {
+  margin-bottom: 4px;
+}
+
+.password-rules li.valid {
+  color: green;
+  font-weight: 500;
+}
