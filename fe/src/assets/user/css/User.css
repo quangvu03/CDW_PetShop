@@ -1,0 +1,37 @@
+/* Personal Info */
+select.form-control {
+  font-size: 16px;
+  font-family: inherit;
+  color: #333;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  box-sizing: border-box;
+  width: 100%;
+  appearance: none;
+  height: 48px !important;
+  padding: 10px 15px !important;
+  line-height: 1.5 !important;
+}
+
+select.form-control:focus {
+  background-color: #fff;
+  border-color: #007bff;
+  outline: none;
+}
+.avatar-preview {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
+  display: block;
+}
+
+
+
+  
+  
+  
