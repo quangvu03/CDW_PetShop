@@ -29,9 +29,51 @@ select.form-control:focus {
   margin: 0 auto;
   display: block;
 }
+/* productarea - pagination */
 
+ #product-display-area .pagination {
+  display: flex !important; /* <<< Dùng flex và !important để chắc chắn ghi đè */
 
+  /* Có thể thêm lại các style cơ bản của Bootstrap pagination nếu cần,
+     mặc dù thường chỉ cần ghi đè display là đủ */
+  padding-left: 0;
+  list-style: none;
+  /* justify-content được xử lý bởi thẻ nav cha */
+}
 
-  
-  
-  
+/*
+* Đảm bảo các page-item bên trong cũng hiển thị đúng khi cha là flex.
+* Thường thì không cần ghi đè page-item, nhưng thêm vào để chắc chắn.
+*/
+#product-display-area .page-item {
+   /* Không cần set display cụ thể ở đây khi cha là flex */
+   /* display: inline-block; */ /* Bỏ dòng này nếu có */
+}
+
+/* Giữ nguyên các style cho page-link, active, disabled bạn đã có hoặc copy từ Bootstrap */
+#product-display-area .page-link {
+  /* ... (các style padding, border, color, background...) ... */
+  position: relative;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin-left: -1px;
+  line-height: 1.25;
+  color: #007bff;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  text-decoration: none;
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+#product-display-area .page-item.active .page-link {
+  z-index: 3;
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+#product-display-area .page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+  cursor: auto;
+  background-color: #fff;
+  border-color: #dee2e6;
+}
