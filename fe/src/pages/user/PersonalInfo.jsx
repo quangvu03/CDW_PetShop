@@ -94,8 +94,16 @@ export default function PersonalInfo() {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (formData.avatarPreview && formData.avatarPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(formData.avatarPreview);
+      }
+
       const preview = URL.createObjectURL(file);
-      setFormData({ ...formData, avatar: file, avatarPreview: preview });
+      setFormData(prev => ({
+        ...prev,
+        avatar: file,
+        avatarPreview: preview
+      }));
     }
   };
 
@@ -248,11 +256,8 @@ export default function PersonalInfo() {
                       border: '2px solid #ccc',
                     }}
                     src={
-                      formData.avatarPreview
-                        ? formData.avatarPreview.startsWith('http')
-                          ? formData.avatarPreview
-                          : `http://localhost:8080/uploads/avatars/${formData.avatarPreview}`
-                        : '/assets/user/images/default-avatar.png'
+                      formData.avatarPreview ||
+                      '/assets/user/images/default-avatar.png'
                     }
                     alt="avatar"
                   />

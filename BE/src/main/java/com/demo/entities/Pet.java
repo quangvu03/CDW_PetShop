@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,6 +26,9 @@ public class Pet {
 
     @Column(name = "breed", length = 100)
     private String breed;
+
+    @Column(name = "price")
+    private double price;
 
     @Lob
     @Column(name = "gender")
@@ -55,4 +59,11 @@ public class Pet {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @OneToMany(
+            mappedBy = "pet",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
+    private List<PetImage> images;
 }

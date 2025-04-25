@@ -1,0 +1,10 @@
+package com.demo.services;
+
+import com.demo.dtos.PetDto;
+
+import java.util.List;
+
+public interface PetService {
+    public List<PetDto> findAllPetsBySpecies(String species);
+    public List<String> getAllDistinctSpecies();
+}
