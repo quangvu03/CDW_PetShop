@@ -1,33 +1,25 @@
-package com.demo.configurations; // Đảm bảo đúng package
+package com.demo.configurations;
 
-import com.demo.services.JwtUtil; // Đảm bảo đúng đường dẫn tới JwtUtil
+import com.demo.services.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger; // Thêm import cho Logger
-import org.slf4j.LoggerFactory; // Thêm import cho Logger
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService; // Import UserDetailsService
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component; // Hoặc @Service
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-// Import các exception JWT nếu bạn catch cụ thể
-// import io.jsonwebtoken.ExpiredJwtException;
-// import io.jsonwebtoken.MalformedJwtException;
-// import io.jsonwebtoken.SignatureException;
 
 import java.io.IOException;
 
-@Component // Đảm bảo đây là một Spring Bean
+@Component
 public class JwtFilter extends OncePerRequestFilter {
-
-    // Khai báo Logger
     private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
-
-    // Inject các dependency qua constructor (ưu tiên)
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
 
@@ -111,12 +103,6 @@ public class JwtFilter extends OncePerRequestFilter {
             // Ví dụ: ExpiredJwtException, SignatureException, MalformedJwtException,...
             // Log lỗi chi tiết hơn để debug
             log.warn("doFilterInternal: JWT Token processing error: {} - Token [{}...]", e.getMessage(), jwt.substring(0, Math.min(jwt.length(), 10)));
-            // Không set Authentication -> request sẽ không được xác thực
-            // Có thể clear context để đảm bảo an toàn
-            // SecurityContextHolder.clearContext();
-            // Có thể trả về lỗi 401/403 ngay tại đây nếu muốn
-            // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT Token");
-            // return;
         }
 
         // 10. Chuyển request và response cho filter tiếp theo trong chuỗi
