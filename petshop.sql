@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th4 25, 2025 lúc 11:13 AM
+-- Thời gian đã tạo: Th4 28, 2025 lúc 07:05 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -594,7 +594,8 @@ INSERT INTO `pet_images` (`id`, `pet_id`, `image_url`, `is_main`) VALUES
 (210, 210, 'uploads/pets/snake/king_snake/ran-milk-snake.jpg', 1),
 (211, 211, 'uploads/pets/snake/night_snake/ran-corn-snake.jpg', 1),
 (212, 212, 'uploads/pets/snake/night_snake/ran-cornsnake.jpg', 1),
-(213, 213, 'uploads/pets/snake/rock_python/ran-ball-python.jpg', 1);
+(213, 213, 'uploads/pets/snake/rock_python/ran-ball-python.jpg', 1),
+(214, 1, 'uploads/pets/bird/goldfinch/chim-canari.jpg', 0);
 
 -- --------------------------------------------------------
 
@@ -936,7 +937,7 @@ ALTER TABLE `pets`
 -- AUTO_INCREMENT cho bảng `pet_images`
 --
 ALTER TABLE `pet_images`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=214;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=215;
 
 --
 -- AUTO_INCREMENT cho bảng `products`
