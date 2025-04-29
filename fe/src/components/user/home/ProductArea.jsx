@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 // 1. Đảm bảo đường dẫn service đúng và service KHÔNG gửi page/size
 import { getPetsBySpecies, getAllSpecies } from '../../../services/petService';
 // 2. Đảm bảo đường dẫn CSS đúng và CSS có quy tắc cần thiết
-import '../../../assets/user/css/User.css';
+import ProductDetailModal from './ProductDetailModal';
 
 // --- 3. ĐỊNH NGHĨA BASE URL CỦA BACKEND ---
 // !!! THAY ĐỔI CHO PHÙ HỢP VỚI MÔI TRƯỜNG CỦA BẠN !!!
@@ -32,9 +32,39 @@ export default function ProductArea() {
     const [speciesLoading, setSpeciesLoading] = useState(true);
     const [petsLoading, setPetsLoading] = useState(false);
     const [error, setError] = useState(null);
-
+// Dữ liệu pet giả định (đặt bên ngoài component hoặc ngay trong state)
+// --- CẬP NHẬT DỮ LIỆU TEST Ở ĐÂY ---
+// --- DỮ LIỆU TEST VỚI ẢNH THẬT ---
+const dummyPetData = {
+    id: 999,
+    name: 'Test Pet (Ảnh Thật)',
+    species: 'Mèo',
+    breed: 'Mèo Ta Mix',
+    price: 1200000,
+    gender: 'female',
+    age: 12,
+    color: 'Vàng Trắng',
+    size: 'medium',
+    origin: 'Việt Nam',
+    description: 'Test hiển thị thumbnails với các ảnh thật từ internet. Click thumbnail để đổi ảnh chính.',
+    // Ảnh chính (lấy từ picsum)
+    imageUrl: 'https://picsum.photos/seed/maincat/600/600',
+    // Danh sách ảnh phụ (lấy từ picsum với seed khác nhau)
+    imageUrls: [
+        'https://picsum.photos/seed/catthumb1/600/600', // Trùng ảnh chính hoặc ảnh đầu list
+        'https://picsum.photos/seed/catthumb2/600/600',
+        'https://picsum.photos/seed/catthumb3/600/600',
+        'https://picsum.photos/seed/catthumb4/600/600',
+        'https://picsum.photos/seed/catthumb5/600/600',
+        // Thêm 1 ảnh từ server backend (giả định đường dẫn) - để test logic path
+         '/uploads/pets/mèo_server_1.jpg'
+    ],
+};
     // --- Ảnh mặc định của Frontend ---
     const defaultImageUrl = "/assets/user/images/default-pet-placeholder.png"; // Đảm bảo đường dẫn này đúng
+
+    const [isModalOpen, setIsModalOpen] = useState(true);        // <-- SET LÀ TRUE
+const [selectedPet, setSelectedPet] = useState(dummyPetData);
 
     // --- useEffect: Lấy danh sách loài ---
     useEffect(() => {
@@ -157,6 +187,17 @@ export default function ProductArea() {
                 window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
             }
         }
+    };
+
+    // +++ 3. THÊM VÀO ĐÂY: Hàm mở và đóng Modal +++
+    const handleOpenModal = (pet) => {
+        setSelectedPet(pet); // Lưu thông tin pet được click
+        setIsModalOpen(true); // Mở modal
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false); // Đóng modal
+        setSelectedPet(null); // Xóa thông tin pet khỏi state khi đóng
     };
 
     // --- Render Phân trang ---
@@ -289,7 +330,17 @@ export default function ProductArea() {
                                                             </a>
                                                             <div className="button-head">
                                                                 <div className="product-action">
-                                                                    <a data-toggle="modal" title="Quick View" href="#"><i className="ti-eye"></i><span>Xem chi tiết</span></a>
+                                                                <a
+                                                                        data-toggle="modal" // Có thể giữ hoặc bỏ thuộc tính này nếu không dùng Bootstrap JS cho modal
+                                                                        title="Quick View"
+                                                                        href="#" // Giữ href="#" hoặc bỏ đi
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault(); // Ngăn không cho link nhảy trang
+                                                                            handleOpenModal(pet); // Gọi hàm mở modal với pet hiện tại
+                                                                        }}
+                                                                    >
+                                                                        <i className="ti-eye"></i><span>Xem chi tiết</span>
+                                                                    </a>
                                                                     <a title="Wishlist" href="#"><i className="ti-heart"></i><span>Yêu thích</span></a>
                                                                 </div>
                                                                 <div className="product-action-2">
@@ -331,6 +382,11 @@ export default function ProductArea() {
                     </div>
                 </div>
             </div>
+         <ProductDetailModal
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            pet={selectedPet}    // <-- TRUYỀN selectedPet vào prop 'pet'
+        />
         </div>
     );
 }

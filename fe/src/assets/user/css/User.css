@@ -32,27 +32,15 @@ select.form-control:focus {
 /* productarea - pagination */
 
  #product-display-area .pagination {
-  display: flex !important; /* <<< Dùng flex và !important để chắc chắn ghi đè */
-
-  /* Có thể thêm lại các style cơ bản của Bootstrap pagination nếu cần,
-     mặc dù thường chỉ cần ghi đè display là đủ */
+  display: flex !important; 
   padding-left: 0;
   list-style: none;
-  /* justify-content được xử lý bởi thẻ nav cha */
 }
 
-/*
-* Đảm bảo các page-item bên trong cũng hiển thị đúng khi cha là flex.
-* Thường thì không cần ghi đè page-item, nhưng thêm vào để chắc chắn.
-*/
 #product-display-area .page-item {
-   /* Không cần set display cụ thể ở đây khi cha là flex */
-   /* display: inline-block; */ /* Bỏ dòng này nếu có */
+ 
 }
-
-/* Giữ nguyên các style cho page-link, active, disabled bạn đã có hoặc copy từ Bootstrap */
 #product-display-area .page-link {
-  /* ... (các style padding, border, color, background...) ... */
   position: relative;
   display: block;
   padding: 0.5rem 0.75rem;
@@ -76,4 +64,262 @@ select.form-control:focus {
   cursor: auto;
   background-color: #fff;
   border-color: #dee2e6;
+}
+/* ProductDetail Modal */
+/* --- Overlay --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75); /* Nền mờ đậm hơn chút */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050; /* Đảm bảo nằm trên cùng */
+  cursor: pointer;
+  padding: 15px; /* Padding tránh chạm viền */
+}
+
+/* --- Modal Content --- */
+.modal-content {
+  background-color: white;
+  padding: 20px 25px;
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Bóng đổ rõ hơn */
+  max-width: 950px; /* Kích thước modal */
+  width: 90%;
+  max-height: 90vh; /* Giới hạn chiều cao */
+  overflow: hidden; /* Quan trọng: Để body scroll */
+  position: relative;
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Nút đóng --- */
+.modal-close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #777;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  z-index: 10; /* Nằm trên các element khác trong content */
+  transition: color 0.2s ease;
+}
+.modal-close-button:hover {
+  color: #000;
+}
+
+/* --- Body Container (Layout Flex chính) --- */
+.modal-body-container {
+  display: flex;
+  flex-direction: row;
+  gap: 25px; /* Tăng khoảng cách cột một chút */
+  width: 100%;
+  overflow: hidden;
+  flex-grow: 1;
+  margin-top: 15px; /* Khoảng cách rõ hơn với nút đóng */
+}
+
+/* --- Cột 1: Thumbnails --- */
+.modal-thumbnails-column {
+  flex: 0 0 80px; /* Giảm chiều rộng thumbnail một chút */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: calc(90vh - 90px); /* Điều chỉnh chiều cao dựa trên padding mới */
+  padding-right: 5px; /* Padding cho thanh cuộn */
+}
+/* Thanh cuộn cho Webkit */
+.modal-thumbnails-column::-webkit-scrollbar { width: 5px; }
+.modal-thumbnails-column::-webkit-scrollbar-thumb { background: #bbb; border-radius: 3px; }
+.modal-thumbnails-column::-webkit-scrollbar-track { background: #f1f1f1; }
+
+
+.thumbnail-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border: 2px solid #e8e8e8;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
+  opacity: 0.7;
+}
+.thumbnail-image:hover {
+  opacity: 1;
+  transform: scale(1.03); /* Hiệu ứng hover nhẹ */
+}
+.thumbnail-image.active {
+  border-color: #007bff;
+  opacity: 1;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.6);
+}
+
+/* --- Cột 2: Ảnh chính và Kính lúp --- */
+.modal-main-image-column {
+  flex: 1 1 48%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0; /* Ngăn flex item bị tràn */
+}
+
+/* Container cho kính lúp */
+.zoom-container-relative {
+  width: 100%;
+  position: relative; /* Quan trọng */
+  cursor: crosshair;
+  line-height: 0; /* Tránh khoảng trắng */
+  border: 1px solid #eee; /* Thêm lại border nhẹ */
+  border-radius: 4px; /* Bo góc */
+  overflow: hidden; /* !! Thêm overflow hidden ở đây để giới hạn lens !! */
+}
+
+/* Ảnh chính - giữ nguyên kích thước */
+.modal-main-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(90vh - 100px); /* Giữ giới hạn chiều cao */
+  object-fit: contain; /* Giữ object-fit */
+}
+
+/* Kính lúp */
+.magnifier-lens {
+  position: absolute;
+  border: 2px solid rgba(210, 210, 210, 0.85);
+  border-radius: 50%;
+  width: 120px; /* Kích thước lens */
+  height: 120px; /* Kích thước lens */
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.35);
+  background-color: rgba(255, 255, 255, 0.2);
+  /* Ẩn/Hiện sẽ do React quản lý, không cần display: none */
+}
+
+/* --- Cột 3: Thông tin chi tiết --- */
+.modal-pet-details-column {
+  flex: 1 1 42%; /* Điều chỉnh flex-basis một chút */
+  overflow-y: auto;
+  padding-left: 10px; /* Giảm padding trái */
+  padding-right: 10px;
+  max-height: calc(90vh - 90px);
+  min-width: 0;
+}
+/* Thanh cuộn */
+.modal-pet-details-column::-webkit-scrollbar { width: 5px; }
+.modal-pet-details-column::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+.modal-pet-details-column::-webkit-scrollbar-track { background: #f1f1f1; }
+
+.modal-pet-details-column h2 {
+  margin-top: 0; margin-bottom: 8px; font-size: 1.8rem; color: #222; font-weight: 600;
+}
+
+.pet-price {
+  font-size: 1.4rem; font-weight: bold; color: #e63946; margin-bottom: 18px;
+}
+.pet-price strong { color: #333; font-weight: 500; margin-right: 6px; }
+
+.modal-pet-details-column hr {
+  border: 0; border-top: 1px solid #eaeaea; margin: 18px 0;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 20px; /* Tăng khoảng cách cột grid */
+    row-gap: 10px; /* Tăng khoảng cách dòng grid */
+    margin-bottom: 18px;
+    align-items: baseline; /* Căn theo baseline cho đẹp hơn */
+}
+.detail-grid p { margin: 0; line-height: 1.4; }
+.detail-grid strong { color: #444; font-weight: 600; }
+
+.modal-pet-details-column p {
+  margin-bottom: 8px; line-height: 1.6; color: #555; font-size: 0.98rem;
+}
+.modal-pet-details-column strong { color: #333; margin-right: 5px; }
+
+.pet-description {
+    white-space: pre-wrap;
+    color: #505050;
+    background-color: #fdfdfd;
+    padding: 12px 15px;
+    border-radius: 4px;
+    border: 1px solid #f0f0f0;
+    font-size: 0.95rem;
+    max-height: 150px;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+/* Thanh cuộn cho mô tả */
+.pet-description::-webkit-scrollbar { width: 4px; }
+.pet-description::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 2px; }
+.pet-description::-webkit-scrollbar-track { background: #f7f7f7; }
+
+
+/* --- Responsive --- */
+@media (max-width: 991px) { /* Tablet ngang */
+    .modal-content { max-width: 92%; }
+    .modal-body-container { gap: 18px; }
+    .modal-thumbnails-column { flex-basis: 75px; }
+    .modal-pet-details-column h2 { font-size: 1.6rem; }
+    .pet-price { font-size: 1.3rem; }
+}
+
+@media (max-width: 767px) { /* Tablet dọc */
+  .modal-content { padding: 15px 20px; max-height: 95vh; }
+  .modal-body-container {
+    flex-direction: column;
+    overflow-y: auto; /* Body scroll */
+    max-height: calc(95vh - 70px);
+    padding-right: 5px; /* Padding cho scrollbar body */
+  }
+   /* Thanh cuộn cho body trên mobile */
+  .modal-body-container::-webkit-scrollbar { width: 5px; }
+  .modal-body-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+  .modal-body-container::-webkit-scrollbar-track { background: #f1f1f1; }
+
+  /* Đảo vị trí */
+  .modal-main-image-column { order: 1; }
+  .modal-thumbnails-column {
+      order: 2;
+      flex-direction: row; flex-wrap: wrap;
+      flex-basis: auto; max-height: none; overflow-y: visible;
+      margin-top: 15px; padding: 0; justify-content: flex-start; /* Căn trái */
+      gap: 8px; /* Điều chỉnh gap ngang */
+  }
+  .thumbnail-image { width: 65px; height: 65px; flex-shrink: 0; }
+  .modal-pet-details-column {
+      order: 3;
+      margin-top: 20px; padding: 0;
+      max-height: none; overflow-y: visible;
+      padding-left: 5px; /* Padding nhỏ */
+  }
+  .modal-main-image { max-height: 45vh; }
+  .magnifier-lens { width: 100px; height: 100px; } /* Lens nhỏ hơn */
+  .zoom-container-relative { cursor: default; }
+}
+
+@media (max-width: 480px) { /* Mobile nhỏ */
+    .modal-thumbnails-column { gap: 6px; }
+    .thumbnail-image { width: 55px; height: 55px; }
+    .modal-pet-details-column h2 { font-size: 1.4rem; }
+    .pet-price { font-size: 1.2rem; }
+    .detail-grid { column-gap: 10px; row-gap: 8px; }
+    .modal-pet-details-column p { font-size: 0.92rem; }
+     .magnifier-lens { width: 80px; height: 80px; } /* Lens rất nhỏ */
 }
