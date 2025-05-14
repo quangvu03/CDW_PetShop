@@ -323,3 +323,187 @@ select.form-control:focus {
     .modal-pet-details-column p { font-size: 0.92rem; }
      .magnifier-lens { width: 80px; height: 80px; } /* Lens rất nhỏ */
 }
+/* Css ProductDetailModal */
+.pet-status-badge {
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  border-radius: 12px;
+  color: white;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.badge-available {
+  background-color: #28a745; /* xanh lá */
+}
+
+.badge-pending {
+  background-color: #ffc107; /* vàng */
+  color: #212529; /* chữ đen cho dễ đọc */
+}
+
+.badge-sold {
+  background-color: #dc3545; /* đỏ */
+}
+.action-buttons-full {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.action-buttons-full .custom-btn {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+  color: white !important;
+}
+
+/* Nút giỏ hàng */
+.btn-cart {
+  background-color: #f0a500 !important;
+}
+
+.btn-cart:hover {
+  background-color: #d99000 !important;
+}
+
+/* Nút yêu thích */
+.btn-wishlist {
+  background-color: #e63946 !important;
+}
+
+.btn-wishlist:hover {
+  background-color: #c92a3c !important;
+}
+.quantity-selector {
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+.quantity-selector label {
+  font-weight: 500;
+  margin-right: 12px;
+}
+
+.quantity-control {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+}
+
+.quantity-control button {
+  background-color: #f0f0f0;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.quantity-control input {
+  width: 50px;
+  padding: 6px;
+  border: none;
+  text-align: center;
+  font-size: 1rem;
+}
+
+
+/* Css ProductArea */
+.pet-status-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 12px;
+  color: white;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  background-color: gray;
+}
+
+.status-available {
+  background-color: #28a745;
+}
+
+.status-pending {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.status-sold {
+  background-color: #dc3545;
+}
+/* Cart */
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none; /* bỏ nền */
+  border: none;     /* bỏ viền bao */
+}
+
+.quantity-btn {
+  padding: 2px 8px;               /* nhỏ lại */
+  font-size: 14px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quantity-btn:hover {
+  background-color: #ddd;
+}
+
+.quantity-number {
+  font-size: 14px;
+  min-width: 20px;
+  text-align: center;
+}
+/* Ẩn spinner trong input number (Chrome, Safari, Edge) */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+/* PetDetail */
+/* .pet-image-preview {
+  justify-content: start;
+}
+
+.thumbnail-list img:hover {
+  transform: scale(1.05);
+} */
+
+
+
+
+
+
+
+
+
+

@@ -8,9 +8,9 @@ import api from './axiosConfig';
  */
 export const getPetsBySpecies = (speciesName) => {
     const encodedSpeciesName = encodeURIComponent(speciesName);
-    console.log(`CLIENT-SIDE FETCH: Requesting ALL pets for species: /pets/species/${encodedSpeciesName}`);
+    console.log(`CLIENT-SIDE FETCH: Requesting ALL pets for species: /pet/species/${encodedSpeciesName}`);
     // Chỉ gửi tên loài, không gửi page=...&size=...
-    return api.get(`/pets/species/${encodedSpeciesName}`);
+    return api.get(`/pet/species/${encodedSpeciesName}`);
   };
   
   /**
@@ -18,6 +18,10 @@ export const getPetsBySpecies = (speciesName) => {
    * @returns {Promise<AxiosResponse<any>>} Promise chứa response (dự kiến là mảng string).
    */
   export const getAllSpecies = () => {
-    console.log("CLIENT-SIDE FETCH: Requesting all species: /pets/species");
-    return api.get('/pets/species');
+    console.log("CLIENT-SIDE FETCH: Requesting all species: /pet/species");
+    return api.get('/pet/species');
+  };
+  export const getPetById = (id) => {
+    console.log(`CLIENT-SIDE FETCH: Requesting pet by ID: /pet/${id}`);
+    return api.get(`/pet/${id}`);
   };

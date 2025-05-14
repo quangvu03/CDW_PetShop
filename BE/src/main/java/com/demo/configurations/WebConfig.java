@@ -25,9 +25,6 @@ public class WebConfig implements WebMvcConfigurer {
         };
     }
     */
-    // --- KẾT THÚC PHẦN COMMENT OUT/XÓA ---
-
-    // *** GIỮ LẠI PHẦN NÀY ***
     // Cấu hình để phục vụ file tĩnh từ thư mục 'uploads' khi truy cập URL /uploads/**
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

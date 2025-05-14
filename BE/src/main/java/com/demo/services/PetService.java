@@ -7,4 +7,5 @@ import java.util.List;
 public interface PetService {
     public List<PetDto> findAllPetsBySpecies(String species);
     public List<String> getAllDistinctSpecies();
+    public PetDto findPetById(Integer id);
 }
