@@ -23,7 +23,7 @@ export default function UserRoutes() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<ShopGrid />} />
-        <Route path="/product/:id" element={<PetDetail />} />
+        <Route path="/pet/:id" element={<PetDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/payment" element={<Payment />} />

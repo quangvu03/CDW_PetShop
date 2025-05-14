@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getCartByUser } from '../../services/cartService';
+
 import '../../assets/user/css/UserHeader.css';
 
 export default function UserHeader() {
@@ -8,6 +10,18 @@ export default function UserHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [cartItems, setCartItems] = useState([]);
+
+  const totalTypes = cartItems.length;
+  const totalPrice = cartItems.reduce((sum, item) => {
+    const price = item.pet?.price || item.product?.price || 0;
+    return sum + price * item.quantity;
+  }, 0);
+
+  const getImageUrl = (path) => {
+    if (!path || typeof path !== 'string') return '/assets/user/images/default-pet-placeholder.png';
+    return path.startsWith('http') ? path : `http://localhost:8080${path.startsWith('/') ? '' : '/'}${path}`;
+  };
 
   useEffect(() => {
     const name = localStorage.getItem('full_name');
@@ -15,6 +29,24 @@ export default function UserHeader() {
     setFullName(name || '');
     setIsLoggedIn(!!token);
   }, []);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const data = await getCartByUser();
+        setCartItems(data || []);
+      } catch (err) {
+        console.error('Lỗi khi lấy giỏ hàng ở header:', err);
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchCart();
+      const handleCartUpdate = () => fetchCart();
+      window.addEventListener('cart-updated', handleCartUpdate);
+      return () => window.removeEventListener('cart-updated', handleCartUpdate);
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -31,7 +63,6 @@ export default function UserHeader() {
     setIsLoggedIn(false);
     navigate('/auth/login');
   };
-
   return (
     <header className="header shop">
       {/* Topbar */}
@@ -115,29 +146,47 @@ export default function UserHeader() {
                   <Link to="/profile" className="single-icon"><i className="fa fa-user-circle-o" aria-hidden="true"></i></Link>
                 </div>
                 <div className="sinlge-bar shopping">
-                  <Link to="/cart" className="single-icon">
-                    <i className="ti-bag"></i> <span className="total-count">3</span>
+        <Link to="/cart" className="single-icon">
+          <i className="ti-bag"></i> <span className="total-count">{totalTypes || ''}</span>
+        </Link>
+        <div className="shopping-item">
+          <div className="dropdown-cart-header">
+            <span>{totalTypes}</span> <Link to="/cart">Giỏ hàng</Link>
+          </div>
+          <ul className="shopping-list">
+            {cartItems.length === 0 ? (
+              <li className="text-center">Giỏ hàng trống</li>
+            ) : (
+              cartItems.map((item) => (
+                <li key={item.id}>
+                  <Link to="/cart" className="cart-img">
+                    <img
+                      src={getImageUrl(item.pet?.imageUrl || item.product?.imageUrl)}
+                      alt={item.pet?.name || item.product?.name || 'Không rõ'}
+                      style={{ width: 80, height: 50, objectFit: 'cover' }}
+                    />
                   </Link>
-                  <div className="shopping-item">
-                    <div className="dropdown-cart-header">
-                      <span>2</span> <Link to="/cart">Giỏ hàng</Link>
-                    </div>
-                    <ul className="shopping-list">
-                      <li>
-                        <a className="remove" title="Remove this item"><i className="fa fa-remove"></i></a>
-                        <a className="cart-img" href="#"><img src="" alt="#" /></a>
-                        <h4><a href="#">Tên sản phẩm</a></h4>
-                        <p className="quantity">2 - <span className="amount">3 triệu đồng</span></p>
-                      </li>
-                    </ul>
-                    <div className="bottom">
-                      <div className="total">
-                        <span>Tổng</span> <span className="total-amount">3 triệu đồng</span>
-                      </div>
-                      <Link to="/checkout" className="btn animate">Thanh toán</Link>
-                    </div>
-                  </div>
-                </div>
+                  <h4>
+                    <Link to="/cart">{item.pet?.name || item.product?.name || 'Không rõ'}</Link>
+                  </h4>
+                  <p className="quantity">
+                    {item.quantity} ×{' '}
+                    <span className="total-amount">
+                      {(item.pet?.price || item.product?.price || 0).toLocaleString('vi-VN')}₫
+                    </span>
+                  </p>
+                </li>
+              ))
+            )}
+          </ul>
+          <div className="bottom">
+            <div className="total">
+              <span>Tổng</span> <span className="total-amount">{totalPrice.toLocaleString('vi-VN')}₫</span>
+            </div>
+            <Link to="/checkout" className="btn animate">Thanh toán</Link>
+          </div>
+        </div>
+      </div>
               </div>
             </div>
           </div>

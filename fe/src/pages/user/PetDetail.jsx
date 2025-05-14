@@ -1,6 +1,45 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getPetById } from '../../services/petService';
+import { addToCart } from '../../services/cartService';
+import { toast } from 'react-toastify';
+import '../../assets/user/css/User.css';
 
 export default function PetDetail() {
+  const { id  } = useParams();
+  const [pet, setPet] = useState(null);
+  const [mainImage, setMainImage] = useState('');
+
+  useEffect(() => {
+    const fetchPet = async () => {
+      try {
+        const response = await getPetById(id);
+        setPet(response.data);
+        setMainImage(response.data.imageUrl);
+      } catch (err) {
+        toast.error('Không thể tải dữ liệu thú cưng');
+      }
+    };
+    fetchPet();
+  }, [id]);
+
+  const getFullImageUrl = (path) => {
+    if (!path || typeof path !== 'string') return '/assets/user/images/default-pet-placeholder.png';
+    if (path.startsWith('http')) return path;
+    return `http://localhost:8080${path.startsWith('/') ? '' : '/'}${path}`;
+  };
+
+  const handleAddToCart = async () => {
+    try {
+      await addToCart({ petId: pet.id, quantity: 1 });
+      toast.success('Đã thêm vào giỏ hàng!');
+      localStorage.setItem('cart_updated', Date.now());
+    } catch (err) {
+      toast.error('Lỗi khi thêm vào giỏ hàng');
+    }
+  };
+
+  if (!pet) return <div className="container py-5">Đang tải dữ liệu...</div>;
   return (
     <section className="blog-single section">
       <div className="container">
@@ -9,45 +48,75 @@ export default function PetDetail() {
             <div className="blog-single-main">
               <div className="row">
                 <div className="col-12">
-                  <div className="image">
-                    <img src="" alt="#" id="mainImage" />
-                    {[1, 2, 3, 4].map((i) => (
-                      <div className="image-thumbnail" key={i}>
-                        <div className="image">
-                          <img src="" alt="" onClick={(e) => {
-                            document.getElementById('mainImage').src = e.target.src;
-                          }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="pet-image-preview w-100 d-flex flex-column align-items-center">
+  {/* Ảnh chính chiếm tối đa chiều ngang */}
+  <div className="main-image mb-3" style={{ width: '100%', maxWidth: '700px' }}>
+    <img
+      src={getFullImageUrl(mainImage)}
+      alt="Main"
+      style={{
+        width: '100%',
+        height: 'auto',
+        borderRadius: '12px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        objectFit: 'contain',
+        border: '1px solid #eee',
+      }}
+    />
+  </div>
+
+  {/* Thumbnails nằm ngang bên dưới */}
+  <div className="thumbnail-list d-flex gap-2 justify-content-center">
+  {(pet.imageUrls || []).map((url, i) => (
+  <img
+    key={i}
+    src={getFullImageUrl(url)}
+    alt={`Thumbnail ${i}`}
+    onClick={() => setMainImage(url)}
+    style={{
+      width: '70px',
+      height: '70px',
+      objectFit: 'cover',
+      margin: '10px',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      border: mainImage === url ? '2px solid #00bcd4' : '1px solid #ccc', // Màu cyan nhẹ đẹp
+      boxShadow: mainImage === url ? '0 0 8px rgba(0, 188, 212, 0.4)' : 'none', // hiệu ứng sáng nhẹ
+      transition: 'all 0.2s ease',
+    }}
+  />
+))}
+
+  </div>
+</div>
+
+
                   <div className="blog-detail">
-                    <h2 className="blog-title">ten</h2>
+                    <h2 className="blog-title">{pet.name}</h2>
                     <div className="blog-meta">
                       <span className="author">
-                        <a href="#"><i className="fa fa-user"></i>Số lượng: </a>
-                        <a href="#"><i className="fa fa-user"></i>Lượt xem: 1</a>
-                        <a href="#"><i className="fa fa-calendar"></i>sinh nhat</a>
-                        <a href="#"><i className="fa fa-comments"></i>Bình luận(3)</a>
+                        <a href="#"><i className="fa fa-user"></i>Số lượng: {pet.quantity}</a>
+                        <a href="#"><i className="fa fa-calendar"></i>Tuổi: {pet.age} tháng</a>
+                        <a href="#"><i className="fa fa-comments"></i>Bình luận(0)</a>
                       </span>
-                      <a href="#" className="blog-meta-buy" type="button">
+                      <button className="blog-meta-buy" onClick={handleAddToCart}>
                         <i className="ti-bag"></i>
                         Thêm vào giỏ hàng
-                      </a>
+                      </button>
                     </div>
                     <div className="content">
                       <div className="content-infomation">
                         <div className="content-infomation-child">
-                          <span>Giới tính: </span>
-                          <span>Kích thước:  </span>
+                          <span>Giới tính: {pet.gender}</span>
+                          <span>Kích thước: {pet.size}</span>
                         </div>
                         <div className="content-infomation-child">
-                          <span>Xuất xứ: </span>
-                          <span>Chủng loại:  </span>
+                          <span>Xuất xứ: {pet.origin}</span>
+                          <span>Chủng loại: {pet.breed}</span>
                         </div>
                       </div>
                       <blockquote>
-                        <i className="fa fa-quote-left"></i> Mô tả: 
+                        <i className="fa fa-quote-left"></i> Mô tả: {pet.description}
                       </blockquote>
                     </div>
                   </div>

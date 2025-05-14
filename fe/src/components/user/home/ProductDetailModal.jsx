@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
+import { addToCart } from '../../../services/cartService';
+
 
 // --- Constants ---
-const BACKEND_BASE_URL = 'http://localhost:8080'; // Thay đổi nếu cần
+
+
+const BACKEND_BASE_URL = 'http://localhost:8080'; 
 const defaultPetImageUrl = "/assets/user/images/default-pet-placeholder.png"; // Đường dẫn ảnh mặc định
-const ZOOM_FACTOR = 2.5; // Mức độ phóng to
-const LENS_SIZE = 120;   // Kích thước kính lúp (pixel)
+const ZOOM_FACTOR = 2.5; 
+const LENS_SIZE = 120;  
 
 // --- Hàm helper (Sao chép hoặc import từ file utils) ---
 const formatPrice = (price) => {
@@ -19,6 +24,18 @@ const translateGender = (gender) => {
 const translateSize = (size) => {
     if (size === 'small') return 'Nhỏ'; if (size === 'medium') return 'Vừa'; if (size === 'large') return 'Lớn'; return 'Không rõ';
 };
+// const translateStatus = (status) => {
+//     switch (status) {
+//       case 'available':
+//         return 'Có sẵn';
+//       case 'sold':
+//         return 'Đã bán';
+//       case 'pending':
+//         return 'Đang nhập';
+//       default:
+//         return 'Không rõ';
+//     }
+//   };
 // Hàm xử lý đường dẫn ảnh (quan trọng)
 const getFullImageUrl = (path) => {
     if (!path || typeof path !== 'string' || path.trim() === '') return defaultPetImageUrl;
@@ -26,6 +43,7 @@ const getFullImageUrl = (path) => {
     const separator = path.startsWith('/') ? '' : '/';
     return `${BACKEND_BASE_URL}${separator}${path}`;
 };
+
 // --- Kết thúc hàm helper ---
 
 
@@ -35,9 +53,11 @@ function ProductDetailModal({ isOpen, onClose, pet }) {
     const [showMagnifier, setShowMagnifier] = useState(false);
     const [magnifierPosition, setMagnifierPosition] = useState({ x: 0, y: 0 });
     const [backgroundPosition, setBackgroundPosition] = useState('0% 0%');
+    const [selectedQuantity, setSelectedQuantity] = useState(1);
     // --- Refs ---
     const imgRef = useRef(null);
     const containerRef = useRef(null);
+
 
     // --- Hàm lấy danh sách path ảnh (luôn trả về array) ---
     const getDisplayableImagePaths = (currentPet) => {
@@ -57,6 +77,21 @@ function ProductDetailModal({ isOpen, onClose, pet }) {
         return [...new Set(images)];
     };
     // ------------------------------------------------------
+    const handleAddToCart = async (pet) => {
+      try {
+        await addToCart(pet.id, selectedQuantity);
+        window.dispatchEvent(new Event('cart-updated'));
+        toast.success(`🛒 Đã thêm ${selectedQuantity} vào giỏ hàng!`);
+      } catch (err) {
+        toast.error('🚫 Thêm vào giỏ hàng thất bại!');
+        console.error(err);
+      }
+    };
+      
+      const handleAddToWishlist = (pet) => {
+        console.log("Đã yêu thích:", pet);
+      };
+      
 
     // --- useEffect để set ảnh ban đầu ---
     useEffect(() => {
@@ -193,10 +228,37 @@ function ProductDetailModal({ isOpen, onClose, pet }) {
 
                         {/* Cột 3: Thông tin chi tiết */}
                         <div className="modal-pet-details-column">
-                            <h2>{pet.name || 'Chưa có tên'}</h2>
+                        <h3 className="d-flex align-items-center gap-2">
+  <a href={`/pet/${pet.id}`} className="text-decoration-none">
+    {pet.name || 'Chưa có tên'}
+  </a>
+  <span
+    className={`pet-status-badge ${
+      pet.status === 'available'
+        ? 'badge-available'
+        : pet.status === 'pending'
+        ? 'badge-pending'
+        : 'badge-sold'
+    }`}
+    title={`Trạng thái: ${
+      pet.status === 'available'
+        ? 'Có sẵn'
+        : pet.status === 'pending'
+        ? 'Đang nhập'
+        : 'Hết hàng'
+    }`}
+  >
+    {pet.status === 'available'
+      ? 'Có sẵn'
+      : pet.status === 'pending'
+      ? 'Đang nhập'
+      : 'Hết hàng'}
+  </span>
+</h3>
                             <p className="pet-price"><strong>Giá:</strong> {formatPrice(pet.price)}</p>
                             <hr />
                             <div className="detail-grid">
+                            <p><strong>Số lượng:</strong> {pet.quantity ?? '1'}</p>
                                 <p><strong>Loài:</strong> {pet.species || 'N/A'}</p>
                                 <p><strong>Giống:</strong> {pet.breed || 'N/A'}</p>
                                 <p><strong>Giới tính:</strong> {translateGender(pet.gender)}</p>
@@ -208,6 +270,62 @@ function ProductDetailModal({ isOpen, onClose, pet }) {
                              <hr />
                             <p><strong>Mô tả:</strong></p>
                             <div className="pet-description">{pet.description || 'Chưa có mô tả.'}</div>
+                            <div className="quantity-selector">
+  <label htmlFor="quantity-input">Số lượng:</label>
+  <div className="quantity-control">
+  <button
+  onClick={() => {
+    if (selectedQuantity <= 1) {
+      toast.warning("⚠️ Số lượng tối thiểu là 1!");
+    } else {
+      setSelectedQuantity(q => q - 1);
+    }
+  }}
+>
+  −
+</button>
+<input
+  id="quantity-input"
+  type="number"
+  min="1"
+  max={pet.quantity}
+  value={selectedQuantity}
+  onChange={(e) => {
+    const value = parseInt(e.target.value);
+    if (isNaN(value) || value < 1) {
+      toast.warning("⚠️ Số lượng không được nhỏ hơn 1!");
+      setSelectedQuantity(1);
+    } else if (value > pet.quantity) {
+      toast.warning("🚫 Vượt quá số lượng tồn kho!");
+      setSelectedQuantity(pet.quantity);
+    } else {
+      setSelectedQuantity(value);
+    }
+  }}
+/>
+<button
+  onClick={() => {
+    if (selectedQuantity >= pet.quantity) {
+      toast.warning("🚫 Đã đạt số lượng tối đa trong kho!");
+    } else {
+      setSelectedQuantity(q => q + 1);
+    }
+  }}
+>
+  +
+</button>
+  </div>
+</div>
+
+                            <div className="action-buttons-full">
+  <button className="custom-btn btn-cart" onClick={() => handleAddToCart(pet)}>
+    🛒 THÊM VÀO GIỎ HÀNG
+  </button>
+  <button className="custom-btn btn-wishlist" onClick={() => handleAddToWishlist(pet)}>
+    ❤️ YÊU THÍCH
+  </button>
+</div>
+
                         </div>
                     </div>
                 )}
