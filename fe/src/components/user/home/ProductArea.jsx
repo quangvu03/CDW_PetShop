@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-// 1. Đảm bảo đường dẫn service đúng và service KHÔNG gửi page/size
 import { getPetsBySpecies, getAllSpecies } from '../../../services/petService';
-// 2. Đảm bảo đường dẫn CSS đúng và CSS có quy tắc cần thiết
+import { addPetToWishlist } from '../../../services/wishlistService';
+import { addToCart, getCartByUser} from '../../../services/cartService';
+import { toast } from 'react-toastify';
 import ProductDetailModal from './ProductDetailModal';
 
-// --- 3. ĐỊNH NGHĨA BASE URL CỦA BACKEND ---
-// !!! THAY ĐỔI CHO PHÙ HỢP VỚI MÔI TRƯỜNG CỦA BẠN !!!
 const BACKEND_BASE_URL = 'http://localhost:8080';
 
 // --- Hàm format giá ---
@@ -27,13 +26,13 @@ export default function ProductArea() {
     // --- State ---
     const [speciesList, setSpeciesList] = useState([]);
     const [selectedSpecies, setSelectedSpecies] = useState('');
-    const [allPetsForSpecies, setAllPetsForSpecies] = useState([]); // Luôn khởi tạo là mảng rỗng
+    const [allPetsForSpecies, setAllPetsForSpecies] = useState([]); 
     const [currentPage, setCurrentPage] = useState(1);
     const [speciesLoading, setSpeciesLoading] = useState(true);
     const [petsLoading, setPetsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [cartItems, setCartItems] = useState([]);
 // Dữ liệu pet giả định (đặt bên ngoài component hoặc ngay trong state)
-// --- CẬP NHẬT DỮ LIỆU TEST Ở ĐÂY ---
 // --- DỮ LIỆU TEST VỚI ẢNH THẬT ---
 const dummyPetData = {
     id: 999,
@@ -56,14 +55,13 @@ const dummyPetData = {
         'https://picsum.photos/seed/catthumb3/600/600',
         'https://picsum.photos/seed/catthumb4/600/600',
         'https://picsum.photos/seed/catthumb5/600/600',
-        // Thêm 1 ảnh từ server backend (giả định đường dẫn) - để test logic path
          '/uploads/pets/mèo_server_1.jpg'
     ],
 };
     // --- Ảnh mặc định của Frontend ---
-    const defaultImageUrl = "/assets/user/images/default-pet-placeholder.png"; // Đảm bảo đường dẫn này đúng
+    const defaultImageUrl = "/assets/user/images/default-pet-placeholder.png"; 
 
-    const [isModalOpen, setIsModalOpen] = useState(true);        // <-- SET LÀ TRUE
+    const [isModalOpen, setIsModalOpen] = useState(false);        
 const [selectedPet, setSelectedPet] = useState(dummyPetData);
 
     // --- useEffect: Lấy danh sách loài ---
@@ -101,7 +99,6 @@ const [selectedPet, setSelectedPet] = useState(dummyPetData);
         return () => {
             isMounted = false;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Chạy một lần khi mount
 
     // --- useEffect: Lấy TOÀN BỘ Pet khi selectedSpecies THAY ĐỔI ---
@@ -151,6 +148,19 @@ const [selectedPet, setSelectedPet] = useState(dummyPetData);
              isMounted = false;
          };
      }, [selectedSpecies]); // Chỉ phụ thuộc vào selectedSpecies
+
+     useEffect(() => {
+        const fetchCart = async () => {
+          try {
+            const data = await getCartByUser();
+            setCartItems(data);
+          } catch (err) {
+            console.error('Lỗi khi lấy giỏ hàng:', err);
+          }
+        };
+        fetchCart();
+      }, []);
+      
 
 
     // --- Tính toán currentPets (Client-Side) ---
@@ -312,42 +322,113 @@ const [selectedPet, setSelectedPet] = useState(dummyPetData);
                                             return (
                                                 <div key={pet.id} className="col-xl-3 col-lg-4 col-md-4 col-12 mb-4">
                                                     <div className="single-product"> {/* Cần CSS min-height */}
-                                                        <div className="product-img">
-                                                            <a href={`/pet/${pet.id}`}>
-                                                                <img
-                                                                    className="default-img"
-                                                                    src={imageSource}
-                                                                    alt={pet.name || 'Thú cưng'}
-                                                                    loading="lazy"
-                                                                    onError={(e) => {
-                                                                        if (e.target.src !== defaultImageUrl) {
-                                                                            e.target.onerror = null;
-                                                                            e.target.src = defaultImageUrl;
-                                                                        }
-                                                                    }}
-                                                                    style={{ aspectRatio: '1 / 1', objectFit: 'cover', backgroundColor: '#f5f5f5' }}
-                                                                />
-                                                            </a>
-                                                            <div className="button-head">
-                                                                <div className="product-action">
-                                                                <a
-                                                                        data-toggle="modal" // Có thể giữ hoặc bỏ thuộc tính này nếu không dùng Bootstrap JS cho modal
-                                                                        title="Quick View"
-                                                                        href="#" // Giữ href="#" hoặc bỏ đi
-                                                                        onClick={(e) => {
-                                                                            e.preventDefault(); // Ngăn không cho link nhảy trang
-                                                                            handleOpenModal(pet); // Gọi hàm mở modal với pet hiện tại
-                                                                        }}
-                                                                    >
-                                                                        <i className="ti-eye"></i><span>Xem chi tiết</span>
-                                                                    </a>
-                                                                    <a title="Wishlist" href="#"><i className="ti-heart"></i><span>Yêu thích</span></a>
-                                                                </div>
-                                                                <div className="product-action-2">
-                                                                    <a title="Add to cart" href="#">Thêm vào giỏ hàng</a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                    <div className="product-img position-relative">
+  <a href={`/pet/${pet.id}`}>
+    <img
+      className="default-img"
+      src={imageSource}
+      alt={pet.name || 'Thú cưng'}
+      loading="lazy"
+      onError={(e) => {
+        if (e.target.src !== defaultImageUrl) {
+          e.target.onerror = null;
+          e.target.src = defaultImageUrl;
+        }
+      }}
+      style={{
+        aspectRatio: '1 / 1',
+        objectFit: 'cover',
+        backgroundColor: '#f5f5f5',
+      }}
+    />
+  </a>
+
+  {/* Badge trạng thái đè lên ảnh */}
+  <div
+    className={`pet-status-overlay ${
+      pet.status === 'available'
+        ? 'status-available'
+        : pet.status === 'pending'
+        ? 'status-pending'
+        : 'status-sold'
+    }`}
+  >
+    {pet.status === 'available'
+      ? 'Có sẵn'
+      : pet.status === 'pending'
+      ? 'Đang nhập'
+      : 'Hết hàng'}
+  </div>
+
+  <div className="button-head">
+    <div className="product-action">
+      <a
+        data-toggle="modal"
+        title="Quick View"
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          handleOpenModal(pet);
+        }}
+      >
+        <i className="ti-eye"></i><span>Xem chi tiết</span>
+      </a>
+      <a
+        title="Wishlist"
+        href="#"
+        onClick={async (e) => {
+          e.preventDefault();
+        //   const userId = localStorage.getItem('userId');
+          try {
+            await addPetToWishlist(pet.id);
+            toast.success("Đã thêm vào danh sách yêu thích!");
+          } catch (err) {
+            if (err.response?.status === 409) {
+              toast.info(err.response.data.message || "Sản phẩm đã có trong danh sách yêu thích.");
+            } else {
+              toast.error("Lỗi khi thêm vào danh sách yêu thích!");
+            }
+          }
+        }}
+      >
+        <i className="ti-heart"></i><span>Yêu thích</span>
+      </a>
+    </div>
+    <div className="product-action-2">
+    <a
+  title="Thêm vào giỏ hàng"
+  href="#"
+  onClick={async (e) => {
+    e.preventDefault();
+    try {
+      const existingItem = cartItems?.find((item) => item.pet?.id === pet.id);
+      const currentQty = existingItem?.quantity || 0;
+      const stock = pet.quantity;
+  
+      if (currentQty + 1 > stock) {
+        toast.warning("🚫 Số lượng vượt quá tồn kho!");
+        return;
+      }
+  
+      await addToCart({ petId: pet.id, quantity: 1 });
+      window.dispatchEvent(new Event('cart-updated'));
+      toast.success('Đã thêm vào giỏ hàng!');
+  
+      // Cập nhật giỏ sau khi thêm
+      const updated = await getCartByUser();
+      setCartItems(updated);
+    } catch (err) {
+      toast.error('Lỗi khi thêm vào giỏ hàng');
+    }
+  }}
+>
+  Thêm vào giỏ hàng
+</a>
+
+</div>
+  </div>
+</div>
+
                                                         <div className="product-content">
                                                             <h3><a href={`/pet/${pet.id}`}>{pet.name || 'Chưa có tên'}</a></h3>
                                                             <div className="product-price">

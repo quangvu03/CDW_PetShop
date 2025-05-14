@@ -1,8 +1,7 @@
 package com.demo.entities;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
@@ -10,6 +9,8 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "wishlist", indexes = {
         @Index(name = "user_id", columnList = "user_id"),
         @Index(name = "pet_id", columnList = "pet_id"),
@@ -19,7 +20,7 @@ public class Wishlist {
     @Id
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
