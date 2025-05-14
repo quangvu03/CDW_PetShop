@@ -19,13 +19,14 @@ export default function Login() {
 
     try {
       const res = await login(form);
-      const { accessToken, refreshToken, username, role, full_name } = res.data;
+      const { accessToken, refreshToken, username, role, full_name, userId } = res.data;
 
       localStorage.setItem('token', accessToken);
       localStorage.setItem('refresh_token', refreshToken);
       localStorage.setItem('username', username);
       localStorage.setItem('role', role);
       localStorage.setItem('full_name', full_name || '');
+      localStorage.setItem('userId', userId);
 
       toast.success('Đăng nhập thành công');
 

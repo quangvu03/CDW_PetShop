@@ -81,6 +81,7 @@ public class AuthController {
             String refreshToken = refreshTokenService.createRefreshToken(user.getId()).getToken();
 
             Map<String, Object> response = new HashMap<>();
+            response.put("userId", user.getId());
             response.put("accessToken", token);
             response.put("refreshToken", refreshToken);
             response.put("username", user.getUsername());

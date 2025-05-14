@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List; // Dùng List
+import java.util.Optional;
 
 @Repository
 public interface PetRepository extends JpaRepository<Pet, Integer> {
@@ -25,6 +26,10 @@ public interface PetRepository extends JpaRepository<Pet, Integer> {
     // Giữ nguyên phương thức lấy danh sách loài
     @Query("SELECT DISTINCT p.species FROM Pet p WHERE p.species IS NOT NULL AND TRIM(p.species) <> '' ORDER BY p.species")
     List<String> findAllDistinctSpecies();
+
+    Optional<Pet> findById(Integer id);
+
+
 
     // Bỏ hoặc comment out các phương thức cũ dùng Pageable nếu không dùng nữa
     // Page<Integer> findIdsBySpeciesIgnoreCase(@Param("species") String species, Pageable pageable);

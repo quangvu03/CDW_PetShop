@@ -64,6 +64,7 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             // 3. Trích xuất username từ token
             username = jwtUtil.extractUsername(jwt); // Đảm bảo phương thức này tồn tại trong JwtUtil
+            log.info("🔐 JWT filter activated - Token for user: {}", username);
 
             // 4. Kiểm tra username và SecurityContext
             // Chỉ xử lý nếu có username và chưa có ai được xác thực trong context hiện tại
@@ -102,7 +103,7 @@ public class JwtFilter extends OncePerRequestFilter {
             // Xử lý các lỗi có thể xảy ra khi parse hoặc validate token
             // Ví dụ: ExpiredJwtException, SignatureException, MalformedJwtException,...
             // Log lỗi chi tiết hơn để debug
-            log.warn("doFilterInternal: JWT Token processing error: {} - Token [{}...]", e.getMessage(), jwt.substring(0, Math.min(jwt.length(), 10)));
+            log.warn("doFilterInternal: JWT Token processing error: {} - Token [{}...]", e.getMessage(), jwt != null ? jwt.substring(0, Math.min(jwt.length(), 10)) : "null");
         }
 
         // 10. Chuyển request và response cho filter tiếp theo trong chuỗi

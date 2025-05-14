@@ -30,6 +30,8 @@ public class Pet {
     @Column(name = "price")
     private double price;
 
+    @Column(name = "quantity")
+    private int quantity;
     @Lob
     @Column(name = "gender")
     private String gender;
