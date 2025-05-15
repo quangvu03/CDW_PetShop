@@ -46,4 +46,8 @@ public class Order {
     @Column(name = "shipping_address")
     private String shippingAddress;
 
+    @ManyToOne
+    @JoinColumn(name = "shipping_method_id")
+    private ShippingMethod shippingMethod;
+
 }

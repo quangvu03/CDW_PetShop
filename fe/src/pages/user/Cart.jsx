@@ -7,14 +7,22 @@ import {
   removeItemFromCart
 } from '../../services/cartService';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
+  const navigate = useNavigate();
 
 
   useEffect(() => {
     fetchCart();
   }, []);
+  // Khi click vào nút thanh toán
+const handleCheckout = () => {
+  localStorage.setItem('checkout_items', JSON.stringify(cartItems));
+  navigate('/checkout'); // hoặc <Link to="/checkout" />
+};
+
 
   const getFullImageUrl = (path) => {
     if (!path || typeof path !== 'string') return '/assets/user/images/default-pet-placeholder.png';
@@ -34,6 +42,7 @@ export default function Cart() {
   const handleQuantityChange = async (itemId, newQty) => {
     try {
       await updateCartItemQuantity(itemId, newQty);
+      window.dispatchEvent(new Event('cart-updated'));
       setCartItems((prev) =>
         prev.map((i) =>
           i.id === itemId ? { ...i, quantity: newQty } : i
@@ -50,6 +59,8 @@ export default function Cart() {
         petId: item.pet?.id,
         productId: item.product?.id
       });
+      toast.success('Xoá sản phẩm khỏi giỏ hàng thành công');
+      window.dispatchEvent(new Event('cart-updated'));
       setCartItems((prev) => prev.filter((i) => i.id !== item.id));
     } catch (err) {
       toast.error('Xoá khỏi giỏ thất bại');
@@ -198,7 +209,7 @@ export default function Cart() {
                         </li>
                       </ul>
                       <div className="button5">
-                        <a href="#" className="btn btn-success">
+                        <a href="#" onClick={handleCheckout} className="btn btn-success">
                           Thanh toán
                         </a>
                         <a href="/" className="btn btn-success">
