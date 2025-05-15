@@ -1,5 +1,4 @@
 import React from 'react';
-
 export default function CheckoutForm() {
   return (
     <div className="col-lg-8 col-12">
@@ -17,19 +16,19 @@ export default function CheckoutForm() {
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
                 <label>Số điện thoại<span>*</span></label>
-                <input type="tel" name="phoneNumber" required />
+                <input type="tel" className="form-control" name="phoneNumber" required />
               </div>
             </div>
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
                 <label>Email<span>*</span></label>
-                <input type="email" name="email" required />
+                <input type="email" className="form-control" name="email" required />
               </div>
             </div>
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
                 <label>Tỉnh/Thành Phố<span>*</span></label>
-                <select name="country_checkout">
+                <select name="country_checkout" className="form-control">
                   <option value="">Chọn tỉnh/thành</option>
                 </select>
               </div>
@@ -37,7 +36,7 @@ export default function CheckoutForm() {
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
                 <label>Quận/Huyện<span>*</span></label>
-                <select name="district_checkout">
+                <select name="district_checkout" className="form-control">
                   <option value="">Chọn quận/huyện</option>
                 </select>
               </div>
@@ -45,7 +44,7 @@ export default function CheckoutForm() {
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
                 <label>Xã/Phường<span>*</span></label>
-                <select name="ward_checkout">
+                <select name="ward_checkout" className="form-control">
                   <option value="">Chọn xã/phường</option>
                 </select>
               </div>
@@ -53,7 +52,7 @@ export default function CheckoutForm() {
             <div className="col-12">
               <div className="form-group">
                 <label>Địa chỉ cụ thể<span>*</span></label>
-                <input type="text" name="address_checkout" required />
+                <input type="text" className="form-control" name="address_checkout" required />
               </div>
             </div>
             <div className="col-12">

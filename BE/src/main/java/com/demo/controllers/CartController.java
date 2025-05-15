@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,6 +49,7 @@ public class CartController {
 
     // ✅ Xoá khỏi giỏ hàng
     @DeleteMapping("/remove")
+    @Transactional
     public ResponseEntity<Void> removeItem(@AuthenticationPrincipal UserDetails userDetails,
                                            @RequestParam(defaultValue = "-1") int petId,
                                            @RequestParam(defaultValue = "-1") int productId) {
