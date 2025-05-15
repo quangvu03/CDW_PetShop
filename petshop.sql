@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th4 28, 2025 lúc 07:05 AM
+-- Thời gian đã tạo: Th5 15, 2025 lúc 10:32 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -49,6 +49,14 @@ CREATE TABLE `cart_items` (
   `quantity` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `cart_items`
+--
+
+INSERT INTO `cart_items` (`id`, `user_id`, `pet_id`, `product_id`, `quantity`, `created_at`) VALUES
+(1, 3, 1, NULL, 4, '2025-05-14 00:36:18'),
+(2, 3, 3, NULL, 1, '2025-05-14 09:31:20');
 
 -- --------------------------------------------------------
 
@@ -105,7 +113,8 @@ CREATE TABLE `orders` (
   `status` enum('pending','confirmed','shipped','completed','cancelled') DEFAULT NULL,
   `payment_method` varchar(50) DEFAULT NULL,
   `payment_status` enum('paid','unpaid') DEFAULT NULL,
-  `shipping_address` text DEFAULT NULL
+  `shipping_address` text DEFAULT NULL,
+  `shipping_method_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -135,6 +144,7 @@ CREATE TABLE `pets` (
   `species` varchar(50) DEFAULT NULL,
   `breed` varchar(100) DEFAULT NULL,
   `price` double NOT NULL,
+  `quantity` int(11) NOT NULL,
   `gender` enum('male','female') DEFAULT NULL,
   `age` int(11) DEFAULT NULL,
   `color` varchar(50) DEFAULT NULL,
@@ -149,220 +159,220 @@ CREATE TABLE `pets` (
 -- Đang đổ dữ liệu cho bảng `pets`
 --
 
-INSERT INTO `pets` (`id`, `name`, `species`, `breed`, `price`, `gender`, `age`, `color`, `size`, `origin`, `description`, `status`, `created_at`) VALUES
-(1, 'chim-canari', 'bird', 'goldfinch', 844288, 'male', 4, 'brown', 'large', 'USA', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(2, 'hoang-yen', 'bird', 'goldfinch', 413832, 'male', 10, 'black', 'medium', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(3, 'anhdaidienchim', 'bird', 'robin', 326636, 'female', 10, 'gold', 'medium', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(4, 'abyssinia', 'cat', 'egyptian_cat', 594849, 'male', 15, 'black', 'small', 'USA', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(5, 'bao-bengal', 'cat', 'egyptian_cat', 793005, 'male', 14, 'black', 'small', 'Thailand', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(6, 'coc-duoi-nhat-ban', 'cat', 'egyptian_cat', 271523, 'male', 3, 'cream', 'small', 'France', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(7, 'korat', 'cat', 'egyptian_cat', 296082, 'female', 6, 'black', 'small', 'Germany', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(8, 'maine-coon', 'cat', 'egyptian_cat', 605786, 'female', 10, 'cream', 'large', 'Germany', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(9, 'meoanhlongngan', 'cat', 'egyptian_cat', 452639, 'female', 5, 'brown', 'medium', 'France', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(10, 'mien-dien', 'cat', 'egyptian_cat', 353847, 'male', 12, 'gray', 'small', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(11, 'moggie', 'cat', 'egyptian_cat', 682564, 'male', 1, 'brown', 'medium', 'Germany', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(12, 'nga-xanh', 'cat', 'egyptian_cat', 684739, 'male', 13, 'gold', 'large', 'USA', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(13, 'ocicat', 'cat', 'egyptian_cat', 619992, 'female', 7, 'white', 'large', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(14, 'rex-cornwall', 'cat', 'egyptian_cat', 723297, 'male', 3, 'gold', 'small', 'Vietnam', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(15, 'rex-devon', 'cat', 'egyptian_cat', 851981, 'female', 15, 'white', 'small', 'USA', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(16, 'somali', 'cat', 'egyptian_cat', 829548, 'female', 6, 'black', 'medium', 'USA', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(17, 'tai-cup-scotland', 'cat', 'egyptian_cat', 229230, 'female', 10, 'gold', 'medium', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(18, 'tiffanie', 'cat', 'egyptian_cat', 868634, 'female', 9, 'brown', 'small', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(19, 'sphynx-khong-long', 'cat', 'hog', 662609, 'female', 3, 'cream', 'large', 'France', 'Calm and suitable for families.', 'sold', '2025-04-24 13:50:37'),
-(20, 'anhdaidienmeo', 'cat', 'lynx', 971310, 'female', 11, 'cream', 'medium', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(21, 'rung-na-uy', 'cat', 'lynx', 466017, 'female', 15, 'white', 'medium', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(22, 'siberian', 'cat', 'lynx', 908268, 'male', 9, 'black', 'large', 'USA', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(23, 'anh-long-ngan', 'cat', 'persian_cat', 649458, 'female', 1, 'gold', 'large', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(24, 'ba-tu', 'cat', 'persian_cat', 745375, 'female', 14, 'white', 'medium', 'Thailand', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(25, 'birman', 'cat', 'persian_cat', 298253, 'male', 12, 'gray', 'small', 'Vietnam', 'Calm and suitable for families.', 'sold', '2025-04-24 13:50:37'),
-(26, 'chinchilla', 'cat', 'persian_cat', 999803, 'female', 6, 'brown', 'small', 'USA', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(27, 'ragdoll', 'cat', 'persian_cat', 500647, 'female', 4, 'cream', 'medium', 'France', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(28, 'tat-trang', 'cat', 'persian_cat', 922911, 'male', 14, 'gray', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(29, 'tonkin', 'cat', 'persian_cat', 720582, 'male', 1, 'cream', 'large', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(30, 'scottish-deerhound', 'cat', 'scottish_deerhound', 326102, 'male', 13, 'black', 'medium', 'Vietnam', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(31, 'bali', 'cat', 'siamese_cat', 259937, 'male', 4, 'gold', 'medium', 'France', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(32, 'xiem', 'cat', 'siamese_cat', 478184, 'female', 13, 'black', 'small', 'Germany', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(33, 'ba-tu-long-ngan', 'cat', 'tabby_cat', 708161, 'male', 5, 'gray', 'medium', 'France', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(34, 'long-ngan-phuong-dong', 'cat', 'tabby_cat', 819044, 'female', 6, 'gold', 'medium', 'France', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(35, 'manx', 'cat', 'tabby_cat', 300961, 'male', 3, 'white', 'large', 'Thailand', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(36, 'bulldog', 'cow', 'boxer', 593766, 'male', 2, 'cream', 'small', 'Vietnam', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(37, 'beagle', 'cow', 'english_foxhound', 448602, 'female', 2, 'white', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(38, 'english-foxhound', 'cow', 'english_foxhound', 877065, 'male', 7, 'white', 'small', 'Germany', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(39, 'pointer', 'cow', 'english_foxhound', 588432, 'female', 12, 'gray', 'medium', 'Thailand', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(40, 'smooth-fox-terrier', 'cow', 'english_foxhound', 572375, 'female', 9, 'white', 'large', 'Germany', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(41, 'boxer', 'cow', 'rhodesian_ridgeback', 392565, 'female', 3, 'cream', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(42, 'anhdaidienalaska', 'dog', 'alaskan_malamute', 972430, 'male', 4, 'cream', 'medium', 'Thailand', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(43, 'siberian-huskys', 'dog', 'alaskan_malamute', 211271, 'female', 4, 'cream', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(44, 'staffordshire-bull-terrier', 'dog', 'american_staffordshire_terrier', 501863, 'male', 1, 'brown', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(45, 'silky-terrier', 'dog', 'australian_terrier', 613469, 'female', 15, 'gold', 'large', 'Vietnam', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(46, 'basset-hound', 'dog', 'basset', 738622, 'male', 15, 'white', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(47, 'manchester-terrier', 'dog', 'black-and-tan_coonhound', 265546, 'female', 4, 'black', 'small', 'USA', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(48, 'glen-of-imaal-terrier', 'dog', 'border_terrier', 761195, 'male', 7, 'gray', 'medium', 'Thailand', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(49, 'pyrenean-shepherd', 'dog', 'briard', 637333, 'male', 5, 'gray', 'small', 'France', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(50, 'skye-terrier', 'dog', 'briard', 942957, 'female', 3, 'cream', 'medium', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(51, 'nova-scotia-duck-tolling-retriever', 'dog', 'brittany_spaniel', 483001, 'female', 11, 'cream', 'large', 'Vietnam', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(52, 'french-bulldog', 'dog', 'bull_mastiff', 305228, 'female', 1, 'gold', 'large', 'Vietnam', 'Calm and suitable for families.', 'sold', '2025-04-24 13:50:37'),
-(53, 'cairn-terrier', 'dog', 'cairn', 451076, 'male', 8, 'white', 'large', 'USA', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(54, 'chihuahua', 'dog', 'chihuahua', 372947, 'male', 11, 'cream', 'small', 'Thailand', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(55, 'singapura', 'dog', 'chihuahua', 318925, 'female', 15, 'black', 'large', 'France', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(56, 'shiba-inu', 'dog', 'chow', 804945, 'male', 6, 'white', 'large', 'Thailand', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(57, 'shetland-sheepdog', 'dog', 'collie', 626795, 'female', 2, 'cream', 'small', 'France', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(58, 'dalmatian', 'dog', 'dalmatian', 240634, 'male', 1, 'white', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(59, 'dandie-dinmont-terrier', 'dog', 'dandie_dinmont', 668092, 'female', 13, 'brown', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(60, 'akita', 'dog', 'dingo', 840036, 'female', 4, 'gray', 'large', 'Thailand', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(61, 'australian-shepherd', 'dog', 'english_setter', 357197, 'female', 9, 'brown', 'small', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(62, 'burmilla', 'dog', 'eskimo_dog', 821357, 'female', 11, 'white', 'small', 'Germany', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(63, 'siberian-husky', 'dog', 'eskimo_dog', 273959, 'female', 1, 'brown', 'medium', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(64, 'flat-coated-retriever', 'dog', 'flat-coated_retriever', 764368, 'male', 15, 'white', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(65, 'german-shepherd', 'dog', 'german_shepherd', 375480, 'female', 2, 'white', 'large', 'Germany', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(66, 'golden-retriever', 'dog', 'golden_retriever', 867096, 'male', 7, 'brown', 'medium', 'Vietnam', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(67, 'kerry-blue-terrier', 'dog', 'kerry_blue_terrier', 304643, 'male', 3, 'cream', 'large', 'Vietnam', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(68, 'labrador-retriever', 'dog', 'labrador_retriever', 544104, 'female', 3, 'cream', 'small', 'Germany', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(69, 'lakeland-terrier', 'dog', 'lakeland_terrier', 418766, 'male', 9, 'white', 'medium', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(70, 'welsh-terrier', 'dog', 'lakeland_terrier', 252999, 'female', 14, 'white', 'large', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(71, 'maltese', 'dog', 'maltese_dog', 361672, 'female', 1, 'cream', 'large', 'France', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(72, 'norfolk-terrier', 'dog', 'norfolk_terrier', 852551, 'female', 9, 'black', 'small', 'USA', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(73, 'norwich-terrier', 'dog', 'norwich_terrier', 526609, 'male', 12, 'cream', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(74, 'old-english-sheepdog', 'dog', 'old_english_sheepdog', 388284, 'male', 15, 'white', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(75, 'pug', 'dog', 'pug', 368266, 'female', 2, 'white', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(76, 'sealyham-terrier', 'dog', 'sealyham_terrier', 814773, 'female', 1, 'brown', 'small', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(77, 'tho-californian', 'dog', 'sealyham_terrier', 203458, 'female', 2, 'gold', 'large', 'USA', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(78, 'soft-coated-wheaten-terrier', 'dog', 'soft-coated_wheaten_terrier', 833748, 'female', 5, 'white', 'small', 'France', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(79, 'spanish-water-dog', 'dog', 'standard_poodle', 228812, 'male', 13, 'gray', 'large', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(80, 'lhasa-apso', 'dog', 'tibetan_terrier', 406448, 'female', 9, 'black', 'small', 'Vietnam', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(81, 'lowchen', 'dog', 'tibetan_terrier', 595079, 'female', 1, 'gray', 'large', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(82, 'tibetan-terrier', 'dog', 'tibetan_terrier', 275645, 'male', 5, 'cream', 'medium', 'Thailand', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(83, 'boston-terrier', 'dog', 'toy_terrier', 503037, 'female', 1, 'black', 'large', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(84, 'miniature-bull-terrier', 'dog', 'toy_terrier', 802984, 'female', 4, 'gold', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(85, 'toy-fox-terrier', 'dog', 'toy_terrier', 369164, 'male', 4, 'cream', 'medium', 'Germany', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(86, 'west-highland-white-terrier', 'dog', 'west_highland_white_terrier', 268428, 'female', 9, 'brown', 'large', 'Germany', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(87, 'wire-fox-terrier', 'dog', 'wire-haired_fox_terrier', 907716, 'male', 14, 'gold', 'medium', 'Vietnam', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(88, 'yorkshire-terrier', 'dog', 'yorkshire_terrier', 613181, 'male', 3, 'white', 'medium', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(89, 'ca-clown', 'fish', 'anemone_fish', 916716, 'female', 11, 'black', 'large', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(90, 'ca-canh-ca-voi', 'fish', 'goldfish', 237436, 'male', 8, 'white', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(91, 'ca-canh-guppy', 'fish', 'goldfish', 588678, 'female', 13, 'gray', 'medium', 'France', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(92, 'ca-canh-guppy1', 'fish', 'goldfish', 358847, 'male', 1, 'white', 'large', 'France', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(93, 'ca-canh-malawi', 'fish', 'goldfish', 777251, 'male', 3, 'white', 'small', 'Thailand', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(94, 'ca-canh-swordtail', 'fish', 'goldfish', 634403, 'female', 3, 'brown', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(95, 'ca-hoi-nhat-ban', 'fish', 'goldfish', 317097, 'male', 10, 'white', 'small', 'Germany', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(96, 'ca-koi', 'fish', 'goldfish', 709833, 'female', 12, 'brown', 'large', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(97, 'ca-surgeon', 'fish', 'goldfish', 243706, 'male', 2, 'cream', 'large', 'France', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(98, 'ca-betta', 'fish', 'macaw', 868552, 'male', 10, 'gray', 'large', 'Thailand', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(99, 'tho-nertherland-dwarf', 'hamster', 'hamster', 773592, 'male', 4, 'brown', 'large', 'Thailand', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(100, 'ran-boa-canh', 'lizard', 'green_lizard', 513821, 'female', 6, 'white', 'large', 'USA', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(101, 'tho-lionhead', 'other', 'angora', 328795, 'female', 4, 'cream', 'medium', 'Thailand', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(102, 'bernese-mountain', 'other', 'appenzeller', 260019, 'male', 1, 'black', 'small', 'Germany', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(103, 'finnish-spitz', 'other', 'basenji', 258953, 'female', 15, 'gray', 'small', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(104, 'cavalier-king-charles-spaniel', 'other', 'blenheim_spaniel', 358613, 'male', 3, 'gray', 'small', 'Germany', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(105, 'king-charles-spaniel', 'other', 'blenheim_spaniel', 957787, 'male', 13, 'gold', 'medium', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(106, 'border-collie', 'other', 'border_collie', 685018, 'female', 9, 'cream', 'small', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(107, 'borzoi', 'other', 'borzoi', 506774, 'male', 5, 'gray', 'small', 'USA', 'Calm and suitable for families.', 'sold', '2025-04-24 13:50:37'),
-(108, 'english-setter', 'other', 'brittany_spaniel', 470265, 'female', 3, 'brown', 'medium', 'Thailand', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(109, 'chim-sao', 'other', 'bulbul', 430081, 'female', 14, 'cream', 'medium', 'Thailand', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(110, 'bullmastiff', 'other', 'bull_mastiff', 374898, 'male', 11, 'black', 'small', 'France', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(111, 'mastiff', 'other', 'bull_mastiff', 586405, 'male', 6, 'gold', 'small', 'Thailand', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(112, 'neapolitan-mastiff', 'other', 'bull_mastiff', 544680, 'male', 8, 'brown', 'large', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(113, 'pembroke-welsh-corgi', 'other', 'cardigan', 863064, 'female', 11, 'cream', 'small', 'Vietnam', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(114, 'chow-chow', 'other', 'chow', 390786, 'female', 15, 'gold', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(115, 'clumber-spaniel', 'other', 'clumber', 793149, 'male', 5, 'white', 'medium', 'USA', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(116, 'doberman-pinscher', 'other', 'doberman', 746814, 'male', 10, 'brown', 'large', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(117, 'ca-rong', 'other', 'eel', 330385, 'female', 8, 'gray', 'small', 'Germany', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(118, 'hong-hac', 'other', 'flamingo', 601411, 'male', 3, 'cream', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(119, 'ca-bay-mau', 'other', 'gar', 720756, 'male', 13, 'brown', 'large', 'Vietnam', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(120, 'small-munsterlander-pointer', 'other', 'german_short-haired_pointer', 477521, 'female', 4, 'black', 'medium', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(121, 'giant-schnauzer', 'other', 'giant_schnauzer', 741256, 'male', 11, 'brown', 'small', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(122, 'cane-corso', 'other', 'great_dane', 862877, 'female', 14, 'white', 'large', 'Vietnam', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(123, 'great-dane', 'other', 'great_dane', 411040, 'female', 2, 'brown', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(124, 'plott', 'other', 'great_dane', 717938, 'male', 14, 'white', 'medium', 'USA', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(125, 'cu-meo', 'other', 'great_grey_owl', 569536, 'female', 3, 'black', 'small', 'France', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(126, 'cu-ngua', 'other', 'great_grey_owl', 628151, 'male', 11, 'white', 'medium', 'Thailand', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(127, 'pyrenean-mastiff', 'other', 'great_pyrenees', 601397, 'male', 14, 'gray', 'large', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(128, 'ran-con-canh', 'other', 'green_mamba', 444760, 'male', 8, 'cream', 'medium', 'USA', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(129, 'italian-greyhound', 'other', 'ibizan_hound', 459630, 'female', 11, 'gray', 'medium', 'France', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(130, 'pharaoh-hound', 'other', 'ibizan_hound', 635919, 'female', 6, 'brown', 'medium', 'Germany', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(131, 'irish-setter', 'other', 'irish_setter', 290777, 'female', 5, 'white', 'small', 'Germany', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(132, 'lrish-wolfhound', 'other', 'irish_wolfhound', 530777, 'male', 7, 'gray', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(133, 'greyhound', 'other', 'italian_greyhound', 830420, 'female', 4, 'cream', 'large', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(134, 'chich-choe-lua', 'other', 'jacamar', 826600, 'male', 4, 'gold', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(135, 'japanese-chin', 'other', 'japanese_spaniel', 936548, 'female', 8, 'brown', 'medium', 'USA', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(136, 'shih-tzu', 'other', 'japanese_spaniel', 752603, 'male', 2, 'gold', 'large', 'France', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(137, 'keeshond', 'other', 'keeshond', 343791, 'male', 6, 'black', 'large', 'Thailand', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(138, 'chim-canh-cut-hoang-gia', 'other', 'king_penguin', 799263, 'male', 15, 'cream', 'small', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(139, 'komondor', 'other', 'komondor', 482565, 'male', 10, 'gray', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(140, 'kuvasz', 'other', 'kuvasz', 410205, 'male', 9, 'cream', 'medium', 'Thailand', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(141, 'ca-cang-co', 'other', 'lorikeet', 860372, 'male', 2, 'gray', 'small', 'USA', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(142, 'vet-noi', 'other', 'lorikeet', 662796, 'male', 3, 'brown', 'large', 'France', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(143, 'phuong-hoang', 'other', 'macaw', 916131, 'male', 11, 'black', 'small', 'Germany', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(144, 'chim-dau', 'other', 'magpie', 632514, 'female', 14, 'cream', 'small', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(145, 'chinese-crested', 'other', 'mexican_hairless', 288245, 'male', 10, 'cream', 'medium', 'France', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(146, 'dachshund', 'other', 'mexican_hairless', 300004, 'male', 4, 'gray', 'small', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(147, 'miniature-pinscher', 'other', 'miniature_pinscher', 945595, 'female', 4, 'brown', 'medium', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(148, 'poodle', 'other', 'miniature_poodle', 398104, 'male', 11, 'gold', 'large', 'USA', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(149, 'norwegian-buhund', 'other', 'norwegian_elkhound', 929072, 'female', 6, 'cream', 'medium', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(150, 'norwegian-elkhound', 'other', 'norwegian_elkhound', 817738, 'male', 3, 'gold', 'small', 'USA', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(151, 'swedish-vallhund', 'other', 'norwegian_elkhound', 896115, 'male', 13, 'brown', 'large', 'Germany', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(152, 'đa-đieu', 'other', 'ostrich', 874322, 'female', 15, 'gold', 'medium', 'Vietnam', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(153, 'favicon', 'other', 'other', 416830, 'female', 6, 'white', 'medium', 'USA', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(154, 'logo', 'other', 'other', 718927, 'female', 9, 'gray', 'large', 'France', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(155, 'logo2', 'other', 'other', 780219, 'female', 4, 'brown', 'small', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(156, 'logopetshop', 'other', 'other', 472062, 'female', 11, 'brown', 'large', 'Germany', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(157, 'map-marker', 'other', 'other', 625737, 'female', 6, 'white', 'small', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(158, 'payment-method', 'other', 'other', 428431, 'female', 12, 'black', 'small', 'Germany', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(159, 'payments', 'other', 'other', 272788, 'female', 6, 'gray', 'medium', 'Thailand', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(160, 'qrcode', 'other', 'other', 593690, 'male', 8, 'gray', 'medium', 'Vietnam', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(161, 'search-icon', 'other', 'other', 779732, 'male', 10, 'white', 'large', 'Vietnam', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(162, 'Unknown_person', 'other', 'other', 408044, 'male', 8, 'gray', 'medium', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(163, 'otterhound', 'other', 'otterhound', 982794, 'female', 13, 'brown', 'large', 'Thailand', 'Calm and suitable for families.', 'sold', '2025-04-24 13:50:37'),
-(164, 'spinone-italiano', 'other', 'otterhound', 838798, 'female', 7, 'black', 'small', 'France', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(165, 'papillon', 'other', 'papillon', 976992, 'male', 4, 'black', 'large', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(166, 'chim-cong', 'other', 'peacock', 557839, 'female', 14, 'gray', 'small', 'Vietnam', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(167, 'pekingese', 'other', 'pekinese', 763587, 'male', 15, 'black', 'large', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(168, 'tibetan-spaniel', 'other', 'pekinese', 537340, 'female', 11, 'white', 'medium', 'USA', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(169, 'corgi', 'other', 'pembroke', 895638, 'male', 6, 'white', 'medium', 'Thailand', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(170, 'pomeranian', 'other', 'pomeranian', 301977, 'female', 9, 'gray', 'large', 'Thailand', 'Calm and suitable for families.', 'sold', '2025-04-24 13:50:37'),
-(171, 'van-tho-nhi-ky', 'other', 'pomeranian', 926274, 'male', 12, 'cream', 'large', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(172, 'redbone-coonhound', 'other', 'redbone', 354708, 'male', 7, 'gold', 'small', 'France', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(173, 'rhodesian-ridgeback', 'other', 'rhodesian_ridgeback', 454513, 'male', 9, 'black', 'small', 'Germany', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(174, 'vizsla', 'other', 'rhodesian_ridgeback', 249661, 'female', 5, 'brown', 'medium', 'Germany', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(175, 'rottweiler', 'other', 'rottweiler', 975730, 'female', 4, 'gold', 'large', 'France', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(176, 'saint-bernard', 'other', 'saint_bernard', 978604, 'male', 10, 'black', 'small', 'Vietnam', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(177, 'saluki', 'other', 'saluki', 472712, 'male', 3, 'gray', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(178, 'whippet', 'other', 'saluki', 387950, 'male', 10, 'brown', 'large', 'Thailand', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(179, 'Jjapanese-spitz', 'other', 'samoyed', 521534, 'female', 14, 'black', 'medium', 'Thailand', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(180, 'samoyed', 'other', 'samoyed', 635845, 'female', 13, 'white', 'small', 'Thailand', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(181, 'schipperke', 'other', 'schipperke', 537976, 'male', 2, 'gold', 'large', 'France', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(182, 'miniature-schnauzer', 'other', 'standard_schnauzer', 667483, 'female', 14, 'white', 'large', 'Germany', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(183, 'standard-schnauzer', 'other', 'standard_schnauzer', 533780, 'female', 7, 'gold', 'medium', 'France', 'Well-trained and affectionate pet.', 'sold', '2025-04-24 13:50:37'),
-(184, 'wirehaired-pointing-griffon', 'other', 'standard_schnauzer', 716670, 'female', 2, 'black', 'small', 'Vietnam', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(185, 'cocker-spaniel', 'other', 'sussex_spaniel', 363779, 'female', 6, 'black', 'large', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(186, 'field-spaniel', 'other', 'sussex_spaniel', 320733, 'female', 12, 'gray', 'medium', 'France', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(187, 'sussex-spaniel', 'other', 'sussex_spaniel', 853378, 'male', 9, 'cream', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(188, 'newfoundland', 'other', 'tibetan_mastiff', 892732, 'female', 10, 'black', 'large', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(189, 'tibetan-mastiff', 'other', 'tibetan_mastiff', 554786, 'female', 15, 'gold', 'large', 'USA', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(190, 'đai-bang-harpy', 'other', 'vulture', 866963, 'male', 9, 'gray', 'large', 'France', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(191, 'treeing-walker-coonhound', 'other', 'walker_hound', 657030, 'male', 7, 'black', 'medium', 'USA', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(192, 'weimaraner', 'other', 'weimaraner', 554446, 'female', 13, 'black', 'large', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(193, 'english-springer-spaniel', 'other', 'welsh_springer_spaniel', 516540, 'male', 3, 'black', 'medium', 'Thailand', 'A friendly and playful companion.', 'sold', '2025-04-24 13:50:37'),
-(194, 'welsh-springer-spaniel', 'other', 'welsh_springer_spaniel', 679735, 'female', 11, 'gray', 'medium', 'France', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(195, 'sloughi', 'other', 'whippet', 689670, 'male', 10, 'cream', 'small', 'Germany', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(196, 'tho-dutch', 'rabbit', 'hare', 364086, 'male', 10, 'gold', 'large', 'USA', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(197, 'tho-flemish-giant', 'rabbit', 'hare', 393310, 'male', 3, 'black', 'small', 'Vietnam', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(198, 'tho-himalayan', 'rabbit', 'hare', 918858, 'female', 11, 'cream', 'medium', 'Germany', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(199, 'tho-holland-op', 'rabbit', 'hare', 322700, 'female', 9, 'gold', 'medium', 'Vietnam', 'Well-trained and affectionate pet.', 'pending', '2025-04-24 13:50:37'),
-(200, 'tho-mini-rex.', 'rabbit', 'hare', 897631, 'male', 5, 'black', 'small', 'Thailand', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
-(201, 'tho-angora', 'rabbit', 'wood_rabbit', 236967, 'male', 14, 'gray', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(202, 'tho-chinchilla', 'rabbit', 'wood_rabbit', 379608, 'male', 8, 'cream', 'medium', 'USA', 'Calm and suitable for families.', 'pending', '2025-04-24 13:50:37'),
-(203, 'tho-jersey-wooly', 'rabbit', 'wood_rabbit', 450861, 'female', 7, 'brown', 'large', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
-(204, 'ran-garter-snake', 'snake', 'garter_snake', 369840, 'male', 6, 'gray', 'large', 'Thailand', 'Perfect for apartment living.', 'pending', '2025-04-24 13:50:37'),
-(205, 'ran-green-tree-python', 'snake', 'green_snake', 878479, 'female', 12, 'white', 'small', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
-(206, 'ran-king-snake', 'snake', 'green_snake', 602566, 'male', 1, 'gold', 'medium', 'Germany', 'Energetic and loves to play outdoors.', 'pending', '2025-04-24 13:50:37'),
-(207, 'ran-hognose', 'snake', 'hognose_snake', 458430, 'female', 5, 'cream', 'medium', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(208, 'ran-trai-dau-đo', 'snake', 'indian_cobra', 307527, 'male', 8, 'cream', 'large', 'Thailand', 'A friendly and playful companion.', 'pending', '2025-04-24 13:50:37'),
-(209, 'ran-ball-python1', 'snake', 'king_snake', 923094, 'male', 14, 'cream', 'large', 'France', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
-(210, 'ran-milk-snake', 'snake', 'king_snake', 324260, 'male', 8, 'cream', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
-(211, 'ran-corn-snake', 'snake', 'night_snake', 501516, 'male', 9, 'gray', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37'),
-(212, 'ran-cornsnake', 'snake', 'night_snake', 237139, 'male', 5, 'brown', 'large', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(213, 'ran-ball-python', 'snake', 'rock_python', 606207, 'female', 4, 'brown', 'small', 'USA', 'Energetic and loves to play outdoors.', 'sold', '2025-04-24 13:50:37');
+INSERT INTO `pets` (`id`, `name`, `species`, `breed`, `price`, `quantity`, `gender`, `age`, `color`, `size`, `origin`, `description`, `status`, `created_at`) VALUES
+(1, 'chim-canari', 'bird', 'goldfinch', 844288, 4, 'male', 4, 'brown', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(2, 'hoang-yen', 'bird', 'goldfinch', 413832, 0, 'male', 10, 'black', 'medium', 'Vietnam', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
+(3, 'anhdaidienchim', 'bird', 'robin', 326636, 1, 'female', 10, 'gold', 'medium', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(4, 'abyssinia', 'cat', 'egyptian_cat', 594849, 1, 'male', 15, 'black', 'small', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(5, 'bao-bengal', 'cat', 'egyptian_cat', 793005, 1, 'male', 14, 'black', 'small', 'Thailand', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(6, 'coc-duoi-nhat-ban', 'cat', 'egyptian_cat', 271523, 1, 'male', 3, 'cream', 'small', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(7, 'korat', 'cat', 'egyptian_cat', 296082, 1, 'female', 6, 'black', 'small', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(8, 'maine-coon', 'cat', 'egyptian_cat', 605786, 1, 'female', 10, 'cream', 'large', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(9, 'meoanhlongngan', 'cat', 'egyptian_cat', 452639, 1, 'female', 5, 'brown', 'medium', 'France', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(10, 'mien-dien', 'cat', 'egyptian_cat', 353847, 1, 'male', 12, 'gray', 'small', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(11, 'moggie', 'cat', 'egyptian_cat', 682564, 1, 'male', 1, 'brown', 'medium', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(12, 'nga-xanh', 'cat', 'egyptian_cat', 684739, 1, 'male', 13, 'gold', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(13, 'ocicat', 'cat', 'egyptian_cat', 619992, 1, 'female', 7, 'white', 'large', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(14, 'rex-cornwall', 'cat', 'egyptian_cat', 723297, 1, 'male', 3, 'gold', 'small', 'Vietnam', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(15, 'rex-devon', 'cat', 'egyptian_cat', 851981, 1, 'female', 15, 'white', 'small', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(16, 'somali', 'cat', 'egyptian_cat', 829548, 1, 'female', 6, 'black', 'medium', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(17, 'tai-cup-scotland', 'cat', 'egyptian_cat', 229230, 1, 'female', 10, 'gold', 'medium', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(18, 'tiffanie', 'cat', 'egyptian_cat', 868634, 1, 'female', 9, 'brown', 'small', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(19, 'sphynx-khong-long', 'cat', 'hog', 662609, 1, 'female', 3, 'cream', 'large', 'France', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(20, 'anhdaidienmeo', 'cat', 'lynx', 971310, 1, 'female', 11, 'cream', 'medium', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(21, 'rung-na-uy', 'cat', 'lynx', 466017, 1, 'female', 15, 'white', 'medium', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(22, 'siberian', 'cat', 'lynx', 908268, 1, 'male', 9, 'black', 'large', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(23, 'anh-long-ngan', 'cat', 'persian_cat', 649458, 1, 'female', 1, 'gold', 'large', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(24, 'ba-tu', 'cat', 'persian_cat', 745375, 1, 'female', 14, 'white', 'medium', 'Thailand', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(25, 'birman', 'cat', 'persian_cat', 298253, 1, 'male', 12, 'gray', 'small', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(26, 'chinchilla', 'cat', 'persian_cat', 999803, 1, 'female', 6, 'brown', 'small', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(27, 'ragdoll', 'cat', 'persian_cat', 500647, 1, 'female', 4, 'cream', 'medium', 'France', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(28, 'tat-trang', 'cat', 'persian_cat', 922911, 1, 'male', 14, 'gray', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(29, 'tonkin', 'cat', 'persian_cat', 720582, 1, 'male', 1, 'cream', 'large', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(30, 'scottish-deerhound', 'cat', 'scottish_deerhound', 326102, 1, 'male', 13, 'black', 'medium', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(31, 'bali', 'cat', 'siamese_cat', 259937, 1, 'male', 4, 'gold', 'medium', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(32, 'xiem', 'cat', 'siamese_cat', 478184, 1, 'female', 13, 'black', 'small', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(33, 'ba-tu-long-ngan', 'cat', 'tabby_cat', 708161, 1, 'male', 5, 'gray', 'medium', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(34, 'long-ngan-phuong-dong', 'cat', 'tabby_cat', 819044, 1, 'female', 6, 'gold', 'medium', 'France', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(35, 'manx', 'cat', 'tabby_cat', 300961, 1, 'male', 3, 'white', 'large', 'Thailand', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(36, 'bulldog', 'cow', 'boxer', 593766, 1, 'male', 2, 'cream', 'small', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(37, 'beagle', 'cow', 'english_foxhound', 448602, 1, 'female', 2, 'white', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(38, 'english-foxhound', 'cow', 'english_foxhound', 877065, 1, 'male', 7, 'white', 'small', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(39, 'pointer', 'cow', 'english_foxhound', 588432, 1, 'female', 12, 'gray', 'medium', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(40, 'smooth-fox-terrier', 'cow', 'english_foxhound', 572375, 1, 'female', 9, 'white', 'large', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(41, 'boxer', 'cow', 'rhodesian_ridgeback', 392565, 1, 'female', 3, 'cream', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(42, 'anhdaidienalaska', 'dog', 'alaskan_malamute', 972430, 1, 'male', 4, 'cream', 'medium', 'Thailand', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(43, 'siberian-huskys', 'dog', 'alaskan_malamute', 211271, 1, 'female', 4, 'cream', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(44, 'staffordshire-bull-terrier', 'dog', 'american_staffordshire_terrier', 501863, 1, 'male', 1, 'brown', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(45, 'silky-terrier', 'dog', 'australian_terrier', 613469, 1, 'female', 15, 'gold', 'large', 'Vietnam', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(46, 'basset-hound', 'dog', 'basset', 738622, 1, 'male', 15, 'white', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(47, 'manchester-terrier', 'dog', 'black-and-tan_coonhound', 265546, 1, 'female', 4, 'black', 'small', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(48, 'glen-of-imaal-terrier', 'dog', 'border_terrier', 761195, 1, 'male', 7, 'gray', 'medium', 'Thailand', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(49, 'pyrenean-shepherd', 'dog', 'briard', 637333, 1, 'male', 5, 'gray', 'small', 'France', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(50, 'skye-terrier', 'dog', 'briard', 942957, 1, 'female', 3, 'cream', 'medium', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(51, 'nova-scotia-duck-tolling-retriever', 'dog', 'brittany_spaniel', 483001, 1, 'female', 11, 'cream', 'large', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(52, 'french-bulldog', 'dog', 'bull_mastiff', 305228, 1, 'female', 1, 'gold', 'large', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(53, 'cairn-terrier', 'dog', 'cairn', 451076, 1, 'male', 8, 'white', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(54, 'chihuahua', 'dog', 'chihuahua', 372947, 1, 'male', 11, 'cream', 'small', 'Thailand', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(55, 'singapura', 'dog', 'chihuahua', 318925, 1, 'female', 15, 'black', 'large', 'France', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(56, 'shiba-inu', 'dog', 'chow', 804945, 1, 'male', 6, 'white', 'large', 'Thailand', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(57, 'shetland-sheepdog', 'dog', 'collie', 626795, 1, 'female', 2, 'cream', 'small', 'France', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(58, 'dalmatian', 'dog', 'dalmatian', 240634, 1, 'male', 1, 'white', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(59, 'dandie-dinmont-terrier', 'dog', 'dandie_dinmont', 668092, 1, 'female', 13, 'brown', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(60, 'akita', 'dog', 'dingo', 840036, 1, 'female', 4, 'gray', 'large', 'Thailand', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(61, 'australian-shepherd', 'dog', 'english_setter', 357197, 1, 'female', 9, 'brown', 'small', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(62, 'burmilla', 'dog', 'eskimo_dog', 821357, 1, 'female', 11, 'white', 'small', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(63, 'siberian-husky', 'dog', 'eskimo_dog', 273959, 1, 'female', 1, 'brown', 'medium', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(64, 'flat-coated-retriever', 'dog', 'flat-coated_retriever', 764368, 1, 'male', 15, 'white', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(65, 'german-shepherd', 'dog', 'german_shepherd', 375480, 1, 'female', 2, 'white', 'large', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(66, 'golden-retriever', 'dog', 'golden_retriever', 867096, 1, 'male', 7, 'brown', 'medium', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(67, 'kerry-blue-terrier', 'dog', 'kerry_blue_terrier', 304643, 1, 'male', 3, 'cream', 'large', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(68, 'labrador-retriever', 'dog', 'labrador_retriever', 544104, 1, 'female', 3, 'cream', 'small', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(69, 'lakeland-terrier', 'dog', 'lakeland_terrier', 418766, 1, 'male', 9, 'white', 'medium', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(70, 'welsh-terrier', 'dog', 'lakeland_terrier', 252999, 1, 'female', 14, 'white', 'large', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(71, 'maltese', 'dog', 'maltese_dog', 361672, 1, 'female', 1, 'cream', 'large', 'France', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(72, 'norfolk-terrier', 'dog', 'norfolk_terrier', 852551, 1, 'female', 9, 'black', 'small', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(73, 'norwich-terrier', 'dog', 'norwich_terrier', 526609, 1, 'male', 12, 'cream', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(74, 'old-english-sheepdog', 'dog', 'old_english_sheepdog', 388284, 1, 'male', 15, 'white', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(75, 'pug', 'dog', 'pug', 368266, 1, 'female', 2, 'white', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(76, 'sealyham-terrier', 'dog', 'sealyham_terrier', 814773, 1, 'female', 1, 'brown', 'small', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(77, 'tho-californian', 'dog', 'sealyham_terrier', 203458, 1, 'female', 2, 'gold', 'large', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(78, 'soft-coated-wheaten-terrier', 'dog', 'soft-coated_wheaten_terrier', 833748, 1, 'female', 5, 'white', 'small', 'France', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(79, 'spanish-water-dog', 'dog', 'standard_poodle', 228812, 1, 'male', 13, 'gray', 'large', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(80, 'lhasa-apso', 'dog', 'tibetan_terrier', 406448, 1, 'female', 9, 'black', 'small', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(81, 'lowchen', 'dog', 'tibetan_terrier', 595079, 1, 'female', 1, 'gray', 'large', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(82, 'tibetan-terrier', 'dog', 'tibetan_terrier', 275645, 1, 'male', 5, 'cream', 'medium', 'Thailand', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(83, 'boston-terrier', 'dog', 'toy_terrier', 503037, 1, 'female', 1, 'black', 'large', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(84, 'miniature-bull-terrier', 'dog', 'toy_terrier', 802984, 1, 'female', 4, 'gold', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(85, 'toy-fox-terrier', 'dog', 'toy_terrier', 369164, 1, 'male', 4, 'cream', 'medium', 'Germany', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(86, 'west-highland-white-terrier', 'dog', 'west_highland_white_terrier', 268428, 1, 'female', 9, 'brown', 'large', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(87, 'wire-fox-terrier', 'dog', 'wire-haired_fox_terrier', 907716, 1, 'male', 14, 'gold', 'medium', 'Vietnam', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(88, 'yorkshire-terrier', 'dog', 'yorkshire_terrier', 613181, 1, 'male', 3, 'white', 'medium', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(89, 'ca-clown', 'fish', 'anemone_fish', 916716, 1, 'female', 11, 'black', 'large', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(90, 'ca-canh-ca-voi', 'fish', 'goldfish', 237436, 1, 'male', 8, 'white', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(91, 'ca-canh-guppy', 'fish', 'goldfish', 588678, 1, 'female', 13, 'gray', 'medium', 'France', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(92, 'ca-canh-guppy1', 'fish', 'goldfish', 358847, 1, 'male', 1, 'white', 'large', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(93, 'ca-canh-malawi', 'fish', 'goldfish', 777251, 1, 'male', 3, 'white', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(94, 'ca-canh-swordtail', 'fish', 'goldfish', 634403, 1, 'female', 3, 'brown', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(95, 'ca-hoi-nhat-ban', 'fish', 'goldfish', 317097, 1, 'male', 10, 'white', 'small', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(96, 'ca-koi', 'fish', 'goldfish', 709833, 1, 'female', 12, 'brown', 'large', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(97, 'ca-surgeon', 'fish', 'goldfish', 243706, 1, 'male', 2, 'cream', 'large', 'France', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(98, 'ca-betta', 'fish', 'macaw', 868552, 1, 'male', 10, 'gray', 'large', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(99, 'tho-nertherland-dwarf', 'hamster', 'hamster', 773592, 1, 'male', 4, 'brown', 'large', 'Thailand', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(100, 'ran-boa-canh', 'lizard', 'green_lizard', 513821, 1, 'female', 6, 'white', 'large', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(101, 'tho-lionhead', 'other', 'angora', 328795, 1, 'female', 4, 'cream', 'medium', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(102, 'bernese-mountain', 'other', 'appenzeller', 260019, 1, 'male', 1, 'black', 'small', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(103, 'finnish-spitz', 'other', 'basenji', 258953, 1, 'female', 15, 'gray', 'small', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(104, 'cavalier-king-charles-spaniel', 'other', 'blenheim_spaniel', 358613, 1, 'male', 3, 'gray', 'small', 'Germany', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(105, 'king-charles-spaniel', 'other', 'blenheim_spaniel', 957787, 1, 'male', 13, 'gold', 'medium', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(106, 'border-collie', 'other', 'border_collie', 685018, 1, 'female', 9, 'cream', 'small', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(107, 'borzoi', 'other', 'borzoi', 506774, 1, 'male', 5, 'gray', 'small', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(108, 'english-setter', 'other', 'brittany_spaniel', 470265, 1, 'female', 3, 'brown', 'medium', 'Thailand', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(109, 'chim-sao', 'other', 'bulbul', 430081, 1, 'female', 14, 'cream', 'medium', 'Thailand', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(110, 'bullmastiff', 'other', 'bull_mastiff', 374898, 1, 'male', 11, 'black', 'small', 'France', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(111, 'mastiff', 'other', 'bull_mastiff', 586405, 1, 'male', 6, 'gold', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(112, 'neapolitan-mastiff', 'other', 'bull_mastiff', 544680, 1, 'male', 8, 'brown', 'large', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(113, 'pembroke-welsh-corgi', 'other', 'cardigan', 863064, 1, 'female', 11, 'cream', 'small', 'Vietnam', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(114, 'chow-chow', 'other', 'chow', 390786, 1, 'female', 15, 'gold', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(115, 'clumber-spaniel', 'other', 'clumber', 793149, 1, 'male', 5, 'white', 'medium', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(116, 'doberman-pinscher', 'other', 'doberman', 746814, 1, 'male', 10, 'brown', 'large', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(117, 'ca-rong', 'other', 'eel', 330385, 1, 'female', 8, 'gray', 'small', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(118, 'hong-hac', 'other', 'flamingo', 601411, 1, 'male', 3, 'cream', 'large', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(119, 'ca-bay-mau', 'other', 'gar', 720756, 1, 'male', 13, 'brown', 'large', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(120, 'small-munsterlander-pointer', 'other', 'german_short-haired_pointer', 477521, 1, 'female', 4, 'black', 'medium', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(121, 'giant-schnauzer', 'other', 'giant_schnauzer', 741256, 1, 'male', 11, 'brown', 'small', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(122, 'cane-corso', 'other', 'great_dane', 862877, 1, 'female', 14, 'white', 'large', 'Vietnam', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(123, 'great-dane', 'other', 'great_dane', 411040, 1, 'female', 2, 'brown', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(124, 'plott', 'other', 'great_dane', 717938, 1, 'male', 14, 'white', 'medium', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(125, 'cu-meo', 'other', 'great_grey_owl', 569536, 1, 'female', 3, 'black', 'small', 'France', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(126, 'cu-ngua', 'other', 'great_grey_owl', 628151, 1, 'male', 11, 'white', 'medium', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(127, 'pyrenean-mastiff', 'other', 'great_pyrenees', 601397, 1, 'male', 14, 'gray', 'large', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(128, 'ran-con-canh', 'other', 'green_mamba', 444760, 1, 'male', 8, 'cream', 'medium', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(129, 'italian-greyhound', 'other', 'ibizan_hound', 459630, 1, 'female', 11, 'gray', 'medium', 'France', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(130, 'pharaoh-hound', 'other', 'ibizan_hound', 635919, 1, 'female', 6, 'brown', 'medium', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(131, 'irish-setter', 'other', 'irish_setter', 290777, 1, 'female', 5, 'white', 'small', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(132, 'lrish-wolfhound', 'other', 'irish_wolfhound', 530777, 1, 'male', 7, 'gray', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(133, 'greyhound', 'other', 'italian_greyhound', 830420, 1, 'female', 4, 'cream', 'large', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(134, 'chich-choe-lua', 'other', 'jacamar', 826600, 1, 'male', 4, 'gold', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(135, 'japanese-chin', 'other', 'japanese_spaniel', 936548, 1, 'female', 8, 'brown', 'medium', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(136, 'shih-tzu', 'other', 'japanese_spaniel', 752603, 1, 'male', 2, 'gold', 'large', 'France', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(137, 'keeshond', 'other', 'keeshond', 343791, 1, 'male', 6, 'black', 'large', 'Thailand', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(138, 'chim-canh-cut-hoang-gia', 'other', 'king_penguin', 799263, 1, 'male', 15, 'cream', 'small', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(139, 'komondor', 'other', 'komondor', 482565, 1, 'male', 10, 'gray', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(140, 'kuvasz', 'other', 'kuvasz', 410205, 1, 'male', 9, 'cream', 'medium', 'Thailand', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(141, 'ca-cang-co', 'other', 'lorikeet', 860372, 1, 'male', 2, 'gray', 'small', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(142, 'vet-noi', 'other', 'lorikeet', 662796, 1, 'male', 3, 'brown', 'large', 'France', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(143, 'phuong-hoang', 'other', 'macaw', 916131, 1, 'male', 11, 'black', 'small', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(144, 'chim-dau', 'other', 'magpie', 632514, 1, 'female', 14, 'cream', 'small', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(145, 'chinese-crested', 'other', 'mexican_hairless', 288245, 1, 'male', 10, 'cream', 'medium', 'France', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(146, 'dachshund', 'other', 'mexican_hairless', 300004, 1, 'male', 4, 'gray', 'small', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(147, 'miniature-pinscher', 'other', 'miniature_pinscher', 945595, 1, 'female', 4, 'brown', 'medium', 'Germany', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(148, 'poodle', 'other', 'miniature_poodle', 398104, 1, 'male', 11, 'gold', 'large', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(149, 'norwegian-buhund', 'other', 'norwegian_elkhound', 929072, 1, 'female', 6, 'cream', 'medium', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(150, 'norwegian-elkhound', 'other', 'norwegian_elkhound', 817738, 1, 'male', 3, 'gold', 'small', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(151, 'swedish-vallhund', 'other', 'norwegian_elkhound', 896115, 1, 'male', 13, 'brown', 'large', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(152, 'đa-đieu', 'other', 'ostrich', 874322, 1, 'female', 15, 'gold', 'medium', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(153, 'favicon', 'other', 'other', 416830, 1, 'female', 6, 'white', 'medium', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(154, 'logo', 'other', 'other', 718927, 1, 'female', 9, 'gray', 'large', 'France', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(155, 'logo2', 'other', 'other', 780219, 1, 'female', 4, 'brown', 'small', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(156, 'logopetshop', 'other', 'other', 472062, 1, 'female', 11, 'brown', 'large', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(157, 'map-marker', 'other', 'other', 625737, 1, 'female', 6, 'white', 'small', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(158, 'payment-method', 'other', 'other', 428431, 1, 'female', 12, 'black', 'small', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(159, 'payments', 'other', 'other', 272788, 1, 'female', 6, 'gray', 'medium', 'Thailand', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(160, 'qrcode', 'other', 'other', 593690, 1, 'male', 8, 'gray', 'medium', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(161, 'search-icon', 'other', 'other', 779732, 1, 'male', 10, 'white', 'large', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(162, 'Unknown_person', 'other', 'other', 408044, 1, 'male', 8, 'gray', 'medium', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(163, 'otterhound', 'other', 'otterhound', 982794, 1, 'female', 13, 'brown', 'large', 'Thailand', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(164, 'spinone-italiano', 'other', 'otterhound', 838798, 1, 'female', 7, 'black', 'small', 'France', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(165, 'papillon', 'other', 'papillon', 976992, 1, 'male', 4, 'black', 'large', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(166, 'chim-cong', 'other', 'peacock', 557839, 1, 'female', 14, 'gray', 'small', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(167, 'pekingese', 'other', 'pekinese', 763587, 1, 'male', 15, 'black', 'large', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(168, 'tibetan-spaniel', 'other', 'pekinese', 537340, 1, 'female', 11, 'white', 'medium', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(169, 'corgi', 'other', 'pembroke', 895638, 1, 'male', 6, 'white', 'medium', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(170, 'pomeranian', 'other', 'pomeranian', 301977, 1, 'female', 9, 'gray', 'large', 'Thailand', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(171, 'van-tho-nhi-ky', 'other', 'pomeranian', 926274, 1, 'male', 12, 'cream', 'large', 'Germany', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(172, 'redbone-coonhound', 'other', 'redbone', 354708, 1, 'male', 7, 'gold', 'small', 'France', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(173, 'rhodesian-ridgeback', 'other', 'rhodesian_ridgeback', 454513, 1, 'male', 9, 'black', 'small', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(174, 'vizsla', 'other', 'rhodesian_ridgeback', 249661, 1, 'female', 5, 'brown', 'medium', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(175, 'rottweiler', 'other', 'rottweiler', 975730, 1, 'female', 4, 'gold', 'large', 'France', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(176, 'saint-bernard', 'other', 'saint_bernard', 978604, 1, 'male', 10, 'black', 'small', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(177, 'saluki', 'other', 'saluki', 472712, 1, 'male', 3, 'gray', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(178, 'whippet', 'other', 'saluki', 387950, 1, 'male', 10, 'brown', 'large', 'Thailand', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(179, 'Jjapanese-spitz', 'other', 'samoyed', 521534, 1, 'female', 14, 'black', 'medium', 'Thailand', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(180, 'samoyed', 'other', 'samoyed', 635845, 1, 'female', 13, 'white', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(181, 'schipperke', 'other', 'schipperke', 537976, 1, 'male', 2, 'gold', 'large', 'France', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(182, 'miniature-schnauzer', 'other', 'standard_schnauzer', 667483, 1, 'female', 14, 'white', 'large', 'Germany', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(183, 'standard-schnauzer', 'other', 'standard_schnauzer', 533780, 1, 'female', 7, 'gold', 'medium', 'France', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(184, 'wirehaired-pointing-griffon', 'other', 'standard_schnauzer', 716670, 1, 'female', 2, 'black', 'small', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(185, 'cocker-spaniel', 'other', 'sussex_spaniel', 363779, 1, 'female', 6, 'black', 'large', 'Vietnam', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(186, 'field-spaniel', 'other', 'sussex_spaniel', 320733, 1, 'female', 12, 'gray', 'medium', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(187, 'sussex-spaniel', 'other', 'sussex_spaniel', 853378, 1, 'male', 9, 'cream', 'small', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(188, 'newfoundland', 'other', 'tibetan_mastiff', 892732, 1, 'female', 10, 'black', 'large', 'Vietnam', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(189, 'tibetan-mastiff', 'other', 'tibetan_mastiff', 554786, 1, 'female', 15, 'gold', 'large', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(190, 'đai-bang-harpy', 'other', 'vulture', 866963, 1, 'male', 9, 'gray', 'large', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(191, 'treeing-walker-coonhound', 'other', 'walker_hound', 657030, 1, 'male', 7, 'black', 'medium', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(192, 'weimaraner', 'other', 'weimaraner', 554446, 1, 'female', 13, 'black', 'large', 'France', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(193, 'english-springer-spaniel', 'other', 'welsh_springer_spaniel', 516540, 1, 'male', 3, 'black', 'medium', 'Thailand', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(194, 'welsh-springer-spaniel', 'other', 'welsh_springer_spaniel', 679735, 1, 'female', 11, 'gray', 'medium', 'France', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(195, 'sloughi', 'other', 'whippet', 689670, 1, 'male', 10, 'cream', 'small', 'Germany', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(196, 'tho-dutch', 'rabbit', 'hare', 364086, 1, 'male', 10, 'gold', 'large', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(197, 'tho-flemish-giant', 'rabbit', 'hare', 393310, 1, 'male', 3, 'black', 'small', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(198, 'tho-himalayan', 'rabbit', 'hare', 918858, 1, 'female', 11, 'cream', 'medium', 'Germany', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(199, 'tho-holland-op', 'rabbit', 'hare', 322700, 1, 'female', 9, 'gold', 'medium', 'Vietnam', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(200, 'tho-mini-rex.', 'rabbit', 'hare', 897631, 1, 'male', 5, 'black', 'small', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(201, 'tho-angora', 'rabbit', 'wood_rabbit', 236967, 1, 'male', 14, 'gray', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(202, 'tho-chinchilla', 'rabbit', 'wood_rabbit', 379608, 1, 'male', 8, 'cream', 'medium', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(203, 'tho-jersey-wooly', 'rabbit', 'wood_rabbit', 450861, 1, 'female', 7, 'brown', 'large', 'USA', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(204, 'ran-garter-snake', 'snake', 'garter_snake', 369840, 1, 'male', 6, 'gray', 'large', 'Thailand', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(205, 'ran-green-tree-python', 'snake', 'green_snake', 878479, 1, 'female', 12, 'white', 'small', 'USA', 'Calm and suitable for families.', 'available', '2025-04-24 13:50:37'),
+(206, 'ran-king-snake', 'snake', 'green_snake', 602566, 1, 'male', 1, 'gold', 'medium', 'Germany', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(207, 'ran-hognose', 'snake', 'hognose_snake', 458430, 1, 'female', 5, 'cream', 'medium', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(208, 'ran-trai-dau-đo', 'snake', 'indian_cobra', 307527, 1, 'male', 8, 'cream', 'large', 'Thailand', 'A friendly and playful companion.', 'available', '2025-04-24 13:50:37'),
+(209, 'ran-ball-python1', 'snake', 'king_snake', 923094, 1, 'male', 14, 'cream', 'large', 'France', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(210, 'ran-milk-snake', 'snake', 'king_snake', 324260, 1, 'male', 8, 'cream', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(211, 'ran-corn-snake', 'snake', 'night_snake', 501516, 1, 'male', 9, 'gray', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(212, 'ran-cornsnake', 'snake', 'night_snake', 237139, 1, 'male', 5, 'brown', 'large', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
+(213, 'ran-ball-python', 'snake', 'rock_python', 606207, 1, 'female', 4, 'brown', 'small', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37');
 
 -- --------------------------------------------------------
 
@@ -659,7 +669,14 @@ INSERT INTO `refresh_token` (`id`, `user_id`, `token`, `expiry_date`) VALUES
 (20, 3, 'c67c46eb-0666-472e-a841-71bc750897bb', '2025-05-01 23:35:51'),
 (21, 3, '19063b4c-5003-4e00-ab71-5a716ddb3a65', '2025-05-01 23:58:24'),
 (22, 3, 'ba79f789-7e56-4b40-8f96-1f552e1c86dc', '2025-05-02 00:17:51'),
-(23, 3, '630e206b-159d-4c97-83f9-4f574bed8c35', '2025-05-02 00:20:26');
+(23, 3, '630e206b-159d-4c97-83f9-4f574bed8c35', '2025-05-02 00:20:26'),
+(24, 3, '4a54ed7e-6b93-4126-bdd0-ffc32083d96c', '2025-05-17 06:38:29'),
+(25, 3, '1037a368-3e1f-4a90-b197-b663ed3bd5e0', '2025-05-17 06:49:32'),
+(26, 3, '75b2ce7d-772a-41c4-be8d-30a6a328e10a', '2025-05-17 11:51:45'),
+(27, 3, '14b71403-27cc-48a9-b32d-4789e5c83538', '2025-05-17 12:35:02'),
+(28, 3, '99de32f5-0e27-486c-b916-80291521925a', '2025-05-20 05:26:39'),
+(29, 3, 'd75906b1-9603-406b-8785-bcd96c425bcc', '2025-05-20 06:47:26'),
+(30, 3, 'd6646dc8-feb6-4fec-8cd9-362bcc1cc7ac', '2025-05-21 10:51:56');
 
 -- --------------------------------------------------------
 
@@ -687,8 +704,18 @@ CREATE TABLE `shipping_methods` (
   `id` int(11) NOT NULL,
   `name` varchar(100) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `price` decimal(10,2) DEFAULT NULL
+  `price` decimal(10,2) DEFAULT NULL,
+  `estimated_time` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `shipping_methods`
+--
+
+INSERT INTO `shipping_methods` (`id`, `name`, `description`, `price`, `estimated_time`) VALUES
+(1, 'Giao hàng tiêu chuẩn', 'Giao hàng trong 3-5 ngày làm việc', 30000.00, '3-5 ngày'),
+(2, 'Giao hàng nhanh', 'Giao trong 1-2 ngày làm việc', 50000.00, '1-2 ngày'),
+(3, 'Giao hàng hỏa tốc', 'Giao trong ngày cho đơn trước 10h sáng', 100000.00, 'Trong ngày');
 
 -- --------------------------------------------------------
 
@@ -751,6 +778,38 @@ CREATE TABLE `wishlist` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Đang đổ dữ liệu cho bảng `wishlist`
+--
+
+INSERT INTO `wishlist` (`id`, `user_id`, `pet_id`, `product_id`, `created_at`) VALUES
+(9, 3, 3, NULL, '2025-05-14 00:23:53'),
+(10, 3, 4, NULL, '2025-05-14 00:34:03');
+
+--
+-- Bẫy `wishlist`
+--
+DELIMITER $$
+CREATE TRIGGER `wishlist_check_insert` BEFORE INSERT ON `wishlist` FOR EACH ROW BEGIN
+  IF (NEW.pet_id IS NOT NULL AND NEW.product_id IS NOT NULL)
+     OR (NEW.pet_id IS NULL AND NEW.product_id IS NULL) THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Chỉ được có pet_id hoặc product_id, không được cả hai hoặc cả hai NULL';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `wishlist_check_update` BEFORE UPDATE ON `wishlist` FOR EACH ROW BEGIN
+  IF (NEW.pet_id IS NOT NULL AND NEW.product_id IS NOT NULL)
+     OR (NEW.pet_id IS NULL AND NEW.product_id IS NULL) THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Chỉ được có pet_id hoặc product_id, không được cả hai hoặc cả hai NULL';
+  END IF;
+END
+$$
+DELIMITER ;
+
+--
 -- Chỉ mục cho các bảng đã đổ
 --
 
@@ -797,7 +856,8 @@ ALTER TABLE `contacts`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `shipping_method_id` (`shipping_method_id`);
 
 --
 -- Chỉ mục cho bảng `order_items`
@@ -895,7 +955,7 @@ ALTER TABLE `browsing_history`
 -- AUTO_INCREMENT cho bảng `cart_items`
 --
 ALTER TABLE `cart_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT cho bảng `categories`
@@ -955,7 +1015,7 @@ ALTER TABLE `recommendations`
 -- AUTO_INCREMENT cho bảng `refresh_token`
 --
 ALTER TABLE `refresh_token`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT cho bảng `reviews`
@@ -967,7 +1027,7 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT cho bảng `shipping_methods`
 --
 ALTER TABLE `shipping_methods`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT cho bảng `users`
@@ -985,7 +1045,7 @@ ALTER TABLE `vouchers`
 -- AUTO_INCREMENT cho bảng `wishlist`
 --
 ALTER TABLE `wishlist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
@@ -1017,7 +1077,8 @@ ALTER TABLE `chatbot_messages`
 -- Các ràng buộc cho bảng `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`shipping_method_id`) REFERENCES `shipping_methods` (`id`);
 
 --
 -- Các ràng buộc cho bảng `order_items`
