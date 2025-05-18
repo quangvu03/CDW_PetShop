@@ -75,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/pets/species", "/api/pets/species/**", "/api/pets/{id:\\d+}").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/shipping/**").permitAll()
 
+
                         // Authenticated endpoints
                         .requestMatchers("/api/auth/me").authenticated()
                         // Thêm các quy tắc authenticated khác nếu cần
