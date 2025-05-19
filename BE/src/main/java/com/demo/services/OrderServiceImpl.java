@@ -74,4 +74,22 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
 
+
+    @Override
+    public String UpdateOrderStatus(int orderId, String status) {
+        Optional<Order> order = orderRepository.findById(orderId);
+        if (order.isEmpty()) {
+            return  "Lỗi: Order không tồn tại!";
+        }
+        if (!order.get().getStatus().equals("pending") && status.equals("cancelled")) {
+            return "Lỗi: Không thể hủy các đơn hàng đã được xác nhận!";
+        }
+        int rowUpdate = orderRepository.updateOrderStatus(orderId, status);
+        if (rowUpdate > 0) {
+            return "success";
+        } else {
+            return "fail";
+        }
+    }
+
 }

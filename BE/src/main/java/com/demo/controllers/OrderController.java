@@ -12,6 +12,7 @@ import com.demo.services.OrderItemService;
 import com.demo.services.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -70,6 +71,20 @@ public class OrderController {
             return new ResponseEntity<>("Lỗi: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PutMapping("/cancelled")
+    public ResponseEntity<?> cancelledOder(@RequestParam("orderId") int orderId,
+                                           @RequestParam("status") String status) {
+        try {
+            String result = orderService.UpdateOrderStatus(orderId, status);
+            return result.equals("success")
+                    ? ResponseEntity.ok(Map.of("result", result))
+                    : ResponseEntity.badRequest().body(Map.of("result", result));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Lỗi: " + e.getMessage()));
+        }
+    }
+
 
 
 }

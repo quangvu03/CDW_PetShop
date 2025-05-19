@@ -10,4 +10,6 @@ public interface OrderService {
     Order saveOrder(OrderRequest orderRequest);
 
     List<OrdersDto> findByUserIdOrderByOrderDateDesc(int userId);
+
+    String UpdateOrderStatus(int orderId,String status);
 }
