@@ -13,13 +13,6 @@ export default function PaymentMethod() {
             <input type="radio" name="payment" value="vnpay" /> Thanh toán VNPay (Sau khi đặt hàng)
           </label>
         </div>
-        <div className="get-button">
-        <div className="content" style={{ margin: '10px 100px' }}>
-          <div className="button">
-            <button className="btn" type="submit">Đặt hàng</button>
-          </div>
-        </div>
-      </div>
-      </div>
+    </div>
   );
 }

@@ -45,7 +45,11 @@ export default function Checkout() {
       <div className="container">
         <div className="row">
           <div className="col-lg-8 col-12">
-            <CheckoutForm />
+            <CheckoutForm 
+              cartItems={checkoutItems}
+              totalAmount={total}
+              selectedShipping={selectedShipping}
+            />
           </div>
           <div className="col-lg-4 col-12">
             <CartSummary

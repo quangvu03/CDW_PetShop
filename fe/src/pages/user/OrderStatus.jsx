@@ -1,126 +1,149 @@
-import { useEffect, useState } from 'react';
-import $ from 'jquery';
-import 'datatables.net';
-import 'datatables.net-dt/css/dataTables.dataTables.css';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getOrdersByUser } from '../../services/orderService';
+import { toast } from 'react-toastify';
 
-
-export default function OrderManagementPage() {
-  const [showModal, setShowModal] = useState(false);
-  const [orderDetails, setOrderDetails] = useState([]);
+export default function OrderStatus() {
+  const navigate = useNavigate();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Init main table
-    $('#example').DataTable();
-
-    // Fake click event to show modal for now
-    $('.clickTR').on('click', () => {
-      setShowModal(true);
-      // TODO: Fetch order details here
-      setOrderDetails([
-        {
-          name: 'Thú cưng A',
-          size: 'L',
-          quantity: 2,
-          price: 1.5,
-          total: 3.0,
-        },
-      ]);
-    });
-
-    return () => {
-      $('.clickTR').off('click');
-    };
+    fetchOrders();
   }, []);
 
-  return (
-    <section className="container_status">
-      <h3 style={{ textAlign: 'center', position: 'relative' }}>Đơn hàng của bạn</h3>
-      <table id="example" className="display" style={{ width: '100%' }}>
-        <thead>
-          <tr>
-            <th>STT</th>
-            <th>Tên</th>
-            <th>Số điện thoại</th>
-            <th>Email</th>
-            <th>Ghi chú</th>
-            <th>Tổng tiền</th>
-            <th>Địa chỉ</th>
-            <th>Thời gian đặt</th>
-            <th>Trạng thái đơn hàng</th>
-            <th>Phương thức thanh toán</th>
-            <th>Trạng thái thanh toán</th>
-            <th>Hoá đơn</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr data-id="1" className="clickTR" style={{ cursor: 'pointer' }}>
-            <td>1</td>
-            <td>Nguyễn Văn A</td>
-            <td>0123456789</td>
-            <td>test@email.com</td>
-            <td>Giao trước 5h</td>
-            <td>3 triệu</td>
-            <td>Thủ Đức, HCM</td>
-            <td>2025-04-18 10:30</td>
-            <td>Đang xác nhận</td>
-            <td>COD</td>
-            <td>Chưa thanh toán</td>
-            <td>Chỉ có khi thanh toán xong</td>
-          </tr>
-        </tbody>
-      </table>
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      // Get user ID from localStorage or your auth context
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        toast.error('Vui lòng đăng nhập để xem đơn hàng');
+        navigate('/auth/login');
+        return;
+      }
+      
+      const response = await getOrdersByUser(userId);
+      if (response.data.success === false) {
+        setOrders([]);
+      } else {
+        setOrders(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        localStorage.clear();
+        navigate('/auth/login');
+      } else {
+        toast.error('Không thể tải danh sách đơn hàng');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      {showModal && (
-        <div>
-          <div className="overlay" onClick={() => setShowModal(false)}></div>
-          <div
-            id="dialog-message"
-            style={{
-              position: 'fixed',
-              top: '15%',
-              left: '15%',
-              zIndex: 999,
-              background: '#fff',
-              padding: '20px',
-              borderRadius: '10px',
-              width: '70%',
-            }}
-          >
-            <button
-              id="btnClose"
-              onClick={() => setShowModal(false)}
-              style={{ float: 'right', border: 'none', background: 'transparent', fontSize: '20px' }}
-            >
-              ✖
-            </button>
-            <h3>Chi tiết đơn hàng</h3>
-            <table className="display" style={{ width: '100%' }}>
-              <thead>
-                <tr>
-                  <th>STT</th>
-                  <th>Tên thú cưng</th>
-                  <th>Kích thước</th>
-                  <th>Số lượng</th>
-                  <th>Đơn giá</th>
-                  <th>Tổng tiền</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orderDetails.map((item, index) => (
-                  <tr key={index}>
-                    <td>{index + 1}</td>
-                    <td>{item.name}</td>
-                    <td>{item.size}</td>
-                    <td>{item.quantity}</td>
-                    <td>{item.price} triệu</td>
-                    <td>{item.total} triệu</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+  const getStatusBadgeClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return 'bg-warning';
+      case 'processing':
+        return 'bg-info';
+      case 'completed':
+        return 'bg-success';
+      case 'cancelled':
+        return 'bg-danger';
+      default:
+        return 'bg-secondary';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const handleViewDetails = (orderId) => {
+    navigate(`/order-detail/${orderId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="container mt-4">
+        <div className="text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mt-4">
+      <h2 className="mb-4">Lịch sử đơn hàng</h2>
+      
+      {orders.length === 0 ? (
+        <div className="alert alert-info">
+          Bạn chưa có đơn hàng nào
+        </div>
+      ) : (
+        <div className="table-responsive">
+          <table className="table table-hover">
+            <thead className="table-light">
+              <tr>
+                <th>Mã đơn hàng</th>
+                <th>Ngày đặt</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái đơn hàng</th>
+                <th>Phương thức thanh toán</th>
+                <th>Trạng thái thanh toán</th>
+                <th>Địa chỉ giao hàng</th>
+                <th>Phương thức giao hàng</th>
+                <th>Chi tiết</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.id}>
+                  <td>#{order.id}</td>
+                  <td>{formatDate(order.orderDate)}</td>
+                  <td>{(order.totalPrice ?? 0).toLocaleString('vi-VN')}đ</td>
+                  <td>
+                    <span className={`badge ${getStatusBadgeClass(order.status)}`}>{
+                      order.status === 'pending' ? 'Chờ xác nhận' :
+                      order.status === 'processing' ? 'Đang xử lý' :
+                      order.status === 'completed' ? 'Hoàn thành' :
+                      order.status === 'cancelled' ? 'Đã hủy' : order.status
+                    }</span>
+                  </td>
+                  <td>{order.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' : order.paymentMethod}</td>
+                  <td>
+                    <span className={`badge ${order.paymentStatus === 'unpaid' ? 'bg-warning' : 'bg-success'}`}>{
+                      order.paymentStatus === 'unpaid' ? 'Chưa thanh toán' : 'Đã thanh toán'
+                    }</span>
+                  </td>
+                  <td>{order.shippingAddress}</td>
+                  <td>{order.shippingName || '---'}</td>
+                  <td>
+                    <button 
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => handleViewDetails(order.id)}
+                    >
+                      Xem chi tiết
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </section>
+    </div>
   );
 }
