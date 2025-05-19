@@ -85,7 +85,7 @@ public class AuthController {
             response.put("accessToken", token);
             response.put("refreshToken", refreshToken);
             response.put("username", user.getUsername());
-            response.put("full_name", user.getFullName()); // Cho phép null nếu không có tên
+            response.put("full_name", user.getFullName());
             response.put("role", user.getRole());
 
             return ResponseEntity.ok(response);
