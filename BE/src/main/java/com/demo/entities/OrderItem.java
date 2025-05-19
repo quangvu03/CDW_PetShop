@@ -3,11 +3,13 @@ package com.demo.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 
 @Getter
 @Setter
+@ToString
 @Entity
 @Table(name = "order_items", indexes = {
         @Index(name = "order_id", columnList = "order_id"),
