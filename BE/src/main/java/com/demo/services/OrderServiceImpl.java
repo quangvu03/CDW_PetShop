@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDate(Instant.now());
         order.setStatus("pending");
         order.setUser(user);
-        order.setPaymentStatus(orderRequest.getPaymentStatus());
+        order.setPaymentStatus("unpaid");
         order.setShippingAddress(orderRequest.getShippingAddress());
         order.setTotalPrice(orderRequest.getTotalPrice());
         order.setPaymentMethod(orderRequest.getPaymentMethod());
@@ -69,6 +69,8 @@ public class OrderServiceImpl implements OrderService {
                     dto.setTotalPrice(order.getTotalPrice());
                     dto.setPaymentMethod(order.getPaymentMethod());
                     dto.setPaymentStatus(order.getPaymentStatus());
+                    dto.setShippingAddress(order.getShippingAddress());
+                    dto.setShippingName(order.getShippingMethod() != null ? order.getShippingMethod().getName() : "");
                     return dto;
                 })
                 .collect(Collectors.toList());

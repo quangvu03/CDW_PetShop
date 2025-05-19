@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderItemRequest {
     int petId;
+    int productId;
     int quantity;
     BigDecimal price;
 }

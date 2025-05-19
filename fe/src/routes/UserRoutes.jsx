@@ -9,6 +9,7 @@ import Checkout from '../pages/user/Checkout';
 import Payment from '../pages/user/Payment';
 import PaymentSuccess from '../pages/user/PaymentSuccess';
 import OrderStatus from '../pages/user/OrderStatus';
+import OrderDetail from '../pages/user/OrderDetail';
 import PersonalInfo from '../pages/user/PersonalInfo';
 import WishlistPet from '../pages/user/WishlistPet';
 import ShowBill from '../pages/user/ShowBill';
@@ -28,7 +29,8 @@ export default function UserRoutes() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/payment" element={<Payment />} />
         <Route path="/checkout/success" element={<PaymentSuccess />} />
-        <Route path="/order/status" element={<OrderStatus />} />
+        <Route path="/order-history" element={<OrderStatus />} />
+        <Route path="/order-detail/:orderId" element={<OrderDetail />} />
         <Route path="/profile" element={<PersonalInfo />} />
         <Route path="/wishlist" element={<WishlistPet />} />
         <Route path="/orders" element={<ShowBill />} />

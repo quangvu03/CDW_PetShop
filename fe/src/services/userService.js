@@ -7,3 +7,7 @@ export const updateProfile = (formData) => {
     },
   });
 };
+
+  export const getCurrentUser = () => {
+    return api.get('/auth/me');
+  };
