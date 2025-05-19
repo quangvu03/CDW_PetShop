@@ -42,8 +42,10 @@ export default function OrderDetail() {
     switch (status?.toLowerCase()) {
       case 'pending':
         return 'bg-warning';
-      case 'processing':
+      case 'confirmed':
         return 'bg-info';
+      case 'shipped':
+        return 'bg-primary';
       case 'completed':
         return 'bg-success';
       case 'cancelled':
@@ -92,7 +94,8 @@ export default function OrderDetail() {
           <h3 className="mb-0">Chi tiết đơn hàng #{order.orderId || order.id}</h3>
           <span className={`badge ${getStatusBadgeClass(order.status)}`}>
             {order.status === 'pending' ? 'Chờ xác nhận' :
-              order.status === 'processing' ? 'Đang xử lý' :
+              order.status === 'confirmed' ? 'Đã xác nhận' :
+              order.status === 'shipped' ? 'Đang giao hàng' :
               order.status === 'completed' ? 'Hoàn thành' :
               order.status === 'cancelled' ? 'Đã hủy' : order.status}
           </span>
@@ -132,9 +135,9 @@ export default function OrderDetail() {
                 {order.petDtoList && order.petDtoList.length > 0 ? order.petDtoList.map((item, idx) => (
                   <tr key={item.id || idx}>
                     <td>Thú cưng #{item.id} - {item.name}</td>
-                    <td>{item.quantity || 1}</td>
-                    <td>{(item.price || 0).toLocaleString('vi-VN')}đ</td>
-                    <td>{((item.price || 0) * (item.quantity || 1)).toLocaleString('vi-VN')}đ</td>
+                    <td>{Number(item.quantity) || 1}</td>
+                    <td>{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</td>
+                    <td>{((Number(item.price) || 0) * (Number(item.quantity) || 1)).toLocaleString('vi-VN')}đ</td>
                   </tr>
                 )) : (
                   <tr><td colSpan="4" className="text-center">Không có sản phẩm</td></tr>

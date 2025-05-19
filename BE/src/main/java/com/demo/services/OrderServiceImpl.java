@@ -2,6 +2,7 @@ package com.demo.services;
 
 import com.demo.dtos.OrdersDto;
 import com.demo.dtos.requests.OrderRequest;
+import com.demo.dtos.requests.UpdateOrderRequest;
 import com.demo.entities.Order;
 import com.demo.entities.ShippingMethod;
 import com.demo.entities.User;
@@ -75,5 +76,65 @@ public class OrderServiceImpl implements OrderService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Order updateOrder(UpdateOrderRequest updateRequest) {
+        // Find the existing order
+        Optional<Order> existingOrderOpt = orderRepository.findById(updateRequest.getOrderId());
+        if (existingOrderOpt.isEmpty()) {
+            throw new IllegalArgumentException("Đơn hàng không tồn tại");
+        }
+
+        Order existingOrder = existingOrderOpt.get();
+
+        // Update status if provided
+        if (updateRequest.getStatus() != null && !updateRequest.getStatus().isEmpty()) {
+            String status = updateRequest.getStatus().toLowerCase();
+            if (!isValidStatus(status)) {
+                throw new IllegalArgumentException("Trạng thái đơn hàng không hợp lệ");
+            }
+            existingOrder.setStatus(status);
+        }
+
+        // Update payment status if provided
+        if (updateRequest.getPaymentStatus() != null && !updateRequest.getPaymentStatus().isEmpty()) {
+            existingOrder.setPaymentStatus(updateRequest.getPaymentStatus());
+        }
+
+        // Update total price if provided
+        if (updateRequest.getTotalPrice() != null) {
+            existingOrder.setTotalPrice(updateRequest.getTotalPrice());
+        }
+
+        // Update payment method if provided
+        if (updateRequest.getPaymentMethod() != null && !updateRequest.getPaymentMethod().isEmpty()) {
+            existingOrder.setPaymentMethod(updateRequest.getPaymentMethod());
+        }
+
+        // Update shipping address if provided
+        if (updateRequest.getShippingAddress() != null && !updateRequest.getShippingAddress().isEmpty()) {
+            existingOrder.setShippingAddress(updateRequest.getShippingAddress());
+        }
+
+        // Update shipping method if provided
+        if (updateRequest.getShippingMethodId() > 0) {
+            Optional<ShippingMethod> shippingMethodOptional = shippingRepository.findById(updateRequest.getShippingMethodId());
+            if (shippingMethodOptional.isEmpty()) {
+                throw new IllegalArgumentException("Lỗi phương thức vận chuyển");
+            }
+            existingOrder.setShippingMethod(shippingMethodOptional.get());
+        }
+
+        return orderRepository.save(existingOrder);
+    }
+
+    private boolean isValidStatus(String status) {
+        return status.equals("pending") ||
+                status.equals("confirmed") ||
+                status.equals("shipped") ||
+                status.equals("completed") ||
+                status.equals("cancelled");
+    }
+
 
 }

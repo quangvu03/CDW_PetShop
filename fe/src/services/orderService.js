@@ -15,6 +15,26 @@ export const getOrderDetail = (orderId) => {
   return api.get(`/order/getDetailOder/${orderId}`);
 };
 
+// Update order status
+async function updateOrderStatus(orderId, status) {
+  try {
+    return await api.put(`/order/updateOrderStatus/${orderId}`, { status });
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Cancel order
+async function cancelOrder(orderId) {
+  try {
+    return await api.delete(`/order/cancelOrder/${orderId}`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export default { createOrder, getOrdersByUser, getOrderDetail, updateOrderStatus, cancelOrder };
+
 
 
 
