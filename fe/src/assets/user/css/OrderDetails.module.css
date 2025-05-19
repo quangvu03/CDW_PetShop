@@ -1,0 +1,249 @@
+.container {
+  max-width: 1280px; /* Tăng từ 1080px lên 1140px */
+  width: 100%;
+  margin: 48px auto; /* Tăng margin để cân đối */
+  padding: 48px; /* Tăng padding cho không gian rộng rãi hơn */
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #6b7280;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 24px;
+  transition: background-color 0.2s ease;
+}
+
+.backButton:hover {
+  background-color: #4b5563;
+}
+
+.loading {
+  text-align: center;
+  padding: 24px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #4b5563;
+  background-color: #f3f4f6;
+  border-radius: 8px;
+}
+
+.error {
+  text-align: center;
+  padding: 24px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #dc2626;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.logo {
+  font-size: 36px;
+  font-family: 'Brush Script MT', cursive;
+  color: #1f2937;
+  letter-spacing: 1px;
+}
+
+.orderId {
+  font-weight: 600;
+  font-size: 18px;
+  color: #374151;
+}
+
+.divider {
+  border-top: 2px solid #e5e7eb;
+  margin: 24px 0;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .infoGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.infoCard {
+  background-color: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.infoCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sectionTitle {
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #1f2937;
+}
+
+.infoLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.infoValue {
+  font-size: 16px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.textRight {
+  text-align: right;
+}
+
+.summary {
+  background-color: #f9fafb;
+  padding: 32px;
+  border-radius: 10px;
+  margin-bottom: 32px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.summaryTitle {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #1f2937;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tableHeader {
+  background-color: #e5e7eb;
+  border-bottom: 2px solid #d1d5db;
+}
+
+.tableCell {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 15px;
+  color: #374151;
+}
+
+.tableCellRight {
+  text-align: right;
+  padding: 12px 16px;
+  font-size: 15px;
+  color: #374151;
+}
+
+.tableRow {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.tableRow:hover {
+  background-color: #f3f4f6;
+}
+
+.totals {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: 15px;
+  color: #374151;
+}
+
+.totalRowFinal {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  border-top: 2px solid #e5e7eb;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.printButton {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #22c55e;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.printButton:hover {
+  background-color: #16a34a;
+}
+
+.sendButton {
+  padding: 10px 28px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.sendButton:hover {
+  background-color: #2563eb;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+}
