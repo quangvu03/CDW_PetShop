@@ -164,6 +164,9 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
         // Clear cart
         localStorage.removeItem('checkout_items');
         
+        // Dispatch event to update cart in header
+        window.dispatchEvent(new Event('cart-updated'));
+        
         // Redirect to order history
         navigate('/order-history');
       } else {
