@@ -71,5 +71,14 @@ public class CartController {
         cartService.updateQuantity(userId, itemId, quantity);
         return ResponseEntity.ok().build();
     }
+    @DeleteMapping("/clear/{userId}")
+    public ResponseEntity<?> clearCartByUser(@PathVariable int userId) {
+        try {
+            cartService.clearCartByUser(userId);
+            return ResponseEntity.ok("Đã xóa toàn bộ giỏ hàng của user " + userId);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+        }
+    }
 
 }

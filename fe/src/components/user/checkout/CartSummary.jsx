@@ -8,7 +8,7 @@ export default function CartSummary({
   shippingMethods = [],
   items = [],
 }) {
-  const [shippingFee, setShippingFee] = useState(100000);
+  const [shippingFee, setShippingFee] = useState(30000);
 
   useEffect(() => {
     const subtotal = items.reduce(
