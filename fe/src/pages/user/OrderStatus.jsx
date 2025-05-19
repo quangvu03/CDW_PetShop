@@ -47,8 +47,10 @@ export default function OrderStatus() {
     switch (status?.toLowerCase()) {
       case 'pending':
         return 'bg-warning';
-      case 'processing':
+      case 'confirmed':
         return 'bg-info';
+      case 'shipped':
+        return 'bg-primary';
       case 'completed':
         return 'bg-success';
       case 'cancelled':
@@ -117,7 +119,8 @@ export default function OrderStatus() {
                   <td>
                     <span className={`badge ${getStatusBadgeClass(order.status)}`}>{
                       order.status === 'pending' ? 'Chờ xác nhận' :
-                      order.status === 'processing' ? 'Đang xử lý' :
+                      order.status === 'confirmed' ? 'Đã xác nhận' :
+                      order.status === 'shipped' ? 'Đang giao hàng' :
                       order.status === 'completed' ? 'Hoàn thành' :
                       order.status === 'cancelled' ? 'Đã hủy' : order.status
                     }</span>

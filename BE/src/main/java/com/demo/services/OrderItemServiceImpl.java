@@ -73,7 +73,12 @@ public class OrderItemServiceImpl implements OrderItemService {
         Order order = orderRepository.findById(idOrder)
                 .orElseThrow(() -> new IllegalArgumentException("Lỗi: Không tìm thấy order"));
         List<PetDto> petDtos = orderItemRepository.findOrderItemsByOrderId(idOrder).stream()
-                .map(item -> new PetDto(item.getPet()))
+                .map(item -> {
+                    PetDto dto = new PetDto(item.getPet());
+                    dto.setQuantity(item.getQuantity() != null ? item.getQuantity().intValue() : 0);
+                    dto.setPrice(item.getPrice() != null ? item.getPrice().doubleValue() : 0.0);
+                    return dto;
+                })
                 .toList();
         return OrderItemDto.builder()
                 .orderId(order.getId())
