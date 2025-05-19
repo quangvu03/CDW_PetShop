@@ -14,5 +14,7 @@ public class OrdersDto {
     private String status;
     private String paymentMethod;
     private String paymentStatus;
+    private String shippingAddress;
+    private String shippingName;
 
 }

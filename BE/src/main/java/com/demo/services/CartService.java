@@ -10,6 +10,5 @@ public interface CartService {
     public void removeFromCart(int userId, int productId, int petId);
     public List<CartItemDto> getCartByUser(int userId);
     void updateQuantity(int userId, int itemId, int newQuantity);
-
-
+    public void clearCartByUser(int userId) ;
 }
