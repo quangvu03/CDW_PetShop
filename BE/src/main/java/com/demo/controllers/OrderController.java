@@ -8,6 +8,7 @@ import com.demo.dtos.requests.OrderRequest;
 import com.demo.dtos.responses.ApiResponse;
 import com.demo.entities.Order;
 import com.demo.entities.OrderItem;
+import com.demo.services.CartService;
 import com.demo.services.OrderItemService;
 import com.demo.services.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,9 @@ public class OrderController {
     private OrderService orderService;
 
     @Autowired
+    private CartService cartService;
+
+    @Autowired
     private OrderItemService orderItemService;
 
     @PostMapping("/saveOrder")
@@ -36,6 +40,7 @@ public class OrderController {
             List<OrderItemRequest> orderItemRequestList = orderRequest.getOrderRequestList();
 
             Order order = orderService.saveOrder(orderRequest);
+            cartService.clearCartByUser(orderRequest.getUserId());
             List<OrderItem> listOrderItem = orderItemService.saveListOrderItem(orderItemRequestList, order);
             if (!listOrderItem.isEmpty()) {
                 return ResponseEntity.ok(new ApiResponse(true, "Đặt hàng thành công"));

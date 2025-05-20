@@ -2,6 +2,7 @@ package com.demo.services;
 
 import com.demo.dtos.OrdersDto;
 import com.demo.dtos.requests.OrderRequest;
+import com.demo.dtos.requests.UpdateOrderRequest;
 import com.demo.entities.Order;
 
 import java.util.List;
@@ -11,5 +12,5 @@ public interface OrderService {
 
     List<OrdersDto> findByUserIdOrderByOrderDateDesc(int userId);
 
-    String UpdateOrderStatus(int orderId,String status);
+    Order updateOrder(UpdateOrderRequest updateOrderRequest);
 }

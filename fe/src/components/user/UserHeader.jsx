@@ -95,6 +95,9 @@ export default function UserHeader() {
               <Link to="/profile" className="dropdown-item">
                 <i className="fa fa-user"></i> <span>Trang cá nhân</span>
               </Link>
+              <Link to="/order-history" className="dropdown-item">
+                <i className="fa fa-shopping-bag"></i> <span>Xem đơn hàng</span>
+              </Link>
               <Link to="/auth/change-password" className="dropdown-item">
                 <i className="fa fa-lock"></i> <span>Đổi mật khẩu</span>
               </Link>
@@ -147,7 +150,7 @@ export default function UserHeader() {
                 </div>
                 <div className="sinlge-bar shopping">
         <Link to="/cart" className="single-icon">
-          <i className="ti-bag"></i> <span className="total-count">{totalTypes || ''}</span>
+          <i className="ti-bag"></i> {totalTypes > 0 && <span className="total-count">{totalTypes}</span>}
         </Link>
         <div className="shopping-item">
           <div className="dropdown-cart-header">

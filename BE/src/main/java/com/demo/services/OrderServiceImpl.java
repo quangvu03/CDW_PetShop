@@ -2,6 +2,7 @@ package com.demo.services;
 
 import com.demo.dtos.OrdersDto;
 import com.demo.dtos.requests.OrderRequest;
+import com.demo.dtos.requests.UpdateOrderRequest;
 import com.demo.entities.Order;
 import com.demo.entities.ShippingMethod;
 import com.demo.entities.User;
@@ -41,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDate(Instant.now());
         order.setStatus("pending");
         order.setUser(user);
-        order.setPaymentStatus(orderRequest.getPaymentStatus());
+        order.setPaymentStatus("unpaid");
         order.setShippingAddress(orderRequest.getShippingAddress());
         order.setTotalPrice(orderRequest.getTotalPrice());
         order.setPaymentMethod(orderRequest.getPaymentMethod());
@@ -69,27 +70,70 @@ public class OrderServiceImpl implements OrderService {
                     dto.setTotalPrice(order.getTotalPrice());
                     dto.setPaymentMethod(order.getPaymentMethod());
                     dto.setPaymentStatus(order.getPaymentStatus());
+                    dto.setShippingAddress(order.getShippingAddress());
+                    dto.setShippingName(order.getShippingMethod() != null ? order.getShippingMethod().getName() : "");
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
-
-
     @Override
-    public String UpdateOrderStatus(int orderId, String status) {
-        Optional<Order> order = orderRepository.findById(orderId);
-        if (order.isEmpty()) {
-            return  "Lỗi: Order không tồn tại!";
+    public Order updateOrder(UpdateOrderRequest updateRequest) {
+        // Find the existing order
+        Optional<Order> existingOrderOpt = orderRepository.findById(updateRequest.getOrderId());
+        if (existingOrderOpt.isEmpty()) {
+            throw new IllegalArgumentException("Đơn hàng không tồn tại");
         }
-        if (!order.get().getStatus().equals("pending") && status.equals("cancelled")) {
-            return "Lỗi: Không thể hủy các đơn hàng đã được xác nhận!";
+
+        Order existingOrder = existingOrderOpt.get();
+
+        // Update status if provided
+        if (updateRequest.getStatus() != null && !updateRequest.getStatus().isEmpty()) {
+            String status = updateRequest.getStatus().toLowerCase();
+            if (!isValidStatus(status)) {
+                throw new IllegalArgumentException("Trạng thái đơn hàng không hợp lệ");
+            }
+            existingOrder.setStatus(status);
         }
-        int rowUpdate = orderRepository.updateOrderStatus(orderId, status);
-        if (rowUpdate > 0) {
-            return "success";
-        } else {
-            return "fail";
+
+        // Update payment status if provided
+        if (updateRequest.getPaymentStatus() != null && !updateRequest.getPaymentStatus().isEmpty()) {
+            existingOrder.setPaymentStatus(updateRequest.getPaymentStatus());
         }
+
+        // Update total price if provided
+        if (updateRequest.getTotalPrice() != null) {
+            existingOrder.setTotalPrice(updateRequest.getTotalPrice());
+        }
+
+        // Update payment method if provided
+        if (updateRequest.getPaymentMethod() != null && !updateRequest.getPaymentMethod().isEmpty()) {
+            existingOrder.setPaymentMethod(updateRequest.getPaymentMethod());
+        }
+
+        // Update shipping address if provided
+        if (updateRequest.getShippingAddress() != null && !updateRequest.getShippingAddress().isEmpty()) {
+            existingOrder.setShippingAddress(updateRequest.getShippingAddress());
+        }
+
+        // Update shipping method if provided
+        if (updateRequest.getShippingMethodId() > 0) {
+            Optional<ShippingMethod> shippingMethodOptional = shippingRepository.findById(updateRequest.getShippingMethodId());
+            if (shippingMethodOptional.isEmpty()) {
+                throw new IllegalArgumentException("Lỗi phương thức vận chuyển");
+            }
+            existingOrder.setShippingMethod(shippingMethodOptional.get());
+        }
+
+        return orderRepository.save(existingOrder);
     }
+
+    private boolean isValidStatus(String status) {
+        return status.equals("pending") ||
+                status.equals("confirmed") ||
+                status.equals("shipped") ||
+                status.equals("completed") ||
+                status.equals("cancelled");
+    }
+
 
 }

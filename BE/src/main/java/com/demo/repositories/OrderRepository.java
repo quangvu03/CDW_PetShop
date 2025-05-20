@@ -14,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByUserIdOrderByOrderDateDesc(int userId);
+    List<Order> findByStatus(String status);
 
 
     @Modifying

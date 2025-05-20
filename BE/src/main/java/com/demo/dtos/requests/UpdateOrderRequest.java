@@ -8,9 +8,12 @@ import java.math.BigDecimal;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderItemRequest {
-    int petId;
-    int productId;
-    int quantity;
-    BigDecimal price;
+public class UpdateOrderRequest {
+    int orderId;
+    String status;
+    String paymentStatus;
+    BigDecimal totalPrice;
+    String paymentMethod;
+    String shippingAddress;
+    int shippingMethodId;
 }
