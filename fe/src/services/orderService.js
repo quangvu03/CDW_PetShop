@@ -24,14 +24,15 @@ async function updateOrderStatus(orderId, status) {
   }
 }
 
-// Cancel order
-async function cancelOrder(orderId) {
+// Cancel order 
+export async function cancelOrder(orderId) {
   try {
-    return await api.delete(`/order/cancelOrder/${orderId}`);
+    return await api.put(`/order/cancelOrder?orderId=${orderId}`);
   } catch (error) {
     throw error;
   }
 }
+
 
 export default { createOrder, getOrdersByUser, getOrderDetail, updateOrderStatus, cancelOrder };
 
