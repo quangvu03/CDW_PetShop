@@ -8,4 +8,5 @@ public interface PetService {
     public List<PetDto> findAllPetsBySpecies(String species);
     public List<String> getAllDistinctSpecies();
     public PetDto findPetById(Integer id);
+    List<PetDto> findByName(String name);
 }
