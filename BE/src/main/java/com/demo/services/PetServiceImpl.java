@@ -37,6 +37,14 @@ public class PetServiceImpl implements PetService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thú cưng với ID: " + id));
     }
 
+    @Override
+    public List<PetDto> findByName(String name) {
+        List<Pet> petList = petRepository.findByNameContainingIgnoreCase(name);
+        return petList.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
 
     private PetDto convertToDto(Pet pet) {
         if (pet == null) {
