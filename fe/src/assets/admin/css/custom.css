@@ -1,0 +1,52 @@
+.dataTables_wrapper .dataTables_paginate {
+    text-align: center;
+    margin: 10px;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.5rem 0.75rem;
+    margin-left: 2px;
+    border-radius: 0.25rem;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    background-image: linear-gradient(45deg, #0c675e, #069e90);
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: green;
+    color: #fff;
+    cursor: pointer;
+  }
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+  }
+  /* Css Trang danh sách thú cưng */
+  .dataTables_wrapper .dataTables_paginate {
+    text-align: center;
+    margin: 10px;
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.5rem 0.75rem;
+    margin-left: 2px;
+    border-radius: 0.25rem;
+    font-size: 14px;
+    line-height: 1.5;
+    border: 1px solid #ccc;
+    background: linear-gradient(45deg, #0c675e, #069e90);
+    color: white;
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: green;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+  }
+  
+  
