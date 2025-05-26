@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getCartByUser } from '../../services/cartService';
-
+import { findPetByName } from '../../services/petService';
 import '../../assets/user/css/UserHeader.css';
 
 export default function UserHeader() {
@@ -10,7 +10,10 @@ export default function UserHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const searchBarRef = useRef(null);
   const [cartItems, setCartItems] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
   const totalTypes = cartItems.length;
   const totalPrice = cartItems.reduce((sum, item) => {
@@ -53,16 +56,56 @@ export default function UserHeader() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
+      if (searchBarRef.current && !searchBarRef.current.contains(event.target)) {
+        setSearchResults([]);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Debounce for search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery.trim() !== '') {
+        findPetByName(searchQuery)
+          .then((response) => {
+            setSearchResults(response.data || []);
+          })
+          .catch((error) => {
+            console.error('Lỗi khi tìm kiếm thú cưng:', error);
+            setSearchResults([]);
+          });
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  // Handle search submission (Enter or button click)
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim() !== '') {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
+      setSearchResults([]); // Clear dropdown results
+      setSearchQuery(''); // Clear input
+    }
+  };
+
+  // Handle Enter keypress
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit();
+    }
+  };
 
   const handleLogout = () => {
     localStorage.clear();
     setIsLoggedIn(false);
     navigate('/auth/login');
   };
+
   return (
     <header className="header shop">
       {/* Topbar */}
@@ -133,10 +176,45 @@ export default function UserHeader() {
             </div>
             <div className="col-lg-8 col-md-7 col-12">
               <div className="search-bar-top">
-                <div className="search-bar">
+                <div className="search-bar position-relative" ref={searchBarRef}>
                   <span style={{ marginRight: '30px' }}>Tìm kiếm</span>
-                  <input name="search" id="timkiem" placeholder="Nhập tên thú cưng....." type="search" />
-                  <button className="btnn"><i className="ti-search"></i></button>
+                  <input
+                    name="search"
+                    id="timkiem"
+                    placeholder="Nhập tên thú cưng....."
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleKeyPress} // Handle Enter key
+                  />
+                  <button className="btnn" onClick={handleSearchSubmit}>
+                    <i className="ti-search"></i>
+                  </button>
+                  {searchResults.length > 0 && (
+                    <div
+                      className="dropdown-menu show w-100 mt-1"
+                      style={{ position: 'absolute', zIndex: 1000, left: '50%', transform: 'translateX(-50%)' }}
+                    >
+                      {searchResults.slice(0, 5).map((pet) => (
+                        <Link
+                          key={pet.id}
+                          to={`/pet/${pet.id}`}
+                          className="dropdown-item d-flex align-items-center"
+                          onClick={() => setSearchResults([])}
+                        >
+                          <img
+                            src={getImageUrl(pet.imageUrl)}
+                            alt={pet.name || 'Không rõ'}
+                            style={{ width: '80px', height: '80px', objectFit: 'cover', marginRight: '10px' }}
+                          />
+                          <div>
+                            <div>{pet.name || 'Không rõ'}</div>
+                            <div className="text-muted">{(pet.price || 0).toLocaleString('vi-VN')}₫</div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -189,7 +267,7 @@ export default function UserHeader() {
             <Link to="/user/checkout" className="btn animate">Thanh toán</Link>
           </div>
         </div>
-      </div>
+      </div>               
               </div>
             </div>
           </div>
@@ -214,17 +292,26 @@ export default function UserHeader() {
                     <div className="navbar-collapse">
                       <div className="nav-inner">
                         <ul className="nav main-menu menu navbar-nav">
-                          <li className="active"><Link to="/">Trang chủ</Link></li>
-                          <li><Link to="/shop">Thú cưng</Link></li>
+                          <li className="active">
+                            <Link to="/">Trang chủ</Link>
+                          </li>
                           <li>
-                            <a href="#">Shop<i className="ti-angle-down"></i><span className="new">Mới</span></a>
+                            <Link to="/shop">Thú cưng</Link>
+                          </li>
+                          <li>
+                            <a href="#">
+                              Shop<i className="ti-angle-down"></i>
+                              <span className="new">Mới</span>
+                            </a>
                             <ul className="dropdown">
                               <li><Link to="/shop">Lọc</Link></li>
                               <li><Link to="/user/cart">Giỏ hàng</Link></li>
                               <li><Link to="/user/checkout">Thanh toán</Link></li>
                             </ul>
                           </li>
-                          <li><Link to="/contact">Liên hệ</Link></li>
+                          <li>
+                            <Link to="/contact">Liên hệ</Link>
+                          </li>
                         </ul>
                       </div>
                     </div>

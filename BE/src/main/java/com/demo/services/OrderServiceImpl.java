@@ -96,12 +96,10 @@ public class OrderServiceImpl implements OrderService {
             existingOrder.setStatus(status);
         }
 
-        // Update payment status if provided
         if (updateRequest.getPaymentStatus() != null && !updateRequest.getPaymentStatus().isEmpty()) {
             existingOrder.setPaymentStatus(updateRequest.getPaymentStatus());
         }
 
-        // Update total price if provided
         if (updateRequest.getTotalPrice() != null) {
             existingOrder.setTotalPrice(updateRequest.getTotalPrice());
         }
@@ -126,6 +124,26 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orderRepository.save(existingOrder);
+    }
+
+    @Override
+    public String cancelledOrder(int orderId) {
+        Optional<Order> order = orderRepository.findById(orderId);
+
+        if (order.isEmpty()) {
+            throw new IllegalArgumentException("Lỗi: Order không tồn tại!");
+        }
+
+        if (!order.get().getStatus().equals("pending")) {
+            throw new IllegalArgumentException("Không thể hủy các đơn hàng đã được xác nhận");
+        }
+
+        int rowUpdate = orderRepository.cancelledOrder(orderId);
+        if (rowUpdate > 0) {
+            return "success";
+        } else {
+            return "fail";
+        }
     }
 
     private boolean isValidStatus(String status) {

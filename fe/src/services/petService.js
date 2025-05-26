@@ -21,7 +21,13 @@ export const getPetsBySpecies = (speciesName) => {
     console.log("CLIENT-SIDE FETCH: Requesting all species: /pet/species");
     return api.get('/pet/species');
   };
+
   export const getPetById = (id) => {
     console.log(`CLIENT-SIDE FETCH: Requesting pet by ID: /pet/${id}`);
     return api.get(`/pet/${id}`);
   };
+
+export const findPetByName = (name) => {
+  console.log(`CLIENT-SIDE FETCH: Requesting pet by name: ${name}`);
+  return api.get(`/pet/findByName`, { params: { name } });
+};
