@@ -76,5 +76,16 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/cancelOrder")
+    public ResponseEntity<?> cancelledOder(@RequestParam("orderId") int orderId) {
+        try {
+            String result = orderService.cancelledOrder(orderId);
+            return result.equals("success")
+                    ? ResponseEntity.ok(Map.of("result", result))
+                    : ResponseEntity.badRequest().body(Map.of("result", result));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Lỗi: " + e.getMessage()));
+        }
+    }
 
 }

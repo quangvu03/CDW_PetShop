@@ -13,4 +13,6 @@ public interface OrderService {
     List<OrdersDto> findByUserIdOrderByOrderDateDesc(int userId);
 
     Order updateOrder(UpdateOrderRequest updateOrderRequest);
+
+    String cancelledOrder(int orderId);
 }
