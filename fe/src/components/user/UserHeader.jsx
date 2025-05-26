@@ -92,10 +92,10 @@ export default function UserHeader() {
 
           {dropdownOpen && (
             <div className="dropdown-menu show">
-              <Link to="/profile" className="dropdown-item">
+              <Link to="/user/profile" className="dropdown-item">
                 <i className="fa fa-user"></i> <span>Trang cá nhân</span>
               </Link>
-              <Link to="/order-history" className="dropdown-item">
+              <Link to="/user/order-history" className="dropdown-item">
                 <i className="fa fa-shopping-bag"></i> <span>Xem đơn hàng</span>
               </Link>
               <Link to="/auth/change-password" className="dropdown-item">
@@ -143,18 +143,18 @@ export default function UserHeader() {
             <div className="col-lg-2 col-md-3 col-12">
               <div className="right-bar">
                 <div className="sinlge-bar">
-                  <Link to="/wishlist" className="single-icon"><i className="fa fa-heart-o" aria-hidden="true"></i></Link>
+                  <Link to="/user/wishlist" className="single-icon"><i className="fa fa-heart-o" aria-hidden="true"></i></Link>
                 </div>
                 <div className="sinlge-bar">
-                  <Link to="/profile" className="single-icon"><i className="fa fa-user-circle-o" aria-hidden="true"></i></Link>
+                  <Link to="/user/profile" className="single-icon"><i className="fa fa-user-circle-o" aria-hidden="true"></i></Link>
                 </div>
                 <div className="sinlge-bar shopping">
-        <Link to="/cart" className="single-icon">
+        <Link to="/user/cart" className="single-icon">
           <i className="ti-bag"></i> {totalTypes > 0 && <span className="total-count">{totalTypes}</span>}
         </Link>
         <div className="shopping-item">
           <div className="dropdown-cart-header">
-            <span>{totalTypes}</span> <Link to="/cart">Giỏ hàng</Link>
+            <span>{totalTypes}</span> <Link to="/user/cart">Giỏ hàng</Link>
           </div>
           <ul className="shopping-list">
             {cartItems.length === 0 ? (
@@ -162,7 +162,7 @@ export default function UserHeader() {
             ) : (
               cartItems.map((item) => (
                 <li key={item.id}>
-                  <Link to="/cart" className="cart-img">
+                  <Link to="/user/cart" className="cart-img">
                     <img
                       src={getImageUrl(item.pet?.imageUrl || item.product?.imageUrl)}
                       alt={item.pet?.name || item.product?.name || 'Không rõ'}
@@ -170,7 +170,7 @@ export default function UserHeader() {
                     />
                   </Link>
                   <h4>
-                    <Link to="/cart">{item.pet?.name || item.product?.name || 'Không rõ'}</Link>
+                    <Link to="/user/cart">{item.pet?.name || item.product?.name || 'Không rõ'}</Link>
                   </h4>
                   <p className="quantity">
                     {item.quantity} ×{' '}
@@ -186,7 +186,7 @@ export default function UserHeader() {
             <div className="total">
               <span>Tổng</span> <span className="total-amount">{totalPrice.toLocaleString('vi-VN')}₫</span>
             </div>
-            <Link to="/checkout" className="btn animate">Thanh toán</Link>
+            <Link to="/user/checkout" className="btn animate">Thanh toán</Link>
           </div>
         </div>
       </div>
@@ -220,8 +220,8 @@ export default function UserHeader() {
                             <a href="#">Shop<i className="ti-angle-down"></i><span className="new">Mới</span></a>
                             <ul className="dropdown">
                               <li><Link to="/shop">Lọc</Link></li>
-                              <li><Link to="/cart">Giỏ hàng</Link></li>
-                              <li><Link to="/checkout">Thanh toán</Link></li>
+                              <li><Link to="/user/cart">Giỏ hàng</Link></li>
+                              <li><Link to="/user/checkout">Thanh toán</Link></li>
                             </ul>
                           </li>
                           <li><Link to="/contact">Liên hệ</Link></li>
