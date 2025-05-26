@@ -16,8 +16,6 @@ export default function App() {
         <Route path="/" element={<RoleBasedRoutes />} />
         <Route path="/user/*" element={<UserRoutes />} />
         <Route path="/admin/*" element={<AdminRoutes />} />
-        {/* Add if you have Seller */}
-        {/* <Route path="/seller/*" element={<SellerRoutes />} /> */}
         <Route path="/auth/*" element={<AuthRoutes />} />
       </Routes>
 
