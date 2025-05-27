@@ -77,6 +77,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/order/**").authenticated()
                         // Authenticated endpoints
                         .requestMatchers("/api/auth/me").authenticated()
+                        // admin endpoints
+                        .requestMatchers("/api/admin/**").hasAuthority("admin")
                         // Thêm các quy tắc authenticated khác nếu cần
 
                         // Mọi request còn lại (trong phạm vi của filter chain này) cần xác thực
