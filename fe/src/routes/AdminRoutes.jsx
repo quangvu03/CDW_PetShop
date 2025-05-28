@@ -18,6 +18,8 @@ import AdminVoucherEdit from '../pages/admin/AdminVoucherEdit';
 import AdminBrowsingHistory from '../pages/admin/AdminBrowsingHistory';
 import AdminCartManager from '../pages/admin/AdminCartManager';
 import AdminChatboxManager from '../pages/admin/AdminChatboxManager';
+import AdminAddUser from '../pages/admin/AdminAddUser';
+import AdminUpdateUser from '../pages/admin/AdminUpdateUser';
 
 export default function AdminRoutes() {
   return (
@@ -26,6 +28,8 @@ export default function AdminRoutes() {
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="users" element={<AdminUserManager />} />
+        <Route path="adduser" element={<AdminAddUser />} />
+        <Route path="updateUser/:id" element={<AdminUpdateUser />} />
         <Route path="categories" element={<AdminCategoryManager />} />
         <Route path="products" element={<AdminPetList />} />
         <Route path="orders" element={<AdminOrderList />} />
