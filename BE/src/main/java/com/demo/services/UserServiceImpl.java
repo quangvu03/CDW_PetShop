@@ -1,5 +1,6 @@
 package com.demo.services;
 
+import com.demo.dtos.UsersDto;
 import com.demo.dtos.requests.RegisterRequest;
 import com.demo.entities.User;
 import com.demo.helpers.RandomNumberHelper;
@@ -10,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -21,6 +24,7 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EmailService emailService;
+
     @Override
     @Transactional
     public void register(RegisterRequest request) {
@@ -78,4 +82,53 @@ public class UserServiceImpl implements UserService {
     public User save(User user) {
         return userRepository.save(user);
     }
+
+    @Override
+    public List<UsersDto> findAll() {
+        List<User> users = userRepository.findAll();
+
+        if (users.isEmpty()) {
+            throw new IllegalArgumentException("Lỗi: không có user!");
+        } else {
+            return users.stream()
+                    .map(user -> {
+                        UsersDto dto = new UsersDto();
+                        dto.setId(user.getId());
+                        dto.setUsername(user.getUsername());
+                        dto.setEmail(user.getEmail());
+                        dto.setFullName(user.getFullName());
+                        dto.setGender(user.getGender());
+                        dto.setBirthday(user.getBirthday());
+                        dto.setPhone(user.getPhone());
+                        dto.setAddress(user.getAddress());
+                        dto.setAvatar(user.getAvatar());
+                        dto.setRole(user.getRole());
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public UsersDto findById(int id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            throw new IllegalArgumentException("Thông tìm thấy người dùng với ID: " + id);
+        } else {
+            UsersDto dto = new UsersDto();
+            dto.setId(user.getId());
+            dto.setUsername(user.getUsername());
+            dto.setEmail(user.getEmail());
+            dto.setFullName(user.getFullName());
+            dto.setGender(user.getGender());
+            dto.setAddress(user.getAddress());
+            dto.setBirthday(user.getBirthday());
+            dto.setPhone(user.getPhone());
+            dto.setAvatar(user.getAvatar());
+            dto.setRole(user.getRole());
+            return dto;
+        }
+    }
+
+
 }
