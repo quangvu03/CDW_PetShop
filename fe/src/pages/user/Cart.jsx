@@ -20,7 +20,7 @@ export default function Cart() {
   // Khi click vào nút thanh toán
 const handleCheckout = () => {
   localStorage.setItem('checkout_items', JSON.stringify(cartItems));
-  navigate('/checkout'); // hoặc <Link to="/checkout" />
+  navigate('/user/checkout'); // hoặc <Link to="/checkout" />
 };
 
 

@@ -323,7 +323,7 @@ const [selectedPet, setSelectedPet] = useState(dummyPetData);
                                                 <div key={pet.id} className="col-xl-3 col-lg-4 col-md-4 col-12 mb-4">
                                                     <div className="single-product"> {/* Cần CSS min-height */}
                                                     <div className="product-img position-relative">
-  <a href={`/pet/${pet.id}`}>
+  <a href={`/user/pet/${pet.id}`}>
     <img
       className="default-img"
       src={imageSource}
