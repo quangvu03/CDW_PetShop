@@ -517,7 +517,7 @@ export default function ShopGrid() {
                                   <div key={pet.id} className="col-xl-3 col-lg-4 col-md-4 col-12 mb-4">
                                     <div className="single-product">
                                       <div className="product-img position-relative">
-                                        <Link to={`/pet/${pet.id}`}>
+                                        <Link to={`/user/pet/${pet.id}`}>
                                           <img
                                             className="default-img"
                                             src={imageSource}

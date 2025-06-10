@@ -229,7 +229,7 @@ export default function OrderDetail() {
                       </td>
                       <td>
                         <Link
-                          to={`/pet/${item.id}`}
+                          to={`user/pet/${item.id}`}
                           style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
                         >
                           #{item.id} - {item.name}

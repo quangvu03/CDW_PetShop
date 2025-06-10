@@ -20,6 +20,8 @@ import AdminCartManager from '../pages/admin/AdminCartManager';
 import AdminChatboxManager from '../pages/admin/AdminChatboxManager';
 import AdminAddUser from '../pages/admin/AdminAddUser';
 import AdminUpdateUser from '../pages/admin/AdminUpdateUser';
+import AdminUpdatePet from '../pages/admin/AdminUpdatePet';
+import AdminAddPet from '../pages/admin/AdminAddPet';
 
 export default function AdminRoutes() {
   return (
@@ -27,9 +29,11 @@ export default function AdminRoutes() {
       <Route path="" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="users" element={<AdminUserManager />} />
-        <Route path="adduser" element={<AdminAddUser />} />
-        <Route path="updateUser/:id" element={<AdminUpdateUser />} />
+        <Route path="users" element={<AdminUserManager />} /> // done
+        <Route path="updatepet/:id" element={<AdminUpdatePet/>} />// done
+        <Route path="adduser" element={<AdminAddUser />} />// done
+        {/* <Route path="addPet" element={<AdminAddPet />} />// done */}
+        <Route path="updateUser/:id" element={<AdminUpdateUser />} />// done
         <Route path="categories" element={<AdminCategoryManager />} />
         <Route path="products" element={<AdminPetList />} />
         <Route path="orders" element={<AdminOrderList />} />
