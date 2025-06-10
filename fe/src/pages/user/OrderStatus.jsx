@@ -90,7 +90,7 @@ export default function OrderStatus() {
   };
 
   const handleViewDetails = (orderId) => {
-    navigate(`/order-detail/${orderId}`);
+    navigate(`/user/order-detail/${orderId}`);
   };
 
   if (loading) {

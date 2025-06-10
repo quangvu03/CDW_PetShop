@@ -168,7 +168,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
         window.dispatchEvent(new Event('cart-updated'));
         
         // Redirect to order history
-        navigate('/order-history');
+        navigate('/user/order-history');
       } else {
         toast.error(response.data.message || 'Có lỗi xảy ra khi đặt hàng');
       }
