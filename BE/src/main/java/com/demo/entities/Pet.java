@@ -3,11 +3,13 @@ package com.demo.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 import java.util.List;
 
+@ToString
 @Getter
 @Setter
 @Entity
