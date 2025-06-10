@@ -1,6 +1,7 @@
 package com.demo.controllers;
 
 import com.demo.dtos.PetDto;
+import com.demo.dtos.PetImageDto;
 import com.demo.services.PetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -41,4 +42,5 @@ public class PetController {
         List<PetDto> petList = petService.findByName(name);
         return ResponseEntity.ok(petList);
     }
+
 }

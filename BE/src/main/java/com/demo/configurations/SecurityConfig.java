@@ -78,6 +78,9 @@ public class SecurityConfig {
                         // Authenticated endpoints
                         .requestMatchers("/api/auth/me").authenticated()
                         // admin endpoints
+                        // Chỉ cho phép admin và staff truy cập các endpoint quản lý pet
+                        // Giữ thứ tự ưu tiên để đảm bảo các endpoint này được xử lý sau các endpoint public
+                        .requestMatchers("/api/admin/pet").hasAnyAuthority("admin","staff")
                         .requestMatchers("/api/admin/**").hasAuthority("admin")
                         // Thêm các quy tắc authenticated khác nếu cần
 

@@ -87,7 +87,7 @@ export default function UserHeader() {
   // Handle search submission (Enter or button click)
   const handleSearchSubmit = () => {
     if (searchQuery.trim() !== '') {
-      navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
+      navigate(`/user/shop?search=${encodeURIComponent(searchQuery)}`);
       setSearchResults([]); // Clear dropdown results
       setSearchQuery(''); // Clear input
     }
@@ -198,7 +198,7 @@ export default function UserHeader() {
                       {searchResults.slice(0, 5).map((pet) => (
                         <Link
                           key={pet.id}
-                          to={`/pet/${pet.id}`}
+                          to={`/user/pet/${pet.id}`}
                           className="dropdown-item d-flex align-items-center"
                           onClick={() => setSearchResults([])}
                         >
@@ -296,7 +296,7 @@ export default function UserHeader() {
                             <Link to="/">Trang chủ</Link>
                           </li>
                           <li>
-                            <Link to="/shop">Thú cưng</Link>
+                            <Link to="/user/shop">Thú cưng</Link>
                           </li>
                           <li>
                             <a href="#">
@@ -304,13 +304,13 @@ export default function UserHeader() {
                               <span className="new">Mới</span>
                             </a>
                             <ul className="dropdown">
-                              <li><Link to="/shop">Lọc</Link></li>
+                              <li><Link to="/user/shop">Lọc</Link></li>
                               <li><Link to="/user/cart">Giỏ hàng</Link></li>
                               <li><Link to="/user/checkout">Thanh toán</Link></li>
                             </ul>
                           </li>
                           <li>
-                            <Link to="/contact">Liên hệ</Link>
+                            <Link to="/user/contact">Liên hệ</Link>
                           </li>
                         </ul>
                       </div>
