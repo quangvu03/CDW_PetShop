@@ -1,6 +1,8 @@
 package com.demo.services;
 
 import com.demo.dtos.PetDto;
+import com.demo.dtos.PetImageDto;
+import com.demo.repositories.PetImageRepository;
 import com.demo.repositories.PetRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +10,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.demo.entities.Pet;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import com.demo.entities.PetImage;
 
@@ -17,6 +28,9 @@ import com.demo.entities.PetImage;
 public class PetServiceImpl implements PetService {
     @Autowired
     private PetRepository petRepository;
+
+    @Autowired
+    private PetImageRepository petImageRepository;
 
     @Transactional(readOnly = true)
     public List<PetDto> findAllPetsBySpecies(String species) {
@@ -43,6 +57,64 @@ public class PetServiceImpl implements PetService {
         return petList.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PetDto> findAll() {
+        List<Pet> petList = petRepository.findAll();
+        if (petList != null && !petList.isEmpty()) {
+            return petList.stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
+    @Override
+    @Transactional
+    public PetDto updatePet(Integer id, PetDto petDto) {
+        Pet existingPet = petRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thú cưng với ID: " + id));
+        existingPet.setName(petDto.getName());
+        existingPet.setSpecies(petDto.getSpecies());
+        existingPet.setBreed(petDto.getBreed());
+        existingPet.setPrice(petDto.getPrice());
+        existingPet.setQuantity(petDto.getQuantity());
+        existingPet.setGender(petDto.getGender());
+        existingPet.setAge(petDto.getAge());
+        existingPet.setColor(petDto.getColor());
+        existingPet.setSize(petDto.getSize());
+        existingPet.setOrigin(petDto.getOrigin());
+        existingPet.setDescription(petDto.getDescription());
+        existingPet.setStatus(petDto.getStatus());
+
+        Pet updatedPet = petRepository.save(existingPet);
+        PetDto dto = convertToDto(updatedPet);
+//        dto.setImageUrls(updatedPet.getImages());
+
+        return dto;
+    }
+
+    @Override
+    @Transactional
+    public PetDto addPet(PetDto petDto) {
+        Pet newPet = new Pet();
+        newPet.setName(petDto.getName());
+        newPet.setSpecies(petDto.getSpecies());
+        newPet.setBreed(petDto.getBreed());
+        newPet.setPrice(petDto.getPrice());
+        newPet.setQuantity(petDto.getQuantity());
+        newPet.setGender(petDto.getGender());
+        newPet.setAge(petDto.getAge());
+        newPet.setColor(petDto.getColor());
+        newPet.setSize(petDto.getSize());
+        newPet.setOrigin(petDto.getOrigin());
+        newPet.setDescription(petDto.getDescription());
+        newPet.setStatus(petDto.getStatus());
+        newPet.setCreatedAt(java.time.Instant.now());
+
+        Pet savedPet = petRepository.save(newPet);
+        return convertToDto(savedPet);
     }
 
 
@@ -83,5 +155,131 @@ public class PetServiceImpl implements PetService {
 
         return dto;
     }
-}
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<PetImageDto> findAllImagesByPetId(Integer petId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thú cưng với ID: " + petId));
+
+        if (pet.getImages() == null || pet.getImages().isEmpty()) {
+            return List.of();
+        }
+
+        return pet.getImages().stream()
+                .map(PetImageDto::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public PetImageDto addPetImage(Integer petId, MultipartFile imageFile) {
+        try {
+            Pet pet = petRepository.findById(petId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thú cưng với ID: " + petId));
+            PetImage petImage = new PetImage();
+            petImage.setPet(pet);
+            petImage.setIsMain(false);
+
+            if (Boolean.TRUE.equals(petImage.getIsMain()) && pet.getImages() != null) {
+                pet.getImages().forEach(img -> img.setIsMain(false));
+            }
+
+            if (pet.getImages() == null) {
+                pet.setImages(new ArrayList<>());
+            }
+
+            String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+
+            String species = pet.getSpecies() != null ? pet.getSpecies().toLowerCase() : "other";
+            Path uploadPath = Paths.get("uploads", "pets", species);
+
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String imageUrl = "uploads/pets/" + species + "/" + fileName;
+            petImage.setImageUrl(imageUrl);
+            pet.getImages().add(petImage);
+            Pet savedPet = petRepository.save(pet);
+
+            PetImage savedImage = savedPet.getImages().stream()
+                    .filter(img -> img.getImageUrl().equals(imageUrl))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Lỗi khi lưu ảnh thú cưng"));
+
+            // Return a PetImageDto representing the saved entity
+            return new PetImageDto(savedImage);
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean deletePetImage(Integer imageId) {
+        try {
+            // Find the PetImage by ID
+            PetImage petImage = petImageRepository.findById(imageId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy ảnh thú cưng với ID: " + imageId));
+
+            // Get the image URL to delete the file from the server
+            String imageUrl = petImage.getImageUrl();
+
+            // Delete the PetImage from the database
+            petImageRepository.deleteById(imageId);
+
+            // Delete the image file from the server if it exists
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                try {
+                    Path imagePath = Paths.get(imageUrl);
+                    if (Files.exists(imagePath)) {
+                        Files.delete(imagePath);
+                    }
+                } catch (IOException e) {
+                    // Log the error but don't throw an exception
+                    System.err.println("Lỗi khi xóa file ảnh: " + e.getMessage());
+                    e.printStackTrace();
+                    // Return true because the database record was deleted successfully
+                    // even though the file deletion failed
+                }
+            }
+
+            return true;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi xóa ảnh thú cưng: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public PetImageDto updateMainImage(Integer petId, Integer imageId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thú cưng với ID: " + petId));
+        if (pet.getImages() == null || pet.getImages().isEmpty()) {
+            throw new RuntimeException("Thú cưng không có ảnh nào.");
+        }
+        boolean found = false;
+        for (PetImage img : pet.getImages()) {
+            if (img.getId() == (imageId)) {
+                img.setIsMain(true);
+                found = true;
+            } else {
+                img.setIsMain(false);
+            }
+        }
+        if (!found) {
+            throw new RuntimeException("Không tìm thấy ảnh với ID: " + imageId);
+        }
+        petImageRepository.saveAll(pet.getImages());
+        PetImage mainImage = pet.getImages().stream()
+                .filter(img -> img.getId() == (imageId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ảnh chính sau khi cập nhật."));
+        return new PetImageDto(mainImage);
+    }
+}
