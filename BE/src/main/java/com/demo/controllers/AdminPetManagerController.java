@@ -39,14 +39,17 @@ public class AdminPetManagerController {
         }
     }
 
-    @PostMapping("/addPet")
-    public ResponseEntity<?> addPet(@RequestBody PetDto petDto) {
+
+    @PostMapping(value = "/addPetWithImage", consumes = { "multipart/form-data" })
+    public ResponseEntity<?> addPetWithImage(
+            @RequestPart("petDto") PetDto petDto,
+            @RequestPart("imageFile") MultipartFile imageFile) {
         try {
-            PetDto newPet = petService.addPet(petDto);
+            PetDto newPet = petService.addPetWithImage(petDto, imageFile);
             return ResponseEntity.ok(newPet);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi khi thêm thú cưng mới: " + e.getMessage());
+            return ResponseEntity.status(500).body("Lỗi khi thêm thú cưng mới với ảnh: " + e.getMessage());
         }
     }
 
@@ -55,7 +58,6 @@ public class AdminPetManagerController {
         List<PetImageDto> images = petService.findAllImagesByPetId(petId);
         return ResponseEntity.ok(images);
     }
-//uploads/pets/bird/goldfinch/chim-canari.jpg
     @PostMapping("/addImagePet/{petId}/")
     public ResponseEntity<?> addPetImage(
             @PathVariable Integer petId,

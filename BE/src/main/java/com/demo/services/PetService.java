@@ -13,7 +13,7 @@ public interface PetService {
     List<PetDto> findByName(String name);
     List<PetDto> findAll();
     PetDto updatePet(Integer id, PetDto petDto);
-    PetDto addPet(PetDto petDto);
+    PetDto addPetWithImage(PetDto petDto, MultipartFile imageFile);
     List<PetImageDto> findAllImagesByPetId(Integer petId);
     PetImageDto addPetImage(Integer petId, MultipartFile imageFile);
     boolean deletePetImage(Integer imageId);
