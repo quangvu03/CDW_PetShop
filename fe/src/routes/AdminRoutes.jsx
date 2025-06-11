@@ -29,11 +29,11 @@ export default function AdminRoutes() {
       <Route path="" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="users" element={<AdminUserManager />} /> // done
-        <Route path="updatepet/:id" element={<AdminUpdatePet/>} />// done
-        <Route path="adduser" element={<AdminAddUser />} />// done
-        {/* <Route path="addPet" element={<AdminAddPet />} />// done */}
-        <Route path="updateUser/:id" element={<AdminUpdateUser />} />// done
+        <Route path="users" element={<AdminUserManager />} />
+        <Route path="updatepet/:id" element={<AdminUpdatePet/>} />
+        <Route path="adduser" element={<AdminAddUser />} />
+        <Route path="addPet" element={<AdminAddPet />} />
+        <Route path="updateUser/:id" element={<AdminUpdateUser />} />
         <Route path="categories" element={<AdminCategoryManager />} />
         <Route path="products" element={<AdminPetList />} />
         <Route path="orders" element={<AdminOrderList />} />

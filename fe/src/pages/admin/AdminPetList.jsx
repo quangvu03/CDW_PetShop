@@ -3,6 +3,8 @@ import $ from 'jquery';
 import 'datatables.net';
 import 'datatables.net-bs4';
 import { getAllPets } from '../../services/AdminPetManagerService';
+import { Link } from 'react-router-dom';
+
 
 const AdminPetList = () => {
   const [pets, setPets] = useState([]);
@@ -121,11 +123,11 @@ const AdminPetList = () => {
     <div className="content-wrapper">
       <div className="container-fluid">
         <div className="row mt-3">
-          <div className="col-lg-12">
-            <button className="add-catalog">
-              <a href="/admin/addsanpham">Thêm thú cưng</a>
-            </button>
-          </div>
+        <div className="col-lg-12">
+          <Link to="/admin/addPet" className="btn btn-success add-catalog">
+            Thêm thú cưng
+          </Link>
+        </div>
 
           <div className="col-lg-12">
             <div className="card">
