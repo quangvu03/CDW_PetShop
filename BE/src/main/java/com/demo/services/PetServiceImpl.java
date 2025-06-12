@@ -95,26 +95,59 @@ public class PetServiceImpl implements PetService {
         return dto;
     }
 
+
     @Override
     @Transactional
-    public PetDto addPet(PetDto petDto) {
-        Pet newPet = new Pet();
-        newPet.setName(petDto.getName());
-        newPet.setSpecies(petDto.getSpecies());
-        newPet.setBreed(petDto.getBreed());
-        newPet.setPrice(petDto.getPrice());
-        newPet.setQuantity(petDto.getQuantity());
-        newPet.setGender(petDto.getGender());
-        newPet.setAge(petDto.getAge());
-        newPet.setColor(petDto.getColor());
-        newPet.setSize(petDto.getSize());
-        newPet.setOrigin(petDto.getOrigin());
-        newPet.setDescription(petDto.getDescription());
-        newPet.setStatus(petDto.getStatus());
-        newPet.setCreatedAt(java.time.Instant.now());
+    public PetDto addPetWithImage(PetDto petDto, MultipartFile imageFile) {
+        try {
+            // First save the pet
+            Pet newPet = new Pet();
+            newPet.setName(petDto.getName());
+            newPet.setSpecies(petDto.getSpecies());
+            newPet.setBreed(petDto.getBreed());
+            newPet.setPrice(petDto.getPrice());
+            newPet.setQuantity(petDto.getQuantity());
+            newPet.setGender(petDto.getGender());
+            newPet.setAge(petDto.getAge());
+            newPet.setColor(petDto.getColor());
+            newPet.setSize(petDto.getSize());
+            newPet.setOrigin(petDto.getOrigin());
+            newPet.setDescription(petDto.getDescription());
+            newPet.setStatus(petDto.getStatus());
+            newPet.setCreatedAt(java.time.Instant.now());
 
-        Pet savedPet = petRepository.save(newPet);
-        return convertToDto(savedPet);
+            Pet savedPet = petRepository.save(newPet);
+
+            // Then add the image
+            PetImage petImage = new PetImage();
+            petImage.setPet(savedPet);
+            petImage.setIsMain(true); // Set as main image
+
+            if (savedPet.getImages() == null) {
+                savedPet.setImages(new ArrayList<>());
+            }
+
+            String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+
+            String species = savedPet.getSpecies() != null ? savedPet.getSpecies().toLowerCase() : "other";
+            Path uploadPath = Paths.get("uploads", "pets", species);
+
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String imageUrl = "uploads/pets/" + species + "/" + fileName;
+            petImage.setImageUrl(imageUrl);
+            savedPet.getImages().add(petImage);
+
+            Pet updatedPet = petRepository.save(savedPet);
+
+            return convertToDto(updatedPet);
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
+        }
     }
 
 
