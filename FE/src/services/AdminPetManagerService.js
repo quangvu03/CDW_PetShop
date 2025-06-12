@@ -181,3 +181,40 @@ export const setPetImageAsMain = async (petId, imageId) => {
     }
   }
 };
+
+
+/**
+ * Thêm thú cưng mới với ảnh.
+ * @param {Object} petData Dữ liệu thú cưng (PetDto).
+ * @param {File} imageFile File ảnh để tải lên.
+ * @returns {Promise<Object>} Promise chứa thông tin thú cưng vừa thêm.
+ */
+export const addPetWithImage = async (petData, imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append('petDto', new Blob([JSON.stringify(petData)], { type: 'application/json' }));
+    formData.append('imageFile', imageFile);
+
+    const response = await api.post('/admin/addPetWithImage', formData, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data; // Giả sử API trả về PetDto
+  } catch (error) {
+    if (error.response) {
+      if (error.response.status === 403) {
+        throw new Error('Bạn không có quyền thêm thú cưng. Vui lòng kiểm tra vai trò admin.');
+      } else if (error.response.status === 401) {
+        throw new Error('Token không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.');
+      } else if (error.response.status === 400) {
+        throw new Error('Dữ liệu thú cưng hoặc file ảnh không hợp lệ. Vui lòng kiểm tra lại.');
+      } else if (error.response.status === 500) {
+        throw new Error('Lỗi server khi thêm thú cưng: ' + (error.response.data?.message || error.message));
+      }
+    } else {
+      throw new Error('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
+    }
+  }
+};
