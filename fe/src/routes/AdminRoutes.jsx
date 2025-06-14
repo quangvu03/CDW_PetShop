@@ -24,6 +24,7 @@ import AdminUpdatePet from '../pages/admin/AdminUpdatePet';
 import AdminAddPet from '../pages/admin/AdminAddPet';
 import AdminAddShippingMethod from '../pages/admin/AdminAddShippingMethod';
 import AdminEditShippingMethod from '../pages/admin/AdminEditShippingMethod';
+import StatisticalByTime from '../pages/admin/StatisticalByTime';
 
 export default function AdminRoutes() {
   return (
@@ -41,7 +42,8 @@ export default function AdminRoutes() {
         <Route path="orders" element={<AdminOrderList />} />
         <Route path="orders/:orderId" element={<AdminOrderDetail />} />
         <Route path="addShipping" element={<AdminAddShippingMethod />} />
-          <Route path="editShipping/:id" element={<AdminEditShippingMethod />} />
+        <Route path="editShipping/:id" element={<AdminEditShippingMethod />} />
+        <Route path="statisticalbytime" element={<StatisticalByTime />} />
 
 
 

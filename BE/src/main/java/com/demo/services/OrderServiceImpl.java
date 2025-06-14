@@ -185,5 +185,30 @@ public class OrderServiceImpl implements OrderService {
                 status.equals("cancelled");
     }
 
+    @Override
+    public List<Order> findOrdersByStatus(String status) {
+        if (!isValidStatus(status)) {
+            throw new IllegalArgumentException("Trạng thái đơn hàng không hợp lệ");
+        }
+        return orderRepository.findByStatus(status);
+    }
 
+    @Override
+    public List<OrdersDto> findCompletedOrdersByDateRange(Instant startDate, Instant endDate) {
+        return orderRepository.findByStatusAndOrderDateBetweenOrderByOrderDateDesc("completed", startDate, endDate)
+                .stream()
+                .map(order -> {
+                    OrdersDto dto = new OrdersDto();
+                    dto.setId(order.getId());
+                    dto.setStatus(order.getStatus());
+                    dto.setOrderDate(order.getOrderDate());
+                    dto.setTotalPrice(order.getTotalPrice());
+                    dto.setPaymentMethod(order.getPaymentMethod());
+                    dto.setPaymentStatus(order.getPaymentStatus());
+                    dto.setShippingAddress(order.getShippingAddress());
+                    dto.setShippingName(order.getShippingMethod() != null ? order.getShippingMethod().getName() : "");
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 }
