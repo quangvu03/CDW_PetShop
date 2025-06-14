@@ -64,3 +64,27 @@ export const updateShippingMethod = (id, shippingMethod) => {
   console.log(`CLIENT-SIDE FETCH: Updating shipping method: ${url}`, shippingMethod);
   return api.put(url, shippingMethod);
 };
+
+export const getCompletedOrders = () => {
+  const url = `/admin/getCompletedOrders`;
+  console.log(`CLIENT-SIDE FETCH: Updating shipping method: ${url}`);
+  return api.get(url);
+};
+
+
+/**
+ * Lấy danh sách đơn hàng hoàn thành trong khoảng thời gian.
+ * @param {string} startDate Ngày bắt đầu (định dạng yyyy/MM/dd, ví dụ: '2025/06/01').
+ * @param {string} endDate Ngày kết thúc (định dạng yyyy/MM/dd, ví dụ: '2025/06/15').
+ * @returns {Promise<AxiosResponse<any>>} Promise chứa response (dự kiến là mảng OrderItemDto[]).
+ */
+export const getCompletedOrdersByDateRange = (startDate, endDate) => {
+  const url = `/admin/getCompletedOrdersByDateRange`;
+  console.log(`CLIENT-SIDE FETCH: Requesting completed orders by date range: ${url}?startDate=${startDate}&endDate=${endDate}`);
+  
+  const params = new URLSearchParams();
+  params.append('startDate', startDate.replace(/\//g, '-')); // Chuyển yyyy/MM/dd thành yyyy-MM-dd
+  params.append('endDate', endDate.replace(/\//g, '-')); // Chuyển yyyy/MM/dd thành yyyy-MM-dd
+
+  return api.get(url, { params });
+};
