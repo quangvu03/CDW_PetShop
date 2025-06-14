@@ -14,9 +14,14 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByUserIdOrderByOrderDateDesc(int userId);
+
     List<Order> findByStatus(String status);
+
+    List<Order> findAllByOrderByOrderDateDesc();
+
     @Modifying @Transactional
     @Query("UPDATE Order o SET o.status = 'cancelled' WHERE o.id = :orderId")
     int cancelledOrder(@Param("orderId") int orderId);
+
 
 }

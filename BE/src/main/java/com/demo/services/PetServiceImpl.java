@@ -95,7 +95,6 @@ public class PetServiceImpl implements PetService {
         return dto;
     }
 
-
     @Override
     @Transactional
     public PetDto addPetWithImage(PetDto petDto, MultipartFile imageFile) {
@@ -149,7 +148,6 @@ public class PetServiceImpl implements PetService {
             throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
         }
     }
-
 
     private PetDto convertToDto(Pet pet) {
         if (pet == null) {
