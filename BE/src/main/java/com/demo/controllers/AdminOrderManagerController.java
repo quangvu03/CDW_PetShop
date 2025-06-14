@@ -5,10 +5,16 @@ import com.demo.dtos.requests.UpdateOrderRequest;
 import com.demo.services.OrderItemService;
 import com.demo.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -55,6 +61,38 @@ public class AdminOrderManagerController {
                 updateRequest.setPaymentStatus(paymentStatus);
             }
             return ResponseEntity.ok(Map.of("result", orderService.updateOrder(updateRequest)));
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/getCompletedOrders")
+    public ResponseEntity<?> getCompletedOrders() {
+        try {
+            List<OrderItemDto> completedOrders = new ArrayList<>();
+            List<com.demo.entities.Order> orders = orderService.findOrdersByStatus("completed");
+
+            for (com.demo.entities.Order order : orders) {
+                OrderItemDto orderItemDto = orderItemService.findOrderItemByOrderId(order.getId());
+                completedOrders.add(orderItemDto);
+            }
+
+            return ResponseEntity.ok(completedOrders);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/getCompletedOrdersByDateRange")
+    public ResponseEntity<?> getCompletedOrdersByDateRange(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            // Convert LocalDate to Instant (start of day for startDate, end of day for endDate)
+            Instant startInstant = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+            Instant endInstant = endDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+            return ResponseEntity.ok(orderService.findCompletedOrdersByDateRange(startInstant, endInstant));
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
