@@ -5,6 +5,7 @@ import com.demo.dtos.requests.OrderRequest;
 import com.demo.dtos.requests.UpdateOrderRequest;
 import com.demo.entities.Order;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface OrderService {
@@ -18,6 +19,8 @@ public interface OrderService {
 
     List<OrdersDto> findAllByOrderByOrderDateDesc();
 
+    List<Order> findOrdersByStatus(String status);
 
+    List<OrdersDto> findCompletedOrdersByDateRange(Instant startDate, Instant endDate);
 
 }

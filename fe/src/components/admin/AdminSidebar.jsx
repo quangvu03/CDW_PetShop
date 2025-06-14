@@ -10,7 +10,7 @@ const AdminSidebar = () => {
       <ul className="sidebar-menu do-nicescrol">
         <li className="sidebar-header">MENU ADMIN</li>
 
-        <li><a href="/admin"><i className="zmdi zmdi-view-dashboard"></i> <span>Tổng quan</span></a></li>
+        <li><a href="/admin"><i className="zmdi zmdi-view-dashboard"></i> <span>Doanh Thu</span></a></li>
         <li><a href="/admin/users"><i className="zmdi zmdi-accounts"></i> <span>Quản lí User</span></a></li>
         <li><a href="/admin/categories"><i className="zmdi zmdi-grid"></i> <span>Chuyên Mục</span></a></li>
         <li><a href="/admin/products"><i className="zmdi zmdi-widgets"></i> <span>Danh Sách Sản Phẩm</span></a></li>
