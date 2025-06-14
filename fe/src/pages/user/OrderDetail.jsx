@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom'; // Thêm Link
-import { getOrderDetail, cancelOrder } from '../../services/orderService';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getOrderDetail, cancelOrder, updateAddress } from '../../services/orderService';
 import { getCurrentUser } from '../../services/userService';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 export default function OrderDetail() {
   const { orderId } = useParams();
@@ -11,10 +12,19 @@ export default function OrderDetail() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState(null);
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedWard, setSelectedWard] = useState('');
+  const [street, setStreet] = useState('');
 
   useEffect(() => {
     fetchOrderDetails();
     fetchUserInfo();
+    fetchProvinces();
   }, [orderId]);
 
   const fetchOrderDetails = async () => {
@@ -39,6 +49,31 @@ export default function OrderDetail() {
     }
   };
 
+  const fetchProvinces = async () => {
+    try {
+      const response = await axios.get('https://provinces.open-api.vn/api/?depth=3');
+      console.log('Provinces loaded:', response.data);
+      setProvinces(response.data);
+    } catch (error) {
+      console.error('Error fetching provinces:', error);
+      toast.error('Không thể tải danh sách tỉnh/thành');
+    }
+  };
+
+  const fetchDistricts = (provinceCode) => {
+    const province = provinces.find((p) => p.code === parseInt(provinceCode));
+    setDistricts(province ? province.districts : []);
+    setWards([]);
+    setSelectedDistrict('');
+    setSelectedWard('');
+  };
+
+  const fetchWards = (districtCode) => {
+    const district = districts.find((d) => d.code === parseInt(districtCode));
+    setWards(district ? district.wards : []);
+    setSelectedWard('');
+  };
+
   const handleCancelOrder = async () => {
     Swal.fire({
       title: 'Bạn có muốn hủy đơn hàng không?',
@@ -61,6 +96,50 @@ export default function OrderDetail() {
         }
       }
     });
+  };
+
+  const handleChangeAddress = () => {
+    setShowAddressModal(true);
+    setSelectedProvince('');
+    setSelectedDistrict('');
+    setSelectedWard('');
+    setDistricts([]);
+    setWards([]);
+    setStreet(order?.shippingAddress?.split(', ').slice(0, -3).join(', ') || '');
+  };
+
+  const handleUpdateAddress = async () => {
+    if (!selectedProvince || !selectedDistrict || !selectedWard || !street) {
+      toast.error('Vui lòng điền đầy đủ thông tin địa chỉ');
+      return;
+    }
+
+    const provinceName = provinces.find((p) => p.code === parseInt(selectedProvince))?.name;
+    const districtName = districts.find((d) => d.code === parseInt(selectedDistrict))?.name;
+    const wardName = wards.find((w) => w.code === parseInt(selectedWard))?.name;
+
+    if (!provinceName || !districtName || !wardName) {
+      toast.error('Địa chỉ không hợp lệ');
+      return;
+    }
+
+    const newAddress = `${street}, ${wardName}, ${districtName}, ${provinceName}`;
+    console.log('Sending updateAddress request:', { orderId, address: newAddress });
+
+    try {
+      const response = await updateAddress(orderId, encodeURIComponent(newAddress));
+      console.log('UpdateAddress response:', response.data);
+      if (response.data.success) {
+        toast.success(response.data.message || 'Cập nhật địa chỉ thành công');
+        await fetchOrderDetails();
+        setShowAddressModal(false);
+      } else {
+        toast.error(response.data.message || 'Cập nhật địa chỉ thất bại');
+      }
+    } catch (error) {
+      console.error('Error updating address:', error);
+      toast.error(error.response?.data?.message || 'Không thể cập nhật địa chỉ');
+    }
   };
 
   const getStatusBadgeClass = (status) => {
@@ -91,6 +170,7 @@ export default function OrderDetail() {
   };
 
   const canCancelOrder = order && order.status?.toLowerCase() === 'pending';
+  const canChangeAddress = order && order.status?.toLowerCase() === 'pending';
 
   if (loading) {
     return (
@@ -125,6 +205,15 @@ export default function OrderDetail() {
                 onClick={handleCancelOrder}
               >
                 Hủy đơn hàng
+              </button>
+            )}
+            {canChangeAddress && (
+              <button
+                className="btn btn-warning btn-sm d-flex align-items-center justify-content-center"
+                style={{ minWidth: '120px', height: '36px' }}
+                onClick={handleChangeAddress}
+              >
+                Thay đổi địa chỉ
               </button>
             )}
             <span
@@ -287,6 +376,131 @@ export default function OrderDetail() {
           </div>
         </div>
       </div>
+
+      {showAddressModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: '0',
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '8px',
+              width: '400px',
+              maxWidth: '90%',
+            }}
+          >
+            <h3 style={{ marginBottom: '20px' }}>Thay đổi địa chỉ</h3>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Tỉnh/Thành
+              </label>
+              <select
+                value={selectedProvince}
+                onChange={(e) => {
+                  setSelectedProvince(e.target.value);
+                  fetchDistricts(e.target.value);
+                }}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value="">Chọn tỉnh/thành</option>
+                {provinces.map((p) => (
+                  <option key={p.code} value={p.code}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Quận/Huyện
+              </label>
+              <select
+                value={selectedDistrict}
+                onChange={(e) => {
+                  setSelectedDistrict(e.target.value);
+                  fetchWards(e.target.value);
+                }}
+                disabled={!districts.length}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value="">Chọn quận/huyện</option>
+                {districts.map((d) => (
+                  <option key={d.code} value={d.code}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Phường/Xã
+              </label>
+              <select
+                value={selectedWard}
+                onChange={(e) => setSelectedWard(e.target.value)}
+                disabled={!wards.length}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value="">Chọn phường/xã</option>
+                {wards.map((w) => (
+                  <option key={w.code} value={w.code}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Số nhà, tên đường
+              </label>
+              <input
+                value={street}
+                onChange={(e) => setStreet(e.target.value)}
+                placeholder="Nhập số nhà, tên đường"
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={handleUpdateAddress}
+                style={{
+                  padding: '8px 16px',
+                  background: '#3085d6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                }}
+              >
+                Cập nhật
+              </button>
+              <button
+                onClick={() => setShowAddressModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  background: '#d33',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                }}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

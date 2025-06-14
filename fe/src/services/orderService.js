@@ -33,6 +33,16 @@ export async function cancelOrder(orderId) {
   }
 }
 
+export async function updateAddress(orderId, address) {
+  try {
+    const result = await api.put(`/order/updateAddress?orderId=${orderId}&shippingAddress=${address}`);
+    console.log(`Order address updated successfully: ${JSON.stringify(result.data)}`);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+}
+
 
 export default { createOrder, getOrdersByUser, getOrderDetail, updateOrderStatus, cancelOrder };
 
