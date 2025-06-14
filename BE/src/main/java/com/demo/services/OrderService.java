@@ -12,7 +12,12 @@ public interface OrderService {
 
     List<OrdersDto> findByUserIdOrderByOrderDateDesc(int userId);
 
-    Order updateOrder(UpdateOrderRequest updateOrderRequest);
+    OrdersDto updateOrder(UpdateOrderRequest updateOrderRequest);
 
     String cancelledOrder(int orderId);
+
+    List<OrdersDto> findAllByOrderByOrderDateDesc();
+
+
+
 }

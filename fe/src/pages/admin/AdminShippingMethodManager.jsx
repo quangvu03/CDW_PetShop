@@ -1,23 +1,105 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import $ from 'jquery';
-import DateRangePicker from '../../components/common/DateRangePicker';
+import 'datatables.net';
+import { getAllShippingMethods } from '../../services/AdminShippingManagerService';
+import { toast } from 'react-toastify';
 
 const AdminShippingMethodManager = () => {
+  const navigate = useNavigate();
+  const [shippingMethods, setShippingMethods] = useState([]);
+  const [error, setError] = useState(null);
+
+  // Lấy danh sách phương thức vận chuyển từ API
+  const fetchShippingMethods = async () => {
+    try {
+      const response = await getAllShippingMethods();
+      console.log('Dữ liệu phương thức vận chuyển:', response.data);
+      setShippingMethods(response.data);
+      setError(null);
+    } catch (error) {
+      console.error('Lỗi khi lấy phương thức vận chuyển:', error);
+      setError('Không thể tải danh sách phương thức vận chuyển. Vui lòng thử lại.');
+      toast.error('Không thể tải danh sách phương thức vận chuyển.');
+    }
+  };
+
+  // Gọi API khi component mount
   useEffect(() => {
-    $('#shippingTable').DataTable();
+    fetchShippingMethods();
   }, []);
+
+  // Khởi tạo DataTable khi shippingMethods thay đổi
+  useEffect(() => {
+    const table = $('#shippingTable').DataTable({
+      destroy: true,
+      pageLength: 10,
+      language: {
+        emptyTable: 'Không có dữ liệu phương thức vận chuyển',
+        info: 'Hiển thị _START_ đến _END_ của _TOTAL_ phương thức',
+        lengthMenu: 'Hiển thị _MENU_ phương thức mỗi trang',
+        search: 'Tìm kiếm:',
+        paginate: {
+          first: 'Đầu',
+          last: 'Cuối',
+          next: 'Tiếp',
+          previous: 'Trước',
+        },
+      },
+      data: shippingMethods,
+      columns: [
+        { data: null, render: (data, type, row, meta) => meta.row + 1 },
+        { data: 'name', defaultContent: 'N/A' },
+        { data: 'description', defaultContent: 'N/A' },
+        {
+          data: 'price',
+          render: data => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data),
+        },
+        { data: 'estimatedTime', defaultContent: 'N/A' },
+        {
+          data: 'id',
+          render: data => `
+            <button class="btn btn-success btn-sm me-2" data-id="${data}" data-action="edit">Sửa</button>
+            <button class="btn btn-danger btn-sm" data-id="${data}" data-action="delete">Xóa</button>
+          `,
+        },
+      ],
+      createdRow: (row, data) => {
+        $(row).find('[data-action="edit"]').on('click', () => {
+          console.log('Sửa phương thức vận chuyển:', data.id);
+          navigate(`/admin/editShipping/${data.id}`);
+        });
+        $(row).find('[data-action="delete"]').on('click', () => {
+          console.log('Xóa phương thức vận chuyển:', data.id);
+          toast.info('Chức năng xóa đang được phát triển');
+        });
+      },
+    });
+
+    return () => {
+      table.destroy();
+    };
+  }, [shippingMethods, navigate]);
 
   return (
     <div className="content-wrapper">
       <div className="container-fluid">
-        <form id="filterForm" method="get">
-          <DateRangePicker />
-          <button type="submit" className="btn btn-primary ml-2 mt-4">Lọc</button>
-        </form>
+        <h5 className="card-title">Danh sách phương thức vận chuyển</h5>
+
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        <div className="mt-2">
+          <Link
+            to="/admin/addShipping"
+            className="btn btn-primary"
+            style={{ textDecoration: 'none' }}
+          >
+            Thêm
+          </Link>
+        </div>
 
         <div className="card mt-3">
           <div className="card-body">
-            <h5 className="card-title">Danh sách phương thức vận chuyển</h5>
             <div className="table-responsive">
               <table id="shippingTable" className="table table-striped">
                 <thead>
@@ -30,41 +112,7 @@ const AdminShippingMethodManager = () => {
                     <th>Hành động</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>Giao hàng tiêu chuẩn</td>
-                    <td>Giao hàng trong 3-5 ngày làm việc</td>
-                    <td>30.000</td>
-                    <td>3-5 ngày</td>
-                    <td>
-                      <button className="btn btn-success btn-sm mr-2">Sửa</button>
-                      <button className="btn btn-danger btn-sm">Xóa</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td>Giao hàng nhanh</td>
-                    <td>Giao trong 1-2 ngày làm việc</td>
-                    <td>50.000</td>
-                    <td>1-2 ngày</td>
-                    <td>
-                      <button className="btn btn-success btn-sm mr-2">Sửa</button>
-                      <button className="btn btn-danger btn-sm">Xóa</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>Giao hàng hỏa tốc</td>
-                    <td>Giao trong ngày cho đơn trước 10h sáng</td>
-                    <td>100.000</td>
-                    <td>Trong ngày</td>
-                    <td>
-                      <button className="btn btn-success btn-sm mr-2">Sửa</button>
-                      <button className="btn btn-danger btn-sm">Xóa</button>
-                    </td>
-                  </tr>
-                </tbody>
+                <tbody></tbody>
               </table>
             </div>
           </div>

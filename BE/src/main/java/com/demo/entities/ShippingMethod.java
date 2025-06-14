@@ -24,7 +24,8 @@ public class ShippingMethod {
 
     @Column(name = "price", precision = 10, scale = 2)
     private BigDecimal price;
-    @Column(name = "estimatedTime", length = 100)
+
+    @Column(name = "estimated_time", length = 100)
     private String estimatedTime;
 
 }

@@ -34,7 +34,7 @@ public class AdminPetManagerController {
             PetDto updatedPet = petService.updatePet(id, petDto);
             return ResponseEntity.ok(updatedPet);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return ResponseEntity.status(500).body("Lỗi khi cập nhật thú cưng: " + e.getMessage());
         }
     }
@@ -48,7 +48,7 @@ public class AdminPetManagerController {
             PetDto newPet = petService.addPetWithImage(petDto, imageFile);
             return ResponseEntity.ok(newPet);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return ResponseEntity.status(500).body("Lỗi khi thêm thú cưng mới với ảnh: " + e.getMessage());
         }
     }
@@ -67,7 +67,7 @@ public class AdminPetManagerController {
             PetImageDto savedImage = petService.addPetImage(petId, imageFile);
             return ResponseEntity.ok(savedImage);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return ResponseEntity.status(500).body("Lỗi khi thêm ảnh thú cưng: " + e.getMessage());
         }
     }
@@ -82,7 +82,7 @@ public class AdminPetManagerController {
                 return ResponseEntity.status(500).body("Không thể xóa ảnh thú cưng");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return ResponseEntity.status(500).body("Lỗi khi xóa ảnh thú cưng: " + e.getMessage());
         }
     }
