@@ -5,12 +5,15 @@ import com.demo.dtos.OrderItemDto;
 import com.demo.dtos.OrdersDto;
 import com.demo.dtos.requests.OrderItemRequest;
 import com.demo.dtos.requests.OrderRequest;
+import com.demo.dtos.requests.UpdateOrderRequest;
 import com.demo.dtos.responses.ApiResponse;
 import com.demo.entities.Order;
 import com.demo.entities.OrderItem;
 import com.demo.services.CartService;
 import com.demo.services.OrderItemService;
 import com.demo.services.OrderService;
+import com.demo.services.ShippingService;
+import com.demo.entities.ShippingMethod;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +35,9 @@ public class OrderController {
 
     @Autowired
     private OrderItemService orderItemService;
+
+    @Autowired
+    private ShippingService shippingService;
 
     @PostMapping("/saveOrder")
     public ResponseEntity<?> saveOrder(@RequestBody OrderRequest orderRequest) {
@@ -88,4 +94,36 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/updateAddress")
+    public ResponseEntity<?> updateAddress(@RequestParam("orderId") int orderId, @RequestParam("shippingAddress") String shippingAddress) {
+        try {
+            UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest();
+            updateOrderRequest.setOrderId(orderId);
+            updateOrderRequest.setShippingAddress(shippingAddress);
+
+            OrdersDto updatedOrder = orderService.updateOrder(updateOrderRequest);
+
+            if (updatedOrder != null) {
+                return ResponseEntity.ok(new ApiResponse(true, "Cập nhật địa chỉ giao hàng thành công"));
+            } else {
+                return ResponseEntity.badRequest().body(new ApiResponse(false, "Cập nhật địa chỉ giao hàng thất bại"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Lỗi: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/getAllShipping")
+    public ResponseEntity<?> getAllShipping() {
+        try {
+            List<ShippingMethod> shippingMethods = shippingService.findAll();
+            if (!shippingMethods.isEmpty()) {
+                return ResponseEntity.ok(shippingMethods);
+            } else {
+                return ResponseEntity.ok(new ApiResponse(true, "Không có phương thức vận chuyển nào!"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ApiResponse(false, "Lỗi khi lấy danh sách phương thức vận chuyển: " + e.getMessage()));
+        }
+    }
 }

@@ -78,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order updateOrder(UpdateOrderRequest updateRequest) {
+    public OrdersDto updateOrder(UpdateOrderRequest updateRequest) {
         // Find the existing order
         Optional<Order> existingOrderOpt = orderRepository.findById(updateRequest.getOrderId());
         if (existingOrderOpt.isEmpty()) {
@@ -123,7 +123,20 @@ public class OrderServiceImpl implements OrderService {
             existingOrder.setShippingMethod(shippingMethodOptional.get());
         }
 
-        return orderRepository.save(existingOrder);
+        Order savedOrder = orderRepository.save(existingOrder);
+
+        // Convert Order to OrdersDto
+        OrdersDto dto = new OrdersDto();
+        dto.setId(savedOrder.getId());
+        dto.setStatus(savedOrder.getStatus());
+        dto.setOrderDate(savedOrder.getOrderDate());
+        dto.setTotalPrice(savedOrder.getTotalPrice());
+        dto.setPaymentMethod(savedOrder.getPaymentMethod());
+        dto.setPaymentStatus(savedOrder.getPaymentStatus());
+        dto.setShippingAddress(savedOrder.getShippingAddress());
+        dto.setShippingName(savedOrder.getShippingMethod() != null ? savedOrder.getShippingMethod().getName() : "");
+
+        return dto;
     }
 
     @Override
@@ -144,6 +157,24 @@ public class OrderServiceImpl implements OrderService {
         } else {
             return "fail";
         }
+    }
+
+    @Override
+    public List<OrdersDto> findAllByOrderByOrderDateDesc() {
+        return orderRepository.findAllByOrderByOrderDateDesc().stream()
+                .map(order -> {
+                    OrdersDto dto = new OrdersDto();
+                    dto.setId(order.getId());
+                    dto.setStatus(order.getStatus());
+                    dto.setOrderDate(order.getOrderDate());
+                    dto.setTotalPrice(order.getTotalPrice());
+                    dto.setPaymentMethod(order.getPaymentMethod());
+                    dto.setPaymentStatus(order.getPaymentStatus());
+                    dto.setShippingAddress(order.getShippingAddress());
+                    dto.setShippingName(order.getShippingMethod() != null ? order.getShippingMethod().getName() : "");
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     private boolean isValidStatus(String status) {

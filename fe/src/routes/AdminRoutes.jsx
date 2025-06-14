@@ -22,6 +22,8 @@ import AdminAddUser from '../pages/admin/AdminAddUser';
 import AdminUpdateUser from '../pages/admin/AdminUpdateUser';
 import AdminUpdatePet from '../pages/admin/AdminUpdatePet';
 import AdminAddPet from '../pages/admin/AdminAddPet';
+import AdminAddShippingMethod from '../pages/admin/AdminAddShippingMethod';
+import AdminEditShippingMethod from '../pages/admin/AdminEditShippingMethod';
 
 export default function AdminRoutes() {
   return (
@@ -38,6 +40,10 @@ export default function AdminRoutes() {
         <Route path="products" element={<AdminPetList />} />
         <Route path="orders" element={<AdminOrderList />} />
         <Route path="orders/:orderId" element={<AdminOrderDetail />} />
+        <Route path="addShipping" element={<AdminAddShippingMethod />} />
+          <Route path="editShipping/:id" element={<AdminEditShippingMethod />} />
+
+
 
         {/* Quản lý nâng cao */}
         <Route path="reviews" element={<AdminReviewManager />} />
