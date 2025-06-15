@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPetById } from '../../services/petService';
 import { addToCart } from '../../services/cartService';
-import { getReviewsByPetId } from '../../services/ratingService';
+import { getCommentsByPetId, addComment, deleteComment, reportComment } from '../../services/commentService';
 import { toast } from 'react-toastify';
+import { getReviewsByPetId } from '../../services/ratingService';
 import '../../assets/user/css/User.css';
 
 const RatingComponent = ({ averageRating, totalReviews, ratingData }) => {
@@ -52,6 +53,19 @@ const RatingComponent = ({ averageRating, totalReviews, ratingData }) => {
   );
 };
 
+const getTimeAgo = (createdAt) => {
+  const now = new Date();
+  const commentDate = new Date(createdAt);
+  const diffMs = now - commentDate;
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffHours >= 24) return `${Math.floor(diffHours / 24)} ngày trước`;
+  if (diffHours >= 1) return `${diffHours} giờ trước`;
+  if (diffMins >= 1) return `${diffMins} phút trước`;
+  return 'Vài giây trước';
+};
+
 export default function PetDetail() {
   const { id } = useParams();
   const [pet, setPet] = useState(null);
@@ -65,6 +79,9 @@ export default function PetDetail() {
     { stars: 2, percentage: 0 },
     { stars: 1, percentage: 0 },
   ]);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [replyStates, setReplyStates] = useState({});
 
   useEffect(() => {
     const fetchPetAndReviews = async () => {
@@ -75,18 +92,16 @@ export default function PetDetail() {
 
         const reviewResponse = await getReviewsByPetId(id);
         const reviews = reviewResponse.data;
-        console.log('Reviews for pet:', reviews);
-
         const total = reviews.length;
         setTotalReviews(total);
         if (total > 0) {
           const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-          const avg = sum / total;
-          setAverageRating(avg);
-
+          setAverageRating(sum / total);
           const ratingCounts = [0, 0, 0, 0, 0, 0];
           reviews.forEach((review) => {
-            ratingCounts[review.rating]++;
+            if (review.rating >= 1 && review.rating <= 5) {
+              ratingCounts[review.rating]++;
+            }
           });
           const newRatingData = [5, 4, 3, 2, 1].map((stars) => ({
             stars,
@@ -94,6 +109,9 @@ export default function PetDetail() {
           }));
           setRatingData(newRatingData);
         }
+
+        const commentResponse = await getCommentsByPetId(id);
+        setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
       } catch (err) {
         console.error('Error fetching data:', err);
         toast.error('Không thể tải dữ liệu');
@@ -108,6 +126,11 @@ export default function PetDetail() {
     return `http://localhost:8080${path.startsWith('/') ? '' : '/'}${path}`;
   };
 
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath || typeof avatarPath !== 'string') return 'https://via.placeholder.com/50';
+    return `http://localhost:8080/uploads/avatars/${avatarPath}`;
+  };
+
   const handleAddToCart = async () => {
     try {
       await addToCart({ petId: pet.id, quantity: 1 });
@@ -118,7 +141,202 @@ export default function PetDetail() {
     }
   };
 
+  const handlePostComment = async (content, parentId = null) => {
+    if (!content.trim()) return;
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      toast.error('Vui lòng đăng nhập để bình luận!');
+      return;
+    }
+    try {
+      const commentData = {
+        userId: parseInt(userId),
+        petId: parseInt(id),
+        content,
+        parentId,
+      };
+      await addComment(commentData);
+      if (!parentId) {
+        setNewComment('');
+      }
+      if (parentId) {
+        setReplyStates((prev) => ({
+          ...prev,
+          [parentId]: { ...prev[parentId], content: '', isReplying: false },
+        }));
+      }
+      const commentResponse = await getCommentsByPetId(id);
+      setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
+      toast.success('Đã đăng bình luận!');
+    } catch (err) {
+      toast.error('Lỗi khi đăng bình luận');
+    }
+  };
+
+  const handleReplyClick = (commentId) => {
+    setReplyStates((prev) => ({
+      ...prev,
+      [commentId]: {
+        isReplying: !prev[commentId]?.isReplying,
+        content: prev[commentId]?.content || '',
+      },
+    }));
+  };
+
+  const handleReplyChange = (commentId, value) => {
+    setReplyStates((prev) => ({
+      ...prev,
+      [commentId]: { ...prev[commentId], content: value },
+    }));
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!commentId) return;
+    if (!window.confirm('Bạn có chắc muốn xóa bình luận này?')) return;
+    try {
+      await deleteComment(commentId);
+      toast.success('Xóa bình luận thành công!');
+      const commentResponse = await getCommentsByPetId(id);
+      setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
+    } catch (err) {
+      toast.error('Lỗi khi xóa bình luận');
+    }
+  };
+
+  const handleReportComment = async (commentId) => {
+    if (!commentId) return;
+    try {
+      await reportComment(commentId);
+      toast.success('Báo cáo bình luận thành công!');
+      const commentResponse = await getCommentsByPetId(id);
+      setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
+    } catch (err) {
+      toast.error('Lỗi khi báo cáo bình luận');
+    }
+  };
+
+  // Build nested comment structure
+  const buildCommentTree = (comments) => {
+    if (!Array.isArray(comments)) return [];
+    const commentMap = {};
+    const tree = [];
+
+    // Create a map of comments by ID and initialize replies from commentsResponses
+    comments.forEach((comment) => {
+      comment.replies = Array.isArray(comment.commentsResponses) ? comment.commentsResponses : [];
+      commentMap[comment.id] = comment;
+    });
+
+    // Build the tree by linking replies based on parentId
+    comments.forEach((comment) => {
+      if (comment.parentId && commentMap[comment.parentId]) {
+        // Avoid duplicate replies
+        if (!commentMap[comment.parentId].replies.find((r) => r.id === comment.id)) {
+          commentMap[comment.parentId].replies.push(comment);
+        }
+      } else if (!comment.parentId) {
+        tree.push(comment);
+      }
+    });
+
+    return tree;
+  };
+
+  const commentTree = buildCommentTree(comments);
+
+  const renderComments = (comments, depth = 0) => {
+    if (!Array.isArray(comments)) return null;
+    return comments.map((comment, index) => (
+      <div key={comment.id}>
+        <div
+          className="single-comment mb-3"
+          style={{ marginLeft: `${depth * 20}px`, borderRadius: '8px', marginBottom: '0px', paddingLeft: '60px' }}
+        >
+          <img
+            src={getAvatarUrl(comment.avatarUser)}
+            alt={`${comment.username} Avatar`}
+            style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '10px' }}
+          />
+          <div className="content" style={{ backgroundColor: '#e3e4e6', padding: '10px', borderRadius: '20px' }}>
+            <h4 style={{ fontWeight: 'bold', marginBottom: '15px' }}>{comment.username}</h4>
+            <p>{comment.content}</p>
+            <div className="d-flex align-items-center gap-3">
+              <small className="text-muted">{getTimeAgo(comment.createdAt)}</small>
+              {depth === 0 && (
+                <a
+                  href="#"
+                  style={{ marginLeft: '10px' }}
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleReplyClick(comment.id);
+                  }}
+                >
+                  <i className="fa fa-reply" aria-hidden="true"></i> Reply
+                </a>
+              )}
+              {parseInt(localStorage.getItem('userId')) === comment.userId && (
+                <a
+                  href="#"
+                  style={{ marginLeft: '10px' }}
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDeleteComment(comment.id);
+                  }}
+                >
+                  <i className="fa fa-trash" aria-hidden="true"></i> Xóa
+                </a>
+              )}
+              <a
+                href="#"
+                style={{ marginLeft: '10px' }}
+                className="btn btn-sm btn-outline-warning"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleReportComment(comment.id);
+                }}
+              >
+                <i className="fa fa-flag" aria-hidden="true"></i> Báo cáo
+              </a>
+            </div>
+            {replyStates[comment.id]?.isReplying && (
+              <div className="reply-input mt-2">
+                <div className="input-group">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Viết phản hồi..."
+                    value={replyStates[comment.id]?.content || ''}
+                    onChange={(e) => handleReplyChange(comment.id, e.target.value)}
+                  />
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={() => handlePostComment(replyStates[comment.id]?.content || '', comment.id)}
+                  >
+                    Post Reply
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => handleReplyClick(comment.id)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        {Array.isArray(comment.replies) && comment.replies.length > 0 && renderComments(comment.replies, depth + 1)}
+        {index < comments.length - 1 && depth === 0 && <hr className="my-3" />}
+      </div>
+    ));
+  };
+
   if (!pet) return <div className="container py-5">Đang tải dữ liệu...</div>;
+
   return (
     <section className="blog-single section">
       <div className="container">
@@ -175,7 +393,7 @@ export default function PetDetail() {
                           <i className="fa fa-calendar"></i>Tuổi: {pet.age} tháng
                         </a>
                         <a href="#">
-                          <i className="fa fa-comments"></i>Bình luận(0)
+                          <i className="fa fa-comments"></i>Bình luận({comments.length})
                         </a>
                       </span>
                       <button className="blog-meta-buy" onClick={handleAddToCart}>
@@ -224,50 +442,27 @@ export default function PetDetail() {
                   <div className="col-12">
                     <div className="comments">
                       <h3 className="comment-title" id="comment-size">
-                        Bình luận(3)
+                        Bình luận({comments.length})
                       </h3>
-                      <div id="list-comment">
-                        <div className="single-comment">
-                          <img src="" style={{ width: '80px', height: '80px' }} alt="Anh dai dien" />
-                          <div className="content">
-                            <h4>ngay</h4>
-                            <p>binh luan</p>
-                            <div className="button">
-                              <a href="#" className="btn">
-                                <i className="fa fa-reply" aria-hidden="true"></i>Phản hồi
-                              </a>
-                            </div>
-                          </div>
+                      <div className="reply">
+                        <div className="input-group mb-3">
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Viết một bình luận..."
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                          />
+                          <button
+                            className="btn btn-primary"
+                            type="button"
+                            onClick={() => handlePostComment(newComment)}
+                          >
+                            Post Comment
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <div className="reply">
-                      <div className="reply-head">
-                        <h2 className="reply-title">Để lại bình luận</h2>
-                        <form className="form" action="">
-                          <div className="row">
-                            <input type="hidden" id="petId" name="petId" value="" />
-                            <input type="hidden" name="userId" />
-                            <div className="col-12">
-                              <div className="form-group">
-                                <label>
-                                  Bình luận của bạn<span>*</span>
-                                </label>
-                                <textarea name="note" placeholder=""></textarea>
-                              </div>
-                            </div>
-                            <div className="col-12">
-                              <div className="form-group button">
-                                <button type="submit" className="btn">
-                                  Đăng bình luận
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </form>
-                      </div>
+                      <div id="list-comment">{renderComments(commentTree)}</div>
                     </div>
                   </div>
                 </div>
@@ -321,11 +516,13 @@ export default function PetDetail() {
               <div className="single-widget side-tags">
                 <h3 className="title">Tags</h3>
                 <ul className="tag">
-                  {['business', 'wordpress', 'html', 'multipurpose', 'education', 'template', 'Ecommerce'].map((tag) => (
-                    <li key={tag}>
-                      <a href="#">{tag}</a>
-                    </li>
-                  ))}
+                  {['business', 'wordpress', 'html', 'multipurpose', 'education', 'template', 'Ecommerce'].map(
+                    (tag) => (
+                      <li key={tag}>
+                        <a href="#">{tag}</a>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </div>
               <div className="single-widget newsletter">

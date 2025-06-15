@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th5 15, 2025 lúc 10:32 PM
--- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: Jun 15, 2025 at 08:38 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `petshop`
+-- Database: `petshop`
 --
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `browsing_history`
+-- Table structure for table `browsing_history`
 --
 
 CREATE TABLE `browsing_history` (
@@ -38,7 +38,7 @@ CREATE TABLE `browsing_history` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `cart_items`
+-- Table structure for table `cart_items`
 --
 
 CREATE TABLE `cart_items` (
@@ -51,17 +51,19 @@ CREATE TABLE `cart_items` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `cart_items`
+-- Dumping data for table `cart_items`
 --
 
 INSERT INTO `cart_items` (`id`, `user_id`, `pet_id`, `product_id`, `quantity`, `created_at`) VALUES
 (1, 3, 1, NULL, 4, '2025-05-14 00:36:18'),
-(2, 3, 3, NULL, 1, '2025-05-14 09:31:20');
+(2, 3, 3, NULL, 1, '2025-05-14 09:31:20'),
+(5, 4, 3, NULL, 1, '2025-05-26 04:59:42'),
+(29, 4, 1, NULL, 1, '2025-06-14 02:14:07');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `categories`
+-- Table structure for table `categories`
 --
 
 CREATE TABLE `categories` (
@@ -72,7 +74,7 @@ CREATE TABLE `categories` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `chatbot_messages`
+-- Table structure for table `chatbot_messages`
 --
 
 CREATE TABLE `chatbot_messages` (
@@ -86,7 +88,36 @@ CREATE TABLE `chatbot_messages` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `contacts`
+-- Table structure for table `comments`
+--
+
+CREATE TABLE `comments` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `pet_id` int(11) NOT NULL,
+  `parent_id` int(11) DEFAULT NULL,
+  `content` text NOT NULL,
+  `is_reported` tinyint(1) DEFAULT 0,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `comments`
+--
+
+INSERT INTO `comments` (`id`, `user_id`, `pet_id`, `parent_id`, `content`, `is_reported`, `created_at`) VALUES
+(1, 5, 2, NULL, 'gút', 0, '2025-06-15 15:51:36'),
+(2, 5, 2, NULL, 'gút', 0, '2025-06-15 15:54:05'),
+(3, 5, 3, NULL, 'gút', 0, '2025-06-15 16:46:02'),
+(16, 5, 90, NULL, ':((', 1, '2025-06-15 18:17:07'),
+(17, 6, 90, 16, ':((((', 1, '2025-06-15 18:17:17'),
+(18, 5, 90, NULL, ':)))', 0, '2025-06-15 18:26:47'),
+(19, 5, 90, 18, ':))', 0, '2025-06-15 18:26:55');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `contacts`
 --
 
 CREATE TABLE `contacts` (
@@ -102,7 +133,7 @@ CREATE TABLE `contacts` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `orders`
+-- Table structure for table `orders`
 --
 
 CREATE TABLE `orders` (
@@ -117,10 +148,23 @@ CREATE TABLE `orders` (
   `shipping_method_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `order_date`, `total_price`, `status`, `payment_method`, `payment_status`, `shipping_address`, `shipping_method_id`) VALUES
+(1, 5, '2025-05-29 20:28:56', 1438360.00, 'completed', 'COD', 'paid', 'So 1 Nguyen Nghiem, Xã Trà Giang, Huyện Trà Bồng, Tỉnh Quảng Ngãi', 1),
+(2, 5, '2025-05-30 06:07:09', 4630238.00, 'completed', 'COD', 'paid', 'So 1 Nguyen Nghiem, Xã Đức Hòa, Huyện Mộ Đức, Tỉnh Quảng Ngãi', 1),
+(3, 5, '2025-05-30 06:13:58', 356636.00, 'completed', 'COD', 'paid', 'So 1 Nguyen Nghiem, Phường Lê Hồng Phong, Thành phố Phủ Lý, Tỉnh Hà Nam', 1),
+(4, 5, '2025-05-30 06:27:15', 3026534.00, 'completed', 'COD', 'paid', 'So 1 Nguyen Nghiem, Xã Pá Hu, Huyện Trạm Tấu, Tỉnh Yên Bái', 3),
+(5, 5, '2025-05-30 06:35:26', 470083.00, 'pending', 'COD', 'unpaid', 'So 1 Nguyen Nghiem, Xã Vân Sơn, Huyện Tân Lạc, Tỉnh Hoà Bình', 1),
+(6, 5, '2025-05-30 06:45:02', 1029803.00, 'pending', 'COD', 'unpaid', 'So 1 Nguyen Nghiem, Xã Xuân Quang, Huyện Bảo Thắng, Tỉnh Lào Cai', 1),
+(7, 5, '2025-06-13 20:15:19', 356636.00, 'completed', 'COD', 'unpaid', 'so1, Phường Đồng Xuân, Quận Hoàn Kiếm, Thành phố Hà Nội', 1);
+
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `order_items`
+-- Table structure for table `order_items`
 --
 
 CREATE TABLE `order_items` (
@@ -132,10 +176,30 @@ CREATE TABLE `order_items` (
   `price` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `pet_id`, `product_id`, `quantity`, `price`) VALUES
+(1, 1, 3, NULL, 1, 326636.00),
+(2, 1, 1, NULL, 1, 844288.00),
+(3, 1, 90, NULL, 1, 237436.00),
+(4, 2, 1, NULL, 4, 844288.00),
+(5, 2, 5, NULL, 1, 793005.00),
+(6, 2, 109, NULL, 1, 430081.00),
+(7, 3, 3, NULL, 1, 326636.00),
+(8, 4, 163, NULL, 1, 982794.00),
+(9, 4, 42, NULL, 1, 972430.00),
+(10, 4, 20, NULL, 1, 971310.00),
+(11, 5, 43, NULL, 1, 211271.00),
+(12, 5, 79, NULL, 1, 228812.00),
+(13, 6, 26, NULL, 1, 999803.00),
+(14, 7, 3, NULL, 1, 326636.00);
+
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `pets`
+-- Table structure for table `pets`
 --
 
 CREATE TABLE `pets` (
@@ -156,11 +220,11 @@ CREATE TABLE `pets` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `pets`
+-- Dumping data for table `pets`
 --
 
 INSERT INTO `pets` (`id`, `name`, `species`, `breed`, `price`, `quantity`, `gender`, `age`, `color`, `size`, `origin`, `description`, `status`, `created_at`) VALUES
-(1, 'chim-canari', 'bird', 'goldfinch', 844288, 4, 'male', 4, 'brown', 'large', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
+(1, 'chim canari', 'bird', 'goldfinch', 844288, 5, 'female', 5, 'brown', 'large', 'Usa', 'STRONG', 'available', '2025-04-24 13:50:37'),
 (2, 'hoang-yen', 'bird', 'goldfinch', 413832, 0, 'male', 10, 'black', 'medium', 'Vietnam', 'Perfect for apartment living.', 'sold', '2025-04-24 13:50:37'),
 (3, 'anhdaidienchim', 'bird', 'robin', 326636, 1, 'female', 10, 'gold', 'medium', 'Vietnam', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
 (4, 'abyssinia', 'cat', 'egyptian_cat', 594849, 1, 'male', 15, 'black', 'small', 'USA', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
@@ -372,12 +436,13 @@ INSERT INTO `pets` (`id`, `name`, `species`, `breed`, `price`, `quantity`, `gend
 (210, 'ran-milk-snake', 'snake', 'king_snake', 324260, 1, 'male', 8, 'cream', 'large', 'Thailand', 'Well-trained and affectionate pet.', 'available', '2025-04-24 13:50:37'),
 (211, 'ran-corn-snake', 'snake', 'night_snake', 501516, 1, 'male', 9, 'gray', 'medium', 'Vietnam', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
 (212, 'ran-cornsnake', 'snake', 'night_snake', 237139, 1, 'male', 5, 'brown', 'large', 'USA', 'Perfect for apartment living.', 'available', '2025-04-24 13:50:37'),
-(213, 'ran-ball-python', 'snake', 'rock_python', 606207, 1, 'female', 4, 'brown', 'small', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37');
+(213, 'ran-ball-python', 'snake', 'rock_python', 606207, 1, 'female', 4, 'brown', 'small', 'USA', 'Energetic and loves to play outdoors.', 'available', '2025-04-24 13:50:37'),
+(214, 'meo ba tu', 'cat', 'snow', 654321, 2, 'male', 2, 'white', 'small', 'ba tu', '1001', 'available', '2025-06-10 20:46:00');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `pet_images`
+-- Table structure for table `pet_images`
 --
 
 CREATE TABLE `pet_images` (
@@ -388,7 +453,7 @@ CREATE TABLE `pet_images` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `pet_images`
+-- Dumping data for table `pet_images`
 --
 
 INSERT INTO `pet_images` (`id`, `pet_id`, `image_url`, `is_main`) VALUES
@@ -605,12 +670,13 @@ INSERT INTO `pet_images` (`id`, `pet_id`, `image_url`, `is_main`) VALUES
 (211, 211, 'uploads/pets/snake/night_snake/ran-corn-snake.jpg', 1),
 (212, 212, 'uploads/pets/snake/night_snake/ran-cornsnake.jpg', 1),
 (213, 213, 'uploads/pets/snake/rock_python/ran-ball-python.jpg', 1),
-(214, 1, 'uploads/pets/bird/goldfinch/chim-canari.jpg', 0);
+(215, 1, 'uploads/pets/bird/513c9e24-b357-4994-9a81-12efa3a816fb_screenshot_4.png', 0),
+(217, 214, 'uploads/pets/cat/c341cf46-2c77-4307-8b82-981787e6a90e_anhmeobatu.jpg', 1);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `products`
+-- Table structure for table `products`
 --
 
 CREATE TABLE `products` (
@@ -626,7 +692,7 @@ CREATE TABLE `products` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `recommendations`
+-- Table structure for table `recommendations`
 --
 
 CREATE TABLE `recommendations` (
@@ -639,7 +705,7 @@ CREATE TABLE `recommendations` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `refresh_token`
+-- Table structure for table `refresh_token`
 --
 
 CREATE TABLE `refresh_token` (
@@ -650,7 +716,7 @@ CREATE TABLE `refresh_token` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `refresh_token`
+-- Dumping data for table `refresh_token`
 --
 
 INSERT INTO `refresh_token` (`id`, `user_id`, `token`, `expiry_date`) VALUES
@@ -676,28 +742,113 @@ INSERT INTO `refresh_token` (`id`, `user_id`, `token`, `expiry_date`) VALUES
 (27, 3, '14b71403-27cc-48a9-b32d-4789e5c83538', '2025-05-17 12:35:02'),
 (28, 3, '99de32f5-0e27-486c-b916-80291521925a', '2025-05-20 05:26:39'),
 (29, 3, 'd75906b1-9603-406b-8785-bcd96c425bcc', '2025-05-20 06:47:26'),
-(30, 3, 'd6646dc8-feb6-4fec-8cd9-362bcc1cc7ac', '2025-05-21 10:51:56');
+(30, 3, 'd6646dc8-feb6-4fec-8cd9-362bcc1cc7ac', '2025-05-21 10:51:56'),
+(31, 4, '28228077-436a-4538-aef6-0ea37745b961', '2025-06-02 04:52:26'),
+(32, 4, '88ec5fcb-e2ec-4272-9209-3e2502a048b7', '2025-06-02 04:59:19'),
+(33, 4, '98a53ba1-0504-4cb2-a397-fa1c56f35621', '2025-06-02 05:36:13'),
+(34, 4, 'cf77f1ae-f744-44d6-a9ee-eb5b67bcfce9', '2025-06-02 06:50:11'),
+(35, 4, '35b1573d-7b61-4527-bc48-37f54a117a46', '2025-06-02 09:42:01'),
+(36, 4, '4600b803-0494-4ac2-8daa-fa40a2e1d2c1', '2025-06-02 10:19:48'),
+(37, 4, '61a6d836-49d8-4449-82b0-c853ad8702bb', '2025-06-02 21:21:21'),
+(38, 4, '17990f01-982a-4708-96eb-cd2209121c11', '2025-06-02 21:43:08'),
+(39, 4, '9a0e29b0-21e0-4466-8261-b34c75565ea7', '2025-06-02 21:45:28'),
+(40, 5, 'c68f6145-8544-44e1-9ec6-3d7543afe5e3', '2025-06-02 22:02:22'),
+(41, 4, '4199ad8d-ac55-403a-b9ee-a47e9e5ce9c5', '2025-06-02 22:15:53'),
+(42, 4, 'd85eca23-9ea3-415b-a9a0-deee6083b248', '2025-06-02 22:17:13'),
+(43, 4, '08bbab40-9342-4c6d-9633-d3843daa913f', '2025-06-02 22:18:48'),
+(44, 4, 'cfa87326-6d11-4b3e-b9a6-0bb71683aa97', '2025-06-02 22:20:39'),
+(45, 4, '77840a54-7a9e-4e89-936f-0deb91a40b1e', '2025-06-02 22:23:17'),
+(46, 4, '52a5fa49-9c68-40aa-bcee-1482ba46cf18', '2025-06-03 04:32:16'),
+(47, 4, '26ba2b7e-5c94-4f85-b88c-27e8d751baa5', '2025-06-03 08:39:40'),
+(48, 4, '085bf944-fc91-46a5-9426-cd7cba5364bb', '2025-06-03 08:55:58'),
+(49, 5, '2d009209-465b-4170-b6b2-30ccd4e4d723', '2025-06-05 08:12:16'),
+(50, 5, 'b3d96125-b61d-477e-9a31-51e1d27af651', '2025-06-05 23:01:07'),
+(51, 5, 'f59fd09c-af8f-4aa6-80a4-1855a12488d2', '2025-06-05 23:32:51'),
+(52, 4, 'cb18d510-71ad-4852-815f-3b250217c47b', '2025-06-05 23:32:59'),
+(53, 4, '7216e397-8d20-4bd8-8758-9b2cc872771b', '2025-06-06 05:56:55'),
+(54, 5, 'a5ccc433-5059-428d-8246-e19a20faff7c', '2025-06-06 05:57:10'),
+(55, 5, 'df439c1e-69e6-41d8-929f-7ff744807b64', '2025-06-06 05:59:18'),
+(56, 5, 'd63aabc3-249c-4948-a02b-5ae61219cf08', '2025-06-06 06:01:14'),
+(57, 5, '467b9cd1-a25c-4308-b88d-ef5d82972abf', '2025-06-06 06:04:28'),
+(58, 4, '60b291ea-702d-4bc6-8ae4-6cdc824a270e', '2025-06-06 06:07:56'),
+(59, 4, '8ace0a3a-a6f0-48b3-928f-46df41d19d61', '2025-06-06 06:10:37'),
+(60, 5, '6371e20a-a60e-49b2-819a-5df6682d2aba', '2025-06-06 06:11:38'),
+(61, 4, '557994fa-690c-4eea-9343-cc6ca6b1ead9', '2025-06-06 06:14:48'),
+(62, 5, '6acc9916-8434-4d24-ad1d-c4bf1337d875', '2025-06-06 06:19:21'),
+(63, 5, '3720717b-de45-46de-86c6-aa0c65c07f2c', '2025-06-06 06:24:18'),
+(64, 5, 'ee4b5990-3898-4480-aff1-85a917be848a', '2025-06-06 06:28:09'),
+(65, 4, '5b79069d-05ab-4c27-a7e9-aeaf12448ac1', '2025-06-06 06:28:15'),
+(66, 5, '265ee035-fb0b-4492-9e2a-a141d78ee129', '2025-06-06 06:32:57'),
+(67, 4, '8a410ea8-4623-496a-a708-43f08117b904', '2025-06-06 06:36:32'),
+(68, 5, '833fb8d8-5292-4b82-977d-69b29294ee2a', '2025-06-06 06:42:28'),
+(69, 4, 'd34d7023-2a3e-4d32-b876-edd795c9c490', '2025-06-06 06:46:00'),
+(70, 4, '7d75c419-6662-4403-a000-8a66771a51a6', '2025-06-06 08:45:20'),
+(71, 5, '475c6f21-aa82-48db-be39-d3f5271f9525', '2025-06-06 08:45:27'),
+(72, 4, '29774fa5-af48-4e0e-84fe-db8b69e7c400', '2025-06-12 22:55:52'),
+(73, 4, '6df3d28a-3e77-4623-b9b5-f5cc7672213b', '2025-06-16 08:59:23'),
+(74, 4, '99f9ccca-8daf-4a80-95d2-da1bd1582746', '2025-06-16 10:33:27'),
+(75, 4, '3c4327a6-3409-4bc9-a0c7-93b265d5a61f', '2025-06-16 22:39:59'),
+(76, 4, '2aeea92e-d742-4fe8-961f-0354519fdf17', '2025-06-16 23:43:44'),
+(77, 4, '657a6824-cdd2-4211-969e-c3d5f6970327', '2025-06-17 03:53:05'),
+(78, 4, 'cda7984e-29b7-4148-9f7f-1fec1bc751e9', '2025-06-17 04:33:45'),
+(79, 4, 'b132f61a-e0f9-4dbf-8524-2c88fd2bd703', '2025-06-17 04:41:52'),
+(80, 4, '40ed3fe8-7930-4f52-94ad-1a34bf2d9fa1', '2025-06-17 05:41:13'),
+(81, 4, '684b4a5d-9d70-41d2-999b-5e1a058e2680', '2025-06-17 20:30:01'),
+(82, 4, '71cd9f81-9792-44c1-ab6f-8d839d28afb6', '2025-06-20 07:15:57'),
+(83, 4, 'd833a785-2934-4d93-acf5-09c935e2face', '2025-06-20 20:14:33'),
+(84, 5, '14d74f47-1209-4850-874a-bf7033babb99', '2025-06-20 20:14:50'),
+(85, 4, '960df551-2f73-493f-80c2-37c2aa462425', '2025-06-20 21:12:25'),
+(86, 4, '787f5606-f608-48dd-8511-33cbdd6122ba', '2025-06-20 22:40:55'),
+(87, 4, 'f3173fbf-2e70-4608-8a39-02d923e14c60', '2025-06-20 22:44:05'),
+(88, 4, 'ca7eb97f-9bb2-4d40-901c-25fde976d917', '2025-06-20 22:56:29'),
+(89, 4, 'b0f27b6e-8120-40f6-bab4-3229946b471c', '2025-06-20 22:59:03'),
+(90, 4, 'b53737a6-b38e-459f-9fd7-fe9855bba3e4', '2025-06-21 01:33:18'),
+(91, 4, 'b887446b-adbe-4b23-862d-7e843fdd0034', '2025-06-21 02:40:22'),
+(92, 4, '3a4ef060-ec91-412e-88c8-234183c3d0ed', '2025-06-21 02:40:33'),
+(93, 4, 'f72352f3-0a83-4dd1-b011-0ab8810eccc4', '2025-06-21 05:45:24'),
+(94, 4, 'bce6bfff-54f8-413c-bbcf-ae42a372726a', '2025-06-21 10:10:52'),
+(95, 4, '49086153-0929-4f95-8b4b-27d520b128b4', '2025-06-21 10:59:08'),
+(96, 5, 'a7e3ad13-9174-4a1e-ad16-ae79346b1e62', '2025-06-21 10:59:32'),
+(97, 4, 'a338543c-9bd5-4948-af9d-be5d61a9bc32', '2025-06-21 20:37:18'),
+(98, 5, 'b139516f-4c0b-4770-8a74-1f9320bb663e', '2025-06-21 20:37:26'),
+(99, 5, '89a1e055-cad5-4003-812c-5c3d9680fcf9', '2025-06-21 20:38:49'),
+(100, 5, '93c9cae2-3ab0-4656-b6cf-c854fabef02c', '2025-06-21 20:39:28'),
+(101, 4, '1fc9e46e-1d4f-47ed-8105-4e0b15dcd4b6', '2025-06-21 20:41:08'),
+(102, 5, '13fa3f3f-8a25-405b-bf5c-3aed1155a690', '2025-06-21 20:45:24'),
+(103, 4, '8e6eb74e-1efd-42b2-92e6-35bb1048a62a', '2025-06-21 21:18:30'),
+(104, 5, '25d24480-013c-46fa-994a-bd5ca10e258d', '2025-06-21 22:37:12'),
+(105, 4, '26f27e12-1b2f-4bb8-91bd-a6eae6306e68', '2025-06-22 09:00:16');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `reviews`
+-- Table structure for table `reviews`
 --
 
 CREATE TABLE `reviews` (
   `id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
-  `product_id` int(11) DEFAULT NULL,
   `pet_id` int(11) DEFAULT NULL,
+  `order_id` int(11) NOT NULL,
   `rating` int(11) DEFAULT NULL,
-  `comment` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `reviews`
+--
+
+INSERT INTO `reviews` (`id`, `user_id`, `pet_id`, `order_id`, `rating`, `created_at`) VALUES
+(3, 5, 163, 4, 4, '2025-06-14 22:34:57'),
+(4, 5, 42, 4, 4, '2025-06-14 22:35:00'),
+(5, 5, 20, 4, 5, '2025-06-14 22:35:01'),
+(6, 5, 3, 7, 5, '2025-06-14 23:14:59'),
+(7, 5, 90, 1, 5, '2025-06-15 09:46:56');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `shipping_methods`
+-- Table structure for table `shipping_methods`
 --
 
 CREATE TABLE `shipping_methods` (
@@ -709,18 +860,19 @@ CREATE TABLE `shipping_methods` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `shipping_methods`
+-- Dumping data for table `shipping_methods`
 --
 
 INSERT INTO `shipping_methods` (`id`, `name`, `description`, `price`, `estimated_time`) VALUES
 (1, 'Giao hàng tiêu chuẩn', 'Giao hàng trong 3-5 ngày làm việc', 30000.00, '3-5 ngày'),
 (2, 'Giao hàng nhanh', 'Giao trong 1-2 ngày làm việc', 50000.00, '1-2 ngày'),
-(3, 'Giao hàng hỏa tốc', 'Giao trong ngày cho đơn trước 10h sáng', 100000.00, 'Trong ngày');
+(3, 'Giao hàng hỏa tốc', 'Giao trong ngày cho đơn trước 10h sáng', 100000.00, 'Trong ngày'),
+(4, 'Hỏa tốc Grab', 'Grab giao hỏa tốc', 200000.00, '2 - 12giờ');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -742,16 +894,20 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `users`
+-- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `full_name`, `gender`, `birthday`, `phone`, `address`, `avatar`, `role`, `created_at`, `updated_at`, `status`, `security_code`) VALUES
-(3, 'binhandsome', '21130591@st.hcmuaf.edu.vn', '$2a$10$z.iss2P5yUyOc9oui3meo.vl.pK5vxfnhN134dPO4N6KUMZbIRXg.', 'Lê Chí Trường', 'Nam', '2025-04-02', '0123445676', 'So 1, Xã Ngũ Kiên, Huyện Vĩnh Tường, Tỉnh Vĩnh Phúc', '9035bb06-c9b7-4495-9017-769c226d37c7_Screenshot 2025-03-30 223039.png', 'user', '2025-04-20 19:15:50', '2025-04-24 05:49:31', 1, NULL);
+(3, 'binhandsome', '21130591@st.hcmuaf.edu.vn', '$2a$10$z.iss2P5yUyOc9oui3meo.vl.pK5vxfnhN134dPO4N6KUMZbIRXg.', 'Lê Chí Trường', 'Nam', '2025-04-02', '0123445676', 'So 1, Xã Ngũ Kiên, Huyện Vĩnh Tường, Tỉnh Vĩnh Phúc', '9035bb06-c9b7-4495-9017-769c226d37c7_Screenshot 2025-03-30 223039.png', 'user', '2025-04-20 19:15:50', '2025-04-24 05:49:31', 1, NULL),
+(4, 'vuvuvu', 'vutran08012k3@gmail.com', '$2a$10$iR1NpJA.0BMP4Hkx1E/VeO6sNjupFbk0ClDCmknW2dHAnLVCWDXsO', NULL, NULL, NULL, NULL, NULL, 'Unknown_person.jpg', 'admin', '2025-05-26 04:51:39', '2025-05-26 04:52:19', 1, NULL),
+(5, 'vuvuvu2', '21130615@st.hcmuaf.edu.vn', '$2a$10$lsRs/85k4VtU4gbnidFHfua1z2OClQvJlrIQ0a2QCicOaoR2CBZWa', 'Lê Chí ', 'Nam', '2025-04-02', '0123445679', 'So 1 Nguyen Nghiem, Xã Đào Mỹ, Huyện Lạng Giang, Tỉnh Bắc Giang', '3058f301-223f-4a07-b021-beef1c787d19_screenshot_4.png', 'user', '2025-05-26 22:01:18', '2025-05-30 06:43:07', 1, NULL),
+(6, '21130615', '211306015@st.hcmuaf.edu.vn', '$2a$10$CuyYEottkztkY9bbeG8kGunemEooc42jGkVwclzi3JlJuoVrYdLSa', NULL, NULL, NULL, NULL, NULL, 'Unknown_person.jpg', 'user', '2025-05-27 03:31:57', '2025-05-27 03:31:57', 0, '500347'),
+(7, 'sdsadsd', '2113061xzx5@st.hcmuaf.edu.vn', '$2a$10$1wdiLPfqSK/UGIQsQgPlD.gU4MqPvuLGbcFmSvqdpDfASxyXbi3Jm', NULL, NULL, NULL, NULL, NULL, 'Unknown_person.jpg', 'user', '2025-05-27 03:47:57', '2025-05-27 03:47:57', 0, '953056');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `vouchers`
+-- Table structure for table `vouchers`
 --
 
 CREATE TABLE `vouchers` (
@@ -766,7 +922,7 @@ CREATE TABLE `vouchers` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `wishlist`
+-- Table structure for table `wishlist`
 --
 
 CREATE TABLE `wishlist` (
@@ -778,15 +934,16 @@ CREATE TABLE `wishlist` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `wishlist`
+-- Dumping data for table `wishlist`
 --
 
 INSERT INTO `wishlist` (`id`, `user_id`, `pet_id`, `product_id`, `created_at`) VALUES
 (9, 3, 3, NULL, '2025-05-14 00:23:53'),
-(10, 3, 4, NULL, '2025-05-14 00:34:03');
+(10, 3, 4, NULL, '2025-05-14 00:34:03'),
+(11, 5, 3, NULL, '2025-06-14 22:53:00');
 
 --
--- Bẫy `wishlist`
+-- Triggers `wishlist`
 --
 DELIMITER $$
 CREATE TRIGGER `wishlist_check_insert` BEFORE INSERT ON `wishlist` FOR EACH ROW BEGIN
@@ -810,11 +967,11 @@ $$
 DELIMITER ;
 
 --
--- Chỉ mục cho các bảng đã đổ
+-- Indexes for dumped tables
 --
 
 --
--- Chỉ mục cho bảng `browsing_history`
+-- Indexes for table `browsing_history`
 --
 ALTER TABLE `browsing_history`
   ADD PRIMARY KEY (`id`),
@@ -823,7 +980,7 @@ ALTER TABLE `browsing_history`
   ADD KEY `product_id` (`product_id`);
 
 --
--- Chỉ mục cho bảng `cart_items`
+-- Indexes for table `cart_items`
 --
 ALTER TABLE `cart_items`
   ADD PRIMARY KEY (`id`),
@@ -832,27 +989,36 @@ ALTER TABLE `cart_items`
   ADD KEY `product_id` (`product_id`);
 
 --
--- Chỉ mục cho bảng `categories`
+-- Indexes for table `categories`
 --
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `name` (`name`);
 
 --
--- Chỉ mục cho bảng `chatbot_messages`
+-- Indexes for table `chatbot_messages`
 --
 ALTER TABLE `chatbot_messages`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
 --
--- Chỉ mục cho bảng `contacts`
+-- Indexes for table `comments`
+--
+ALTER TABLE `comments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `pet_id` (`pet_id`),
+  ADD KEY `parent_id` (`parent_id`);
+
+--
+-- Indexes for table `contacts`
 --
 ALTER TABLE `contacts`
   ADD PRIMARY KEY (`id`);
 
 --
--- Chỉ mục cho bảng `orders`
+-- Indexes for table `orders`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
@@ -860,7 +1026,7 @@ ALTER TABLE `orders`
   ADD KEY `shipping_method_id` (`shipping_method_id`);
 
 --
--- Chỉ mục cho bảng `order_items`
+-- Indexes for table `order_items`
 --
 ALTER TABLE `order_items`
   ADD PRIMARY KEY (`id`),
@@ -869,56 +1035,55 @@ ALTER TABLE `order_items`
   ADD KEY `product_id` (`product_id`);
 
 --
--- Chỉ mục cho bảng `pets`
+-- Indexes for table `pets`
 --
 ALTER TABLE `pets`
   ADD PRIMARY KEY (`id`);
 
 --
--- Chỉ mục cho bảng `pet_images`
+-- Indexes for table `pet_images`
 --
 ALTER TABLE `pet_images`
   ADD PRIMARY KEY (`id`),
   ADD KEY `pet_id` (`pet_id`);
 
 --
--- Chỉ mục cho bảng `products`
+-- Indexes for table `products`
 --
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
   ADD KEY `category_id` (`category_id`);
 
 --
--- Chỉ mục cho bảng `recommendations`
+-- Indexes for table `recommendations`
 --
 ALTER TABLE `recommendations`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
 --
--- Chỉ mục cho bảng `refresh_token`
+-- Indexes for table `refresh_token`
 --
 ALTER TABLE `refresh_token`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_user_refresh` (`user_id`);
 
 --
--- Chỉ mục cho bảng `reviews`
+-- Indexes for table `reviews`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `product_id` (`product_id`),
   ADD KEY `pet_id` (`pet_id`);
 
 --
--- Chỉ mục cho bảng `shipping_methods`
+-- Indexes for table `shipping_methods`
 --
 ALTER TABLE `shipping_methods`
   ADD PRIMARY KEY (`id`);
 
 --
--- Chỉ mục cho bảng `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
@@ -926,14 +1091,14 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Chỉ mục cho bảng `vouchers`
+-- Indexes for table `vouchers`
 --
 ALTER TABLE `vouchers`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `code` (`code`);
 
 --
--- Chỉ mục cho bảng `wishlist`
+-- Indexes for table `wishlist`
 --
 ALTER TABLE `wishlist`
   ADD PRIMARY KEY (`id`),
@@ -942,117 +1107,123 @@ ALTER TABLE `wishlist`
   ADD KEY `product_id` (`product_id`);
 
 --
--- AUTO_INCREMENT cho các bảng đã đổ
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT cho bảng `browsing_history`
+-- AUTO_INCREMENT for table `browsing_history`
 --
 ALTER TABLE `browsing_history`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `cart_items`
+-- AUTO_INCREMENT for table `cart_items`
 --
 ALTER TABLE `cart_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
--- AUTO_INCREMENT cho bảng `categories`
+-- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `chatbot_messages`
+-- AUTO_INCREMENT for table `chatbot_messages`
 --
 ALTER TABLE `chatbot_messages`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `contacts`
+-- AUTO_INCREMENT for table `comments`
+--
+ALTER TABLE `comments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+
+--
+-- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `orders`
+-- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT cho bảng `order_items`
+-- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT cho bảng `pets`
+-- AUTO_INCREMENT for table `pets`
 --
 ALTER TABLE `pets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=214;
-
---
--- AUTO_INCREMENT cho bảng `pet_images`
---
-ALTER TABLE `pet_images`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=215;
 
 --
--- AUTO_INCREMENT cho bảng `products`
+-- AUTO_INCREMENT for table `pet_images`
+--
+ALTER TABLE `pet_images`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=218;
+
+--
+-- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `recommendations`
+-- AUTO_INCREMENT for table `recommendations`
 --
 ALTER TABLE `recommendations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `refresh_token`
+-- AUTO_INCREMENT for table `refresh_token`
 --
 ALTER TABLE `refresh_token`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
 
 --
--- AUTO_INCREMENT cho bảng `reviews`
+-- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT cho bảng `shipping_methods`
+-- AUTO_INCREMENT for table `shipping_methods`
 --
 ALTER TABLE `shipping_methods`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT cho bảng `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT cho bảng `vouchers`
+-- AUTO_INCREMENT for table `vouchers`
 --
 ALTER TABLE `vouchers`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `wishlist`
+-- AUTO_INCREMENT for table `wishlist`
 --
 ALTER TABLE `wishlist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
--- Các ràng buộc cho các bảng đã đổ
+-- Constraints for dumped tables
 --
 
 --
--- Các ràng buộc cho bảng `browsing_history`
+-- Constraints for table `browsing_history`
 --
 ALTER TABLE `browsing_history`
   ADD CONSTRAINT `browsing_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
@@ -1060,7 +1231,7 @@ ALTER TABLE `browsing_history`
   ADD CONSTRAINT `browsing_history_ibfk_3` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 
 --
--- Các ràng buộc cho bảng `cart_items`
+-- Constraints for table `cart_items`
 --
 ALTER TABLE `cart_items`
   ADD CONSTRAINT `cart_items_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
@@ -1068,20 +1239,28 @@ ALTER TABLE `cart_items`
   ADD CONSTRAINT `cart_items_ibfk_3` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 
 --
--- Các ràng buộc cho bảng `chatbot_messages`
+-- Constraints for table `chatbot_messages`
 --
 ALTER TABLE `chatbot_messages`
   ADD CONSTRAINT `chatbot_messages_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
--- Các ràng buộc cho bảng `orders`
+-- Constraints for table `comments`
+--
+ALTER TABLE `comments`
+  ADD CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`pet_id`) REFERENCES `pets` (`id`),
+  ADD CONSTRAINT `comments_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`);
+
+--
+-- Constraints for table `orders`
 --
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`shipping_method_id`) REFERENCES `shipping_methods` (`id`);
 
 --
--- Các ràng buộc cho bảng `order_items`
+-- Constraints for table `order_items`
 --
 ALTER TABLE `order_items`
   ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`),
@@ -1089,39 +1268,38 @@ ALTER TABLE `order_items`
   ADD CONSTRAINT `order_items_ibfk_3` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 
 --
--- Các ràng buộc cho bảng `pet_images`
+-- Constraints for table `pet_images`
 --
 ALTER TABLE `pet_images`
   ADD CONSTRAINT `pet_images_ibfk_1` FOREIGN KEY (`pet_id`) REFERENCES `pets` (`id`);
 
 --
--- Các ràng buộc cho bảng `products`
+-- Constraints for table `products`
 --
 ALTER TABLE `products`
   ADD CONSTRAINT `products_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
 
 --
--- Các ràng buộc cho bảng `recommendations`
+-- Constraints for table `recommendations`
 --
 ALTER TABLE `recommendations`
   ADD CONSTRAINT `recommendations_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
--- Các ràng buộc cho bảng `refresh_token`
+-- Constraints for table `refresh_token`
 --
 ALTER TABLE `refresh_token`
   ADD CONSTRAINT `fk_user_refresh` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Các ràng buộc cho bảng `reviews`
+-- Constraints for table `reviews`
 --
 ALTER TABLE `reviews`
   ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   ADD CONSTRAINT `reviews_ibfk_3` FOREIGN KEY (`pet_id`) REFERENCES `pets` (`id`);
 
 --
--- Các ràng buộc cho bảng `wishlist`
+-- Constraints for table `wishlist`
 --
 ALTER TABLE `wishlist`
   ADD CONSTRAINT `wishlist_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
