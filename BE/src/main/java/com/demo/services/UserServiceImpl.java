@@ -47,6 +47,7 @@ public class UserServiceImpl implements UserService {
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
         user.setSecurityCode(RandomNumberHelper.generate6DigitString());
+        user.setAvatar("Unknown_person.jpg");
 
         userRepository.save(user);
 
