@@ -34,7 +34,7 @@ const AdminHeader = () => {
                 <li className="dropdown-divider"></li>
                 <li className="dropdown-item">
                   <i className="icon-power mr-2"></i>
-                  <a href="/logout">Đăng xuất</a>
+                  <a href="/auth/login">Đăng xuất</a>
                 </li>
               </ul>
             </li>

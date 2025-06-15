@@ -2,25 +2,104 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPetById } from '../../services/petService';
 import { addToCart } from '../../services/cartService';
+import { getReviewsByPetId } from '../../services/ratingService';
 import { toast } from 'react-toastify';
 import '../../assets/user/css/User.css';
 
+const RatingComponent = ({ averageRating, totalReviews, ratingData }) => {
+  const renderStars = (rating) => {
+    return [...Array(5)].map((_, index) => (
+      <span
+        key={index}
+        className={index < Math.round(rating) ? 'text-warning' : 'text-secondary'}
+        style={{ fontSize: '1.2rem' }}
+      >
+        ★
+      </span>
+    ));
+  };
+
+  return (
+    <div className="card p-3 mb-4">
+      <h2 className="card-title h5 mb-3 text-dark">Đánh giá chung</h2>
+      <div className="row">
+        <div className="col-md-4 col-12 text-center">
+          <div className="h3 font-weight-bold text-dark mb-1">{averageRating.toFixed(1)}</div>
+          <div className="mb-1">{renderStars(averageRating)}</div>
+          <div className="text-muted small">{totalReviews} đánh giá</div>
+        </div>
+        <div className="col-md-8 col-12">
+          {ratingData.map((item) => (
+            <div key={item.stars} className="d-flex align-items-center mb-2">
+              <div className="text-right w-25 text-dark font-weight-medium">{item.stars}</div>
+              <div className="text-warning mx-2">★</div>
+              <div className="progress w-50">
+                <div
+                  className="progress-bar bg-warning"
+                  role="progressbar"
+                  style={{ width: `${item.percentage}%` }}
+                  aria-valuenow={item.percentage}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
+              </div>
+              <div className="text-right w-25 text-muted small">{item.percentage}%</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function PetDetail() {
-  const { id  } = useParams();
+  const { id } = useParams();
   const [pet, setPet] = useState(null);
   const [mainImage, setMainImage] = useState('');
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [ratingData, setRatingData] = useState([
+    { stars: 5, percentage: 0 },
+    { stars: 4, percentage: 0 },
+    { stars: 3, percentage: 0 },
+    { stars: 2, percentage: 0 },
+    { stars: 1, percentage: 0 },
+  ]);
 
   useEffect(() => {
-    const fetchPet = async () => {
+    const fetchPetAndReviews = async () => {
       try {
-        const response = await getPetById(id);
-        setPet(response.data);
-        setMainImage(response.data.imageUrl);
+        const petResponse = await getPetById(id);
+        setPet(petResponse.data);
+        setMainImage(petResponse.data.imageUrl);
+
+        const reviewResponse = await getReviewsByPetId(id);
+        const reviews = reviewResponse.data;
+        console.log('Reviews for pet:', reviews);
+
+        const total = reviews.length;
+        setTotalReviews(total);
+        if (total > 0) {
+          const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+          const avg = sum / total;
+          setAverageRating(avg);
+
+          const ratingCounts = [0, 0, 0, 0, 0, 0];
+          reviews.forEach((review) => {
+            ratingCounts[review.rating]++;
+          });
+          const newRatingData = [5, 4, 3, 2, 1].map((stars) => ({
+            stars,
+            percentage: ((ratingCounts[stars] / total) * 100).toFixed(0),
+          }));
+          setRatingData(newRatingData);
+        }
       } catch (err) {
-        toast.error('Không thể tải dữ liệu thú cưng');
+        console.error('Error fetching data:', err);
+        toast.error('Không thể tải dữ liệu');
       }
     };
-    fetchPet();
+    fetchPetAndReviews();
   }, [id]);
 
   const getFullImageUrl = (path) => {
@@ -48,56 +127,56 @@ export default function PetDetail() {
             <div className="blog-single-main">
               <div className="row">
                 <div className="col-12">
-                <div className="pet-image-preview w-100 d-flex flex-column align-items-center">
-  {/* Ảnh chính chiếm tối đa chiều ngang */}
-  <div className="main-image mb-3" style={{ width: '100%', maxWidth: '700px' }}>
-    <img
-      src={getFullImageUrl(mainImage)}
-      alt="Main"
-      style={{
-        width: '100%',
-        height: 'auto',
-        borderRadius: '12px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-        objectFit: 'contain',
-        border: '1px solid #eee',
-      }}
-    />
-  </div>
-
-  {/* Thumbnails nằm ngang bên dưới */}
-  <div className="thumbnail-list d-flex gap-2 justify-content-center">
-  {(pet.imageUrls || []).map((url, i) => (
-  <img
-    key={i}
-    src={getFullImageUrl(url)}
-    alt={`Thumbnail ${i}`}
-    onClick={() => setMainImage(url)}
-    style={{
-      width: '70px',
-      height: '70px',
-      objectFit: 'cover',
-      margin: '10px',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      border: mainImage === url ? '2px solid #00bcd4' : '1px solid #ccc', // Màu cyan nhẹ đẹp
-      boxShadow: mainImage === url ? '0 0 8px rgba(0, 188, 212, 0.4)' : 'none', // hiệu ứng sáng nhẹ
-      transition: 'all 0.2s ease',
-    }}
-  />
-))}
-
-  </div>
-</div>
-
-
+                  <div className="pet-image-preview w-100 d-flex flex-column align-items-center">
+                    <div className="main-image mb-3" style={{ width: '100%', maxWidth: '700px' }}>
+                      <img
+                        src={getFullImageUrl(mainImage)}
+                        alt="Main"
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                          objectFit: 'contain',
+                          border: '1px solid #eee',
+                        }}
+                      />
+                    </div>
+                    <div className="thumbnail-list d-flex gap-2 justify-content-center flex-wrap">
+                      {(pet.imageUrls || []).map((url, i) => (
+                        <img
+                          key={i}
+                          src={getFullImageUrl(url)}
+                          alt={`Thumbnail ${i}`}
+                          onClick={() => setMainImage(url)}
+                          style={{
+                            width: '70px',
+                            height: '70px',
+                            objectFit: 'cover',
+                            margin: '5px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            border: mainImage === url ? '2px solid #00bcd4' : '1px solid #ccc',
+                            boxShadow: mainImage === url ? '0 0 8px rgba(0, 188, 212, 0.4)' : 'none',
+                            transition: 'all 0.2s ease',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
                   <div className="blog-detail">
                     <h2 className="blog-title">{pet.name}</h2>
                     <div className="blog-meta">
                       <span className="author">
-                        <a href="#"><i className="fa fa-user"></i>Số lượng: {pet.quantity}</a>
-                        <a href="#"><i className="fa fa-calendar"></i>Tuổi: {pet.age} tháng</a>
-                        <a href="#"><i className="fa fa-comments"></i>Bình luận(0)</a>
+                        <a href="#">
+                          <i className="fa fa-user"></i>Số lượng: {pet.quantity}
+                        </a>
+                        <a href="#">
+                          <i className="fa fa-calendar"></i>Tuổi: {pet.age} tháng
+                        </a>
+                        <a href="#">
+                          <i className="fa fa-comments"></i>Bình luận(0)
+                        </a>
                       </span>
                       <button className="blog-meta-buy" onClick={handleAddToCart}>
                         <i className="ti-bag"></i>
@@ -126,54 +205,69 @@ export default function PetDetail() {
                         <div className="content-tags">
                           <h4>Thẻ:</h4>
                           <ul className="tag-inner">
-                            <li><a href="#">Cho</a></li>
-                            <li><a href="#">Meo</a></li>
+                            <li>
+                              <a href="#">Cho</a>
+                            </li>
+                            <li>
+                              <a href="#">Meo</a>
+                            </li>
                           </ul>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="col-12">
-                  <div className="comments">
-                    <h3 className="comment-title" id="comment-size">Bình luận(3)</h3>
-                    <div id="list-comment">
-                      <div className="single-comment">
-                        <img src="" style={{ width: '80px', height: '80px' }} alt="Anh dai dien" />
-                        <div className="content">
-                          <h4>ngay</h4>
-                          <p>binh luan</p>
-                          <div className="button">
-                            <a href="#" className="btn">
-                              <i className="fa fa-reply" aria-hidden="true"></i>Phản hồi
-                            </a>
+                  <RatingComponent
+                    averageRating={averageRating}
+                    totalReviews={totalReviews}
+                    ratingData={ratingData}
+                  />
+                  <div className="col-12">
+                    <div className="comments">
+                      <h3 className="comment-title" id="comment-size">
+                        Bình luận(3)
+                      </h3>
+                      <div id="list-comment">
+                        <div className="single-comment">
+                          <img src="" style={{ width: '80px', height: '80px' }} alt="Anh dai dien" />
+                          <div className="content">
+                            <h4>ngay</h4>
+                            <p>binh luan</p>
+                            <div className="button">
+                              <a href="#" className="btn">
+                                <i className="fa fa-reply" aria-hidden="true"></i>Phản hồi
+                              </a>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="col-12">
-                  <div className="reply">
-                    <div className="reply-head">
-                      <h2 className="reply-title">Để lại bình luận</h2>
-                      <form className="form" action="">
-                        <div className="row">
-                          <input type="hidden" id="petId" name="petId" value="" />
-                          <input type="hidden" name="userId" />
-                          <div className="col-12">
-                            <div className="form-group">
-                              <label>Bình luận của bạn<span>*</span></label>
-                              <textarea name="note" placeholder=""></textarea>
+                  <div className="col-12">
+                    <div className="reply">
+                      <div className="reply-head">
+                        <h2 className="reply-title">Để lại bình luận</h2>
+                        <form className="form" action="">
+                          <div className="row">
+                            <input type="hidden" id="petId" name="petId" value="" />
+                            <input type="hidden" name="userId" />
+                            <div className="col-12">
+                              <div className="form-group">
+                                <label>
+                                  Bình luận của bạn<span>*</span>
+                                </label>
+                                <textarea name="note" placeholder=""></textarea>
+                              </div>
+                            </div>
+                            <div className="col-12">
+                              <div className="form-group button">
+                                <button type="submit" className="btn">
+                                  Đăng bình luận
+                                </button>
+                              </div>
                             </div>
                           </div>
-                          <div className="col-12">
-                            <div className="form-group button">
-                              <button type="submit" className="btn">Đăng bình luận</button>
-                            </div>
-                          </div>
-                        </div>
-                      </form>
+                        </form>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -185,28 +279,40 @@ export default function PetDetail() {
               <div className="single-widget search">
                 <div className="form">
                   <input type="email" placeholder="Tìm kiếm..." />
-                  <a className="button" href="#"><i className="fa fa-search"></i></a>
+                  <a className="button" href="#">
+                    <i className="fa fa-search"></i>
+                  </a>
                 </div>
               </div>
               <div className="single-widget category">
                 <h3 className="title">Danh mục thú cưng</h3>
                 <ul className="categor-list">
-                  <li><a href="">Meo</a></li>
-                  <li><a href="">Cho</a></li>
+                  <li>
+                    <a href="">Meo</a>
+                  </li>
+                  <li>
+                    <a href="">Cho</a>
+                  </li>
                 </ul>
               </div>
               <div className="single-widget recent-post">
                 <h3 className="title">Bài đăng gần đây</h3>
-                {[1, 2, 3].map(i => (
+                {[1, 2, 3].map((i) => (
                   <div className="single-post" key={i}>
                     <div className="image">
                       <img src="https://via.placeholder.com/100x100" alt="#" />
                     </div>
                     <div className="content">
-                      <h5><a href="#">Top 10 Beautyful Women Dress in the world</a></h5>
+                      <h5>
+                        <a href="#">Top 10 Beautyful Women Dress in the world</a>
+                      </h5>
                       <ul className="comment">
-                        <li><i className="fa fa-calendar" aria-hidden="true"></i>Jan 11, 2020</li>
-                        <li><i className="fa fa-commenting-o" aria-hidden="true"></i>35</li>
+                        <li>
+                          <i className="fa fa-calendar" aria-hidden="true"></i>Jan 11, 2020
+                        </li>
+                        <li>
+                          <i className="fa fa-commenting-o" aria-hidden="true"></i>35
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -215,8 +321,10 @@ export default function PetDetail() {
               <div className="single-widget side-tags">
                 <h3 className="title">Tags</h3>
                 <ul className="tag">
-                  {['business', 'wordpress', 'html', 'multipurpose', 'education', 'template', 'Ecommerce'].map(tag => (
-                    <li key={tag}><a href="#">{tag}</a></li>
+                  {['business', 'wordpress', 'html', 'multipurpose', 'education', 'template', 'Ecommerce'].map((tag) => (
+                    <li key={tag}>
+                      <a href="#">{tag}</a>
+                    </li>
                   ))}
                 </ul>
               </div>
