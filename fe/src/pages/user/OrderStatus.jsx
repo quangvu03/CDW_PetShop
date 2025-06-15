@@ -9,6 +9,7 @@ export default function OrderStatus() {
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     fetchOrders();
@@ -30,7 +31,7 @@ export default function OrderStatus() {
         setFilteredOrders([]);
       } else {
         setOrders(response.data);
-        setFilteredOrders(response.data);
+        filterOrdersByTab('all', response.data, searchTerm);
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -46,20 +47,36 @@ export default function OrderStatus() {
     }
   };
 
-  // Handle search input change
+  const filterOrdersByTab = (tab, ordersToFilter, term) => {
+    let filtered = ordersToFilter;
+    if (tab !== 'all') {
+      filtered = ordersToFilter.filter(
+        (order) => order.status?.toLowerCase() === tab.toLowerCase()
+      );
+    }
+    if (term) {
+      filtered = filtered.filter(
+        (order) =>
+          order.id.toString().toLowerCase().includes(term) ||
+          order.status?.toLowerCase().includes(term) ||
+          order.shippingAddress?.toLowerCase().includes(term) ||
+          order.paymentMethod?.toLowerCase().includes(term) ||
+          order.shippingName?.toLowerCase().includes(term)
+      );
+    }
+    setFilteredOrders(filtered);
+  };
+
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
+    filterOrdersByTab(activeTab, orders, term);
+  };
 
-    const filtered = orders.filter(
-      (order) =>
-        order.id.toString().toLowerCase().includes(term) ||
-        order.status?.toLowerCase().includes(term) ||
-        order.shippingAddress?.toLowerCase().includes(term) ||
-        order.paymentMethod?.toLowerCase().includes(term) ||
-        order.shippingName?.toLowerCase().includes(term)
-    );
-    setFilteredOrders(filtered);
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchTerm('');
+    filterOrdersByTab(tab, orders, '');
   };
 
   const getStatusBadgeClass = (status) => {
@@ -95,7 +112,7 @@ export default function OrderStatus() {
 
   if (loading) {
     return (
-      <div className="container mt-4">
+      <div className="container-fluid mt-4">
         <div className="text-center">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -106,8 +123,59 @@ export default function OrderStatus() {
   }
 
   return (
-    <div className="container mt-4">
+    <div className="container-fluid mt-4">
       <h2 className="mb-4">Lịch sử đơn hàng</h2>
+
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
+            onClick={() => handleTabChange('all')}
+          >
+            Tất cả
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === 'pending' ? 'active' : ''}`}
+            onClick={() => handleTabChange('pending')}
+          >
+            Chờ xác nhận
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === 'confirmed' ? 'active' : ''}`}
+            onClick={() => handleTabChange('confirmed')}
+          >
+            Đã xác nhận
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === 'shipped' ? 'active' : ''}`}
+            onClick={() => handleTabChange('shipped')}
+          >
+            Đang giao hàng
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === 'completed' ? 'active' : ''}`}
+            onClick={() => handleTabChange('completed')}
+          >
+            Hoàn thành
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === 'cancelled' ? 'active' : ''}`}
+            onClick={() => handleTabChange('cancelled')}
+          >
+            Đã hủy
+          </button>
+        </li>
+      </ul>
 
       {orders.length === 0 ? (
         <div className="alert alert-info">Bạn chưa có đơn hàng nào</div>
@@ -168,7 +236,8 @@ export default function OrderStatus() {
                     <td>{order.shippingName || '---'}</td>
                     <td>
                       <button
-                        className="btn btn-sm btn-outline-primary"
+                        className="btn btn-outline-primary"
+                        style={{ fontSize: '12px', padding: '2px 8px' }}
                         onClick={() => handleViewDetails(order.id)}
                       >
                         Xem chi tiết
@@ -179,7 +248,9 @@ export default function OrderStatus() {
               </tbody>
             </table>
             {filteredOrders.length === 0 && (
-              <div className="alert alert-info mt-3">Không tìm thấy đơn hàng nào</div>
+              <div className="alert alert-info mt-3">
+                Không tìm thấy đơn hàng nào trong tab này
+              </div>
             )}
           </div>
         </>

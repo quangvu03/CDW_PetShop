@@ -25,20 +25,18 @@ public class Review {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id")
     private Pet pet;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
     @Column(name = "rating")
     private Integer rating;
 
-    @Lob
-    @Column(name = "comment")
-    private String comment;
 
     @ColumnDefault("current_timestamp()")
     @Column(name = "created_at", nullable = false)

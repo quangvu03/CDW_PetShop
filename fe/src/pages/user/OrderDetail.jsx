@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getOrderDetail, cancelOrder, updateAddress } from '../../services/orderService';
 import { getCurrentUser } from '../../services/userService';
+import { addReview, getReviewsByUserId, updateReview } from '../../services/ratingService';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import axios from 'axios';
@@ -20,11 +21,16 @@ export default function OrderDetail() {
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedWard, setSelectedWard] = useState('');
   const [street, setStreet] = useState('');
+  const [ratings, setRatings] = useState({}); // Lưu rating đã gửi cho mỗi petId
+  const [pendingRatings, setPendingRatings] = useState({}); // Lưu rating tạm thời
+  const [hoverRatings, setHoverRatings] = useState({}); // Lưu trạng thái hover
+  const [reviews, setReviews] = useState({}); // Lưu reviewId cho mỗi petId
 
   useEffect(() => {
     fetchOrderDetails();
     fetchUserInfo();
     fetchProvinces();
+    fetchUserReviews();
   }, [orderId]);
 
   const fetchOrderDetails = async () => {
@@ -52,11 +58,36 @@ export default function OrderDetail() {
   const fetchProvinces = async () => {
     try {
       const response = await axios.get('https://provinces.open-api.vn/api/?depth=3');
-      console.log('Provinces loaded:', response.data);
       setProvinces(response.data);
     } catch (error) {
       console.error('Error fetching provinces:', error);
       toast.error('Không thể tải danh sách tỉnh/thành');
+    }
+  };
+
+  const fetchUserReviews = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) return;
+
+      const response = await getReviewsByUserId(userId);
+      const userReviews = response.data;
+      console.log('User reviews:', userReviews);
+      const ratingsMap = {};
+      const reviewsMap = {};
+      userReviews.forEach((review) => {
+        if (review.orderId === parseInt(orderId)) {
+          ratingsMap[review.petId] = review.rating;
+          reviewsMap[review.petId] = review.id;
+        }
+      });
+      console.log('Ratings map:', ratingsMap);
+      console.log('Reviews map:', reviewsMap);
+      setRatings(ratingsMap);
+      setReviews(reviewsMap);
+    } catch (error) {
+      console.error('Error fetching user reviews:', error);
+      toast.error('Không thể tải danh sách đánh giá.');
     }
   };
 
@@ -124,11 +155,8 @@ export default function OrderDetail() {
     }
 
     const newAddress = `${street}, ${wardName}, ${districtName}, ${provinceName}`;
-    console.log('Sending updateAddress request:', { orderId, address: newAddress });
-
     try {
       const response = await updateAddress(orderId, encodeURIComponent(newAddress));
-      console.log('UpdateAddress response:', response.data);
       if (response.data.success) {
         toast.success(response.data.message || 'Cập nhật địa chỉ thành công');
         await fetchOrderDetails();
@@ -140,6 +168,66 @@ export default function OrderDetail() {
       console.error('Error updating address:', error);
       toast.error(error.response?.data?.message || 'Không thể cập nhật địa chỉ');
     }
+  };
+
+  const handleStarClick = (petId, star) => {
+    console.log(`Star clicked: petId=${petId}, star=${star}`);
+    setPendingRatings((prev) => ({ ...prev, [petId]: star }));
+  };
+
+  const handleStarHover = (petId, star) => {
+    setHoverRatings((prev) => ({ ...prev, [petId]: star }));
+  };
+
+  const handleStarLeave = (petId) => {
+    setHoverRatings((prev) => ({ ...prev, [petId]: 0 }));
+  };
+
+  const handleSubmitRating = async (petId) => {
+    const rating = pendingRatings[petId];
+    if (!rating || rating < 1 || rating > 5) {
+      toast.error('Vui lòng chọn số sao từ 1 đến 5');
+      return;
+    }
+
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        toast.error('Vui lòng đăng nhập để gửi đánh giá');
+        navigate('/auth/login');
+        return;
+      }
+
+      if (reviews[petId]) {
+        await updateReview(reviews[petId], userId, petId, rating, orderId);
+        toast.success('Đánh giá đã được cập nhật thành công!');
+      } else {
+        await addReview(userId, petId, rating, orderId);
+        toast.success('Đánh giá đã được gửi thành công!');
+        const response = await getReviewsByUserId(userId);
+        const newReview = response.data.find((r) => r.petId === petId && r.orderId === parseInt(orderId));
+        if (newReview) {
+          setReviews((prev) => ({ ...prev, [petId]: newReview.id }));
+        }
+      }
+
+      setRatings((prev) => ({ ...prev, [petId]: rating }));
+      setPendingRatings((prev) => ({ ...prev, [petId]: undefined }));
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        localStorage.clear();
+        navigate('/auth/login');
+      } else {
+        toast.error('Không thể gửi/cập nhật đánh giá. Vui lòng thử lại.');
+      }
+    }
+  };
+
+  const handleCancelRating = (petId) => {
+    setPendingRatings((prev) => ({ ...prev, [petId]: undefined }));
+    setHoverRatings((prev) => ({ ...prev, [petId]: 0 }));
   };
 
   const getStatusBadgeClass = (status) => {
@@ -171,6 +259,7 @@ export default function OrderDetail() {
 
   const canCancelOrder = order && order.status?.toLowerCase() === 'pending';
   const canChangeAddress = order && order.status?.toLowerCase() === 'pending';
+  const canReview = order && order.status?.toLowerCase() === 'completed';
 
   if (loading) {
     return (
@@ -299,6 +388,7 @@ export default function OrderDetail() {
                   <th>Số lượng</th>
                   <th>Đơn giá</th>
                   <th>Thành tiền</th>
+                  {canReview && <th>Đánh giá</th>}
                 </tr>
               </thead>
               <tbody>
@@ -318,7 +408,7 @@ export default function OrderDetail() {
                       </td>
                       <td>
                         <Link
-                          to={`user/pet/${item.id}`}
+                          to={`/user/pet/${item.id}`}
                           style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
                         >
                           #{item.id} - {item.name}
@@ -329,11 +419,61 @@ export default function OrderDetail() {
                       <td>
                         {((Number(item.price) || 0) * (Number(item.quantity) || 1)).toLocaleString('vi-VN')}đ
                       </td>
+                      {canReview && (
+                        <td>
+                          <div className="d-flex gap-2 align-items-center">
+                            <div
+                              className="star-rating"
+                              style={{ minWidth: '120px', flexGrow: 1 }}
+                            >
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <i
+                                  key={star}
+                                  className={`fa fa-star ${
+                                    star <= (hoverRatings[item.id] || pendingRatings[item.id] || ratings[item.id] || 0)
+                                      ? 'fa-star-rated'
+                                      : ''
+                                  }`}
+                                  onClick={() => handleStarClick(item.id, star)}
+                                  onMouseEnter={() => handleStarHover(item.id, star)}
+                                  onMouseLeave={() => handleStarLeave(item.id)}
+                                  style={{
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                    margin: '0 3px',
+                                  }}
+                                ></i>
+                              ))}
+                              {(pendingRatings[item.id] || ratings[item.id]) && (
+                                <p style={{ fontSize: '12px', marginTop: '5px', color: '#000', fontWeight: 'bold' }}>
+                                  {/* Bạn đã chọn {pendingRatings[item.id] || ratings[item.id]} sao */}
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              className="btn btn-outline-success"
+                              style={{ fontSize: '12px', padding: '2px 8px' }}
+                              onClick={() => handleSubmitRating(item.id)}
+                              disabled={!pendingRatings[item.id]}
+                            >
+                              Gửi
+                            </button>
+                            <button
+                              className="btn btn-outline-secondary"
+                              style={{ fontSize: '12px', padding: '2px 8px' }}
+                              onClick={() => handleCancelRating(item.id)}
+                              disabled={!pendingRatings[item.id]}
+                            >
+                              Hủy
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="text-center">
+                    <td colSpan={canReview ? 6 : 5} className="text-center">
                       Không có sản phẩm
                     </td>
                   </tr>
@@ -341,7 +481,7 @@ export default function OrderDetail() {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan="4" className="text-end">
+                  <td colSpan={canReview ? 5 : 4} className="text-end">
                     <strong>Tổng tiền hàng:</strong>
                   </td>
                   <td>
@@ -351,7 +491,7 @@ export default function OrderDetail() {
                   </td>
                 </tr>
                 <tr>
-                  <td colSpan="4" className="text-end">
+                  <td colSpan={canReview ? 5 : 4} className="text-end">
                     <strong>Phí giao hàng:</strong>
                   </td>
                   <td>
@@ -359,7 +499,7 @@ export default function OrderDetail() {
                   </td>
                 </tr>
                 <tr>
-                  <td colSpan="4" className="text-end">
+                  <td colSpan={canReview ? 5 : 4} className="text-end">
                     <strong>Tổng cộng:</strong>
                   </td>
                   <td>
@@ -501,6 +641,17 @@ export default function OrderDetail() {
           </div>
         </div>
       )}
+      {/* Inline CSS cho ngôi sao */}
+      <style>
+        {`
+          .fa-star {
+            color: #333333 !important;
+          }
+          .fa-star-rated {
+            color: #f1c40f !important;
+          }
+        `}
+      </style>
     </div>
   );
 }
