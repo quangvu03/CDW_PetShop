@@ -13,6 +13,7 @@
     "datatables.net-bs4": "^2.3.1",
     "datatables.net-bs5": "^2.3.1",
     "datatables.net-dt": "^2.3.1",
+    "font-awesome": "^4.7.0",
     "jquery": "^3.7.1",
     "jquery-ui-bundle": "^1.12.1-migrate",
     "jquery-ui-dist": "^1.13.3",
