@@ -82,14 +82,14 @@ const AdminPetList = () => {
             </button>
           `,
         },
-        {
-          data: 'id',
-          render: (data) => `
-            <button class="btn btn-warning btn-sm">
-              <a href="/admin/comments/${data}" class="text-white">Bình luận</a>
-            </button>
-          `,
-        },
+        // {
+        //   data: 'id',
+        //   render: (data) => `
+        //     <button class="btn btn-warning btn-sm">
+        //       <a href="/admin/comments/${data}" class="text-white">Bình luận</a>
+        //     </button>
+        //   `,
+        // },
       ],
       pageLength: 10,
       paging: true,
@@ -156,7 +156,7 @@ const AdminPetList = () => {
                         <th>Loại</th>
                         <th>Chuyên mục</th>
                         <th>Hành động</th>
-                        <th>Bình luận</th>
+                        {/* <th>Bình luận</th> */}
                       </tr>
                     </thead>
                     <tbody></tbody>
