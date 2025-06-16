@@ -66,4 +66,23 @@ public class CommentController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/reported")
+    public ResponseEntity<List<CommentResponse>> getAllReportedComments() {
+        List<CommentResponse> reportedComments = commentService.getAllReportedComments();
+        return new ResponseEntity<>(reportedComments, HttpStatus.OK);
+    }
+
+    @PutMapping("/unreport/{commentId}")
+    public ResponseEntity<CommentResponse> unreportComment(@PathVariable Integer commentId) {
+        if (commentId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        try {
+            CommentResponse updatedComment = commentService.unreportComment(commentId);
+            return new ResponseEntity<>(updatedComment, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }

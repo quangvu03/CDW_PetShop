@@ -184,4 +184,78 @@ public class CommentServiceImpl implements CommentService {
 
         return response;
     }
+
+    @Override
+    public CommentResponse unreportComment(Integer commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        // Update isReported to false (0)
+        comment.setIsReported(false);
+        Comment updatedComment = commentRepository.save(comment);
+
+        // Create response
+        CommentResponse response = new CommentResponse();
+        response.setId(updatedComment.getId());
+        response.setUserId(updatedComment.getUser().getId());
+        response.setUsername(updatedComment.getUser().getUsername());
+        response.setAvatarUser(updatedComment.getUser().getAvatar());
+        response.setPetId(updatedComment.getPet().getId());
+        response.setContent(updatedComment.getContent());
+        response.setCreatedAt(updatedComment.getCreatedAt().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        response.setIsReported((byte) 0);
+
+        if (updatedComment.getParent() != null) {
+            response.setParentId(updatedComment.getParent().getId());
+        }
+
+        // Get replies for this comment
+        List<Comment> replies = commentRepository.findByParentId(updatedComment.getId());
+        if (!replies.isEmpty()) {
+            List<CommentsDto> replyDtos = replies.stream()
+                    .map(this::mapToCommentsDto)
+                    .collect(Collectors.toList());
+            response.setCommentsResponses(replyDtos);
+        } else {
+            response.setCommentsResponses(new ArrayList<>());
+        }
+
+        return response;
+    }
+
+    @Override
+    public List<CommentResponse> getAllReportedComments() {
+        List<Comment> reportedComments = commentRepository.findByIsReportedTrue();
+
+        return reportedComments.stream()
+                .map(comment -> {
+                    CommentResponse response = new CommentResponse();
+                    response.setId(comment.getId());
+                    response.setUserId(comment.getUser().getId());
+                    response.setUsername(comment.getUser().getUsername());
+                    response.setAvatarUser(comment.getUser().getAvatar());
+                    response.setPetId(comment.getPet().getId());
+                    response.setContent(comment.getContent());
+                    response.setCreatedAt(comment.getCreatedAt().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                    response.setIsReported((byte) 1); // Since we're only getting reported comments
+
+                    if (comment.getParent() != null) {
+                        response.setParentId(comment.getParent().getId());
+                    }
+
+//                    // Get replies for this comment
+//                    List<Comment> replies = commentRepository.findByParentId(comment.getId());
+//                    if (!replies.isEmpty()) {
+//                        List<CommentsDto> replyDtos = replies.stream()
+//                                .map(this::mapToCommentsDto)
+//                                .collect(Collectors.toList());
+//                        response.setCommentsResponses(replyDtos);
+//                    } else {
+//                        response.setCommentsResponses(new ArrayList<>());
+//                    }
+
+                    return response;
+                })
+                .collect(Collectors.toList());
+    }
 }

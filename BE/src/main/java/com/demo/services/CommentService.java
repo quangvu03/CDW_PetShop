@@ -14,4 +14,8 @@ public interface CommentService {
     void deleteComment(Integer commentId);
 
     CommentResponse updateCommentReportStatus(Integer commentId);
+
+    CommentResponse unreportComment(Integer commentId);
+
+    List<CommentResponse> getAllReportedComments();
 }
