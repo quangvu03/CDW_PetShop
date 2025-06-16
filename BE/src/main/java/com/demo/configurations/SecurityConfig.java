@@ -1,5 +1,9 @@
 package com.demo.configurations;
 
+import com.demo.services.CustomOAuth2UserService;
+import com.demo.services.OAuth2LoginSuccessHandler;
+import com.demo.services.OAuth2Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order; // <-- Thêm import Order
@@ -12,6 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher; // <-- Thêm import AntPathRequestMatcher
 import org.springframework.web.cors.CorsConfiguration;
@@ -26,9 +31,16 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    public SecurityConfig(JwtFilter jwtFilter) {
+    private final CustomOAuth2UserService customOAuth2UserService;
+
+    public SecurityConfig(
+            JwtFilter jwtFilter,
+            CustomOAuth2UserService customOAuth2UserService
+    ) {
         this.jwtFilter = jwtFilter;
+        this.customOAuth2UserService = customOAuth2UserService;
     }
+
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -59,40 +71,36 @@ public class SecurityConfig {
 
     // *** SecurityFilterChain Chính cho API (Ưu tiên cao hơn - chạy sau) ***
     @Bean
-    @Order(2) // Ưu tiên cao hơn (số lớn chạy sau)
-    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+    @Order(2)
+    public SecurityFilterChain apiFilterChain(
+            HttpSecurity http,
+            AuthenticationSuccessHandler oAuth2LoginSuccessHandler // 👈 Inject ở đây
+    ) throws Exception {
         http
-                // Chỉ áp dụng cho các đường dẫn khác KHÔNG phải /uploads/**
-                // (Hoặc áp dụng cho /api/** nếu bạn muốn rõ ràng)
-                // .securityMatcher("/api/**", "/auth/**") // Có thể thêm nếu muốn
-
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Public endpoints (không cần lặp lại /uploads/** ở đây)
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/pets/species", "/api/pets/species/**", "/api/pets/{id:\\d+}").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/shipping/**").permitAll()
                         .requestMatchers("/api/order/**").authenticated()
-                        // Authenticated endpoints
                         .requestMatchers("/api/auth/me").authenticated()
-//                        .requestMatchers("api/review/**").authenticated()
-                        // admin endpoints
-                        // Chỉ cho phép admin và staff truy cập các endpoint quản lý pet
-                        // Giữ thứ tự ưu tiên để đảm bảo các endpoint này được xử lý sau các endpoint public
                         .requestMatchers("/api/admin/pet").hasAnyAuthority("admin","staff")
                         .requestMatchers("/api/admin/**").hasAuthority("admin")
-                        // Thêm các quy tắc authenticated khác nếu cần
-
-                        // Mọi request còn lại (trong phạm vi của filter chain này) cần xác thực
                         .anyRequest().authenticated()
                 )
-                // Thêm JwtFilter CHỈ cho filter chain này
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(oAuth2LoginSuccessHandler) // ✅ Sử dụng bean truyền vào
+                );
 
         return http.build();
     }
+
 
     // --- BEAN CẤU HÌNH CORS (Giữ nguyên) ---
     @Bean
@@ -122,4 +130,9 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+    @Bean
+    public AuthenticationSuccessHandler oAuth2LoginSuccessHandler(OAuth2Service oAuth2Service) {
+        return new OAuth2LoginSuccessHandler(oAuth2Service);
+    }
+
 }

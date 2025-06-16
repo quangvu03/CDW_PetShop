@@ -7,6 +7,7 @@ import VerifyOTP from '../pages/auth/VerifyOTP';
 import ResetPassword from '../pages/auth/ResetPassword';
 import CheckEmail from '../pages/auth/CheckEmail';
 import ChangePassword from '../pages/auth/ChangePassword';
+import OAuth2RedirectHandler from '../pages/auth/OAuth2RedirectHandler';
 
 export default function AuthRoutes() {
   return (
@@ -18,6 +19,7 @@ export default function AuthRoutes() {
       <Route path="reset-password" element={<ResetPassword />} />
       <Route path="check-email" element={<CheckEmail />} />
       <Route path="change-password" element={<ChangePassword />} />
+      <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
     </Routes>
   );
 }
