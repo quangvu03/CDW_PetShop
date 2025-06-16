@@ -3,11 +3,13 @@ package com.demo.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
+@ToString
 @Getter
 @Setter
 @Entity
@@ -50,4 +52,6 @@ public class Order {
     @JoinColumn(name = "shipping_method_id")
     private ShippingMethod shippingMethod;
 
+    @Column(name = "payos_order_code")
+    private Long payosOrderCode; // Thêm trường này
 }
