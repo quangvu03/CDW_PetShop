@@ -10,4 +10,5 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
     List<Comment> findByPetId(Integer petId);
     List<Comment> findByParentId(Integer parentId);
+    List<Comment> findByIsReportedTrue();
 }
