@@ -62,7 +62,14 @@ export default function Login() {
         <div className="auth-divider">— Hoặc đăng nhập bằng —</div>
 
         <div className="auth-social-buttons">
-          <button className="auth-social google"><FaGoogle className="icon" /> Google</button>
+        <a
+  href="http://localhost:8080/oauth2/authorization/google"
+  className="auth-social google"
+  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}
+>
+  <FaGoogle className="icon" />
+  Google
+</a>
           <button className="auth-social facebook"><FaFacebookF className="icon" /> Facebook</button>
         </div>
       </div>
