@@ -85,6 +85,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasAuthority("admin")
                         // Thêm các quy tắc authenticated khác nếu cần
 
+
+                        // các endpoint cho payments
+                        .requestMatchers(HttpMethod.POST, "/payment/payos_transfer_handler").permitAll() // Webhook không cần xác thực
+                        .requestMatchers(HttpMethod.POST, "/order/create").permitAll() // Nếu muốn public
+                        .requestMatchers(HttpMethod.GET, "/order/{orderId}").permitAll() // Nếu muốn public
+                        .requestMatchers(HttpMethod.PUT, "/order/{orderId}").authenticated() // Yêu cầu xác thực để hủy
+                        .requestMatchers(HttpMethod.POST, "/order/confirm-webhook").permitAll() // Nếu webhook confirm là public
+
                         // Mọi request còn lại (trong phạm vi của filter chain này) cần xác thực
                         .anyRequest().authenticated()
                 )

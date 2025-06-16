@@ -23,4 +23,11 @@ public interface OrderService {
 
     List<OrdersDto> findCompletedOrdersByDateRange(Instant startDate, Instant endDate);
 
+    OrdersDto findById(int orderId);
+
+    void updatePaymentStatus(int orderId, String status, Long payosOrderCode); // Thêm
+
+    void updatePaymentStatusByOrderId(int orderId, String status); // Thêm
+
+    void updatePaymentStatusByOrderCode(Long payosOrderCode, String status); // Thêm
 }
