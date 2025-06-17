@@ -25,9 +25,12 @@ public interface OrderService {
 
     OrdersDto findById(int orderId);
 
-    void updatePaymentStatus(int orderId, String status, Long payosOrderCode); // Thêm
+    void updatePaymentStatus(int orderId, String status, Long payosOrderCode);
 
-    void updatePaymentStatusByOrderId(int orderId, String status); // Thêm
+    void updatePaymentStatusByOrderId(int orderId, String status);
 
-    void updatePaymentStatusByOrderCode(Long payosOrderCode, String status); // Thêm
+    void updatePaymentStatusByOrderCode(Long payosOrderCode, String status);
+
+    // Thêm phương thức để cập nhật thông tin PayOS
+    OrdersDto updatePayOSDetails(int orderId, String checkoutUrl, Instant expiredAt, Long payosOrderCode);
 }

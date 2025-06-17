@@ -1,9 +1,4 @@
 import api from './axiosConfig';
-
-/**
- * Lấy toàn bộ danh sách thú cưng, sắp xếp theo ngày đặt hàng giảm dần.
- * @returns {Promise<AxiosResponse<any>>} Promise chứa response (dự kiến là mảng PetDTO[]).
- */
 export const getAllPets = () => {
     const url = '/admin/findAllOrder';
     // const fullUrl = api.defaults.baseURL
@@ -15,11 +10,7 @@ export const getAllPets = () => {
     return result;
 };
 
-/**
- * Lấy chi tiết đơn hàng theo ID đơn hàng.
- * @param {number} idOrder ID của đơn hàng.
- * @returns {Promise<AxiosResponse<any>>} Promise chứa response (dự kiến là đối tượng { result: OrderItemDto }).
- */
+
 export const getDetailOrder = (idOrder) => {
   console.log(`CLIENT-SIDE FETCH: Requesting order details: /admin/getDetailOder/${idOrder}`);
   return api.get(`/admin/getDetailOder/${idOrder}`);
@@ -38,27 +29,14 @@ export const updateOrderStatus = (orderId, status, paymentStatus) => {
   return api.put(`/admin/updateOrderStatus`, null, { params });
 };
 
-/**
- * Lấy thông tin phương thức vận chuyển theo ID.
- * @param {number} id ID của phương thức vận chuyển.
- * @returns {Promise<AxiosResponse<any>>} Promise chứa response (dự kiến là đối tượng ShippingMethod).
- */
+
 export const getShippingMethodById = (id) => {
   const url = `/admin/shipping/${id}`;
   console.log(`CLIENT-SIDE FETCH: Requesting shipping method by ID: ${url}`);
   return api.get(url);
 };
 
-/**
- * Cập nhật thông tin phương thức vận chuyển theo ID.
- * @param {number} id ID của phương thức vận chuyển.
- * @param {Object} shippingMethod Đối tượng chứa thông tin cập nhật.
- * @param {string} shippingMethod.name Tên phương thức vận chuyển.
- * @param {string} shippingMethod.description Mô tả phương thức vận chuyển.
- * @param {number} shippingMethod.price Giá vận chuyển (VNĐ).
- * @param {string} shippingMethod.estimatedTime Thời gian dự kiến.
- * @returns {Promise<AxiosResponse<any>>} Promise chứa response (dự kiến là đối tượng ShippingMethod đã cập nhật).
- */
+
 export const updateShippingMethod = (id, shippingMethod) => {
   const url = `/admin/shipping/${id}`;
   console.log(`CLIENT-SIDE FETCH: Updating shipping method: ${url}`, shippingMethod);
@@ -72,12 +50,7 @@ export const getCompletedOrders = () => {
 };
 
 
-/**
- * Lấy danh sách đơn hàng hoàn thành trong khoảng thời gian.
- * @param {string} startDate Ngày bắt đầu (định dạng yyyy/MM/dd, ví dụ: '2025/06/01').
- * @param {string} endDate Ngày kết thúc (định dạng yyyy/MM/dd, ví dụ: '2025/06/15').
- * @returns {Promise<AxiosResponse<any>>} Promise chứa response (dự kiến là mảng OrderItemDto[]).
- */
+
 export const getCompletedOrdersByDateRange = (startDate, endDate) => {
   const url = `/admin/getCompletedOrdersByDateRange`;
   console.log(`CLIENT-SIDE FETCH: Requesting completed orders by date range: ${url}?startDate=${startDate}&endDate=${endDate}`);
