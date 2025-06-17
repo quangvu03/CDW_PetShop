@@ -52,6 +52,7 @@ public class OrderServiceImpl implements OrderService {
 
         }
         order.setShippingMethod(shippingMethodOptional.get());
+        System.out.println("Saving order: " + order);
 
         return orderRepository.save(order);
     }
@@ -97,7 +98,16 @@ public class OrderServiceImpl implements OrderService {
         }
 
         if (updateRequest.getPaymentStatus() != null && !updateRequest.getPaymentStatus().isEmpty()) {
-            existingOrder.setPaymentStatus(updateRequest.getPaymentStatus());
+            // Map the status to one of the allowed values for the payment_status ENUM column
+            String mappedStatus;
+            if ("paid".equalsIgnoreCase(updateRequest.getPaymentStatus()) || 
+                "PAID".equalsIgnoreCase(updateRequest.getPaymentStatus())) {
+                mappedStatus = "paid";
+            } else {
+                // For any other status, use "unpaid"
+                mappedStatus = "unpaid";
+            }
+            existingOrder.setPaymentStatus(mappedStatus);
         }
 
         if (updateRequest.getTotalPrice() != null) {
@@ -210,5 +220,104 @@ public class OrderServiceImpl implements OrderService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public OrdersDto findById(int orderId) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+
+        if (orderOptional.isEmpty()) {
+            throw new IllegalArgumentException("Đơn hàng không tồn tại");
+        }
+
+        Order order = orderOptional.get();
+
+        // Convert Order to OrdersDto
+        OrdersDto dto = new OrdersDto();
+        dto.setId(order.getId());
+        dto.setStatus(order.getStatus());
+        dto.setOrderDate(order.getOrderDate());
+        dto.setTotalPrice(order.getTotalPrice());
+        dto.setPaymentMethod(order.getPaymentMethod());
+        dto.setPaymentStatus(order.getPaymentStatus());
+        dto.setShippingAddress(order.getShippingAddress());
+        dto.setShippingName(order.getShippingMethod() != null ? order.getShippingMethod().getName() : "");
+
+        return dto;
+    }
+
+    @Override
+    public void updatePaymentStatus(int orderId, String status, Long payosOrderCode) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+        if (orderOptional.isEmpty()) {
+            throw new IllegalArgumentException("Đơn hàng không tồn tại");
+        }
+        Order order = orderOptional.get();
+
+        // Map the status to one of the allowed values for the payment_status ENUM column
+        String mappedStatus;
+        if ("PAID".equalsIgnoreCase(status)) {
+            mappedStatus = "paid";
+        } else {
+            // For "PENDING", "CANCELLED", or any other status, use "unpaid"
+            mappedStatus = "unpaid";
+        }
+
+        order.setPaymentStatus(mappedStatus);
+        if (payosOrderCode != null) {
+            order.setPayosOrderCode(payosOrderCode);
+        }
+        orderRepository.save(order);
+    }
+
+    @Override
+    public void updatePaymentStatusByOrderId(int orderId, String status) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+        if (orderOptional.isEmpty()) {
+            throw new IllegalArgumentException("Đơn hàng không tồn tại");
+        }
+        Order order = orderOptional.get();
+
+        // Map the status to one of the allowed values for the payment_status ENUM column
+        String mappedStatus;
+        if ("PAID".equalsIgnoreCase(status)) {
+            mappedStatus = "paid";
+            order.setStatus("confirmed");
+        } else {
+            // For "PENDING", "CANCELLED", or any other status, use "unpaid"
+            mappedStatus = "unpaid";
+            if ("CANCELLED".equalsIgnoreCase(status)) {
+                order.setStatus("cancelled");
+            }
+        }
+
+        order.setPaymentStatus(mappedStatus);
+        orderRepository.save(order);
+    }
+
+    @Override
+    public void updatePaymentStatusByOrderCode(Long payosOrderCode, String status) {
+        Optional<Order> orderOptional = orderRepository.findByPayosOrderCode(payosOrderCode);
+        if (orderOptional.isEmpty()) {
+            throw new IllegalArgumentException("Đơn hàng với PayOS order code không tồn tại");
+        }
+        Order order = orderOptional.get();
+
+        // Map the status to one of the allowed values for the payment_status ENUM column
+        String mappedStatus;
+        if ("PAID".equalsIgnoreCase(status)) {
+            mappedStatus = "paid";
+            order.setStatus("confirmed");
+        } else {
+            // For "PENDING", "CANCELLED", or any other status, use "unpaid"
+            mappedStatus = "unpaid";
+            if ("CANCELLED".equalsIgnoreCase(status)) {
+                order.setStatus("cancelled");
+            }
+        }
+
+        order.setPaymentStatus(mappedStatus);
+        orderRepository.save(order);
     }
 }

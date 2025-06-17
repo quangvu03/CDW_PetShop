@@ -1,3 +1,4 @@
+// src/pages/user/OrderStatus.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getOrdersByUser } from '../../services/orderService';
@@ -26,22 +27,35 @@ export default function OrderStatus() {
       }
 
       const response = await getOrdersByUser(userId);
-      if (response.data.success === false) {
-        setOrders([]);
-        setFilteredOrders([]);
-      } else {
+      console.log('API response:', response.data); // Debug
+
+      // Kiểm tra kiểu dữ liệu của response.data
+      if (Array.isArray(response.data)) {
+        // Trường hợp trả về mảng đơn hàng
         setOrders(response.data);
         filterOrdersByTab('all', response.data, searchTerm);
+      } else if (response.data && typeof response.data === 'object') {
+        // Trường hợp trả về object
+        if (response.data.success === false || response.data.message === 'Bạn chưa có đơn đặt hàng nào!') {
+          setOrders([]);
+          setFilteredOrders([]);
+        } else {
+          throw new Error('Định dạng phản hồi API không mong đợi');
+        }
+      } else {
+        throw new Error('Phản hồi API không hợp lệ');
       }
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error('Lỗi khi lấy đơn hàng:', error);
       if (error.response?.status === 401 || error.response?.status === 403) {
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         localStorage.clear();
         navigate('/auth/login');
       } else {
-        toast.error('Không thể tải danh sách đơn hàng');
+        toast.error(error.message || 'Không thể tải danh sách đơn hàng');
       }
+      setOrders([]);
+      setFilteredOrders([]);
     } finally {
       setLoading(false);
     }

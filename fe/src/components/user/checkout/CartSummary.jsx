@@ -1,3 +1,4 @@
+// src/components/user/checkout/CartSummary.jsx
 import React, { useEffect, useState } from 'react';
 
 export default function CartSummary({
@@ -42,7 +43,6 @@ export default function CartSummary({
 
   return (
     <>
-      {/* Tổng giỏ hàng */}
       <div className="order-details">
         <div className="single-widget">
           <h2>Tổng giỏ hàng</h2>
@@ -69,7 +69,6 @@ export default function CartSummary({
                   </li>
                 );
               })}
-
               <li>
                 Tổng hàng{' '}
                 <span>{subtotal.toLocaleString('vi-VN')} VND</span>
@@ -78,15 +77,12 @@ export default function CartSummary({
                 (+) Giao hàng <span>{(shippingFee || 0).toLocaleString('vi-VN')} VND</span>
               </li>
               <li className="last">
-  Tổng <span>{(subtotal + shippingFee).toLocaleString('vi-VN')} VND</span>
-</li>
-
+                Tổng <span>{(subtotal + shippingFee).toLocaleString('vi-VN')} VND</span>
+              </li>
             </ul>
           </div>
         </div>
       </div>
-
-      {/* Phương thức vận chuyển */}
       <div className="order-shipping" style={{ marginTop: '20px' }}>
         <div className="single-widget">
           <h2>Phương thức vận chuyển</h2>
