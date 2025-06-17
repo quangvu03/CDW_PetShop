@@ -4,9 +4,11 @@ import com.demo.dtos.requests.UserProfileRequest;
 import com.demo.entities.User;
 import com.demo.services.JwtUtil;
 import com.demo.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,7 +19,9 @@ import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/user")
@@ -30,10 +34,18 @@ public class UserController {
 
     @PostMapping("/profile")
     public ResponseEntity<?> updateProfile(
-            @ModelAttribute UserProfileRequest profile,
+            @Valid @ModelAttribute UserProfileRequest profile,
+            BindingResult bindingResult,
             @RequestHeader("Authorization") String token
     ) {
         try {
+
+            if (bindingResult.hasErrors()) {
+                List<String> errors = bindingResult.getFieldErrors().stream()
+                        .map(error -> error.getDefaultMessage())
+                        .collect(Collectors.toList());
+                return ResponseEntity.badRequest().body(errors);
+            }
             String jwt = token.replace("Bearer ", "");
             String username = jwtUtil.extractUsername(jwt);
 

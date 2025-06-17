@@ -14,10 +14,12 @@ import com.demo.services.OrderItemService;
 import com.demo.services.OrderService;
 import com.demo.services.ShippingService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.payos.PayOS;
 import vn.payos.type.CheckoutResponseData;
@@ -54,12 +56,20 @@ public class OrderController {
     }
 
     @PostMapping("/saveOrder")
-    public ResponseEntity<?> saveOrder(@RequestBody OrderRequest orderRequest) {
+    public ResponseEntity<?> saveOrder(@Valid @RequestBody OrderRequest orderRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            List<String> errors = bindingResult.getFieldErrors().stream()
+                    .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                    .toList();
+            return ResponseEntity.badRequest().body(errors);
+        }
+
         try {
             List<OrderItemRequest> orderItemRequestList = orderRequest.getOrderRequestList();
             Order order = orderService.saveOrder(orderRequest);
             cartService.clearCartByUser(orderRequest.getUserId());
-            List<OrderItem> listOrderItem = orderItemService.saveListOrderItem(orderItemRequestList, order);
+            List<OrderItem> listOrderItem = orderItemService.saveListOrderItem(orderRequest.getOrderRequestList(), order);
+
             if (!listOrderItem.isEmpty()) {
                 if ("PAYOS".equalsIgnoreCase(orderRequest.getPaymentMethod())) {
                     Map<String, Object> body = new HashMap<>();
@@ -73,10 +83,13 @@ public class OrderController {
             } else {
                 return ResponseEntity.badRequest().body(new ApiResponse(false, "Đặt hàng thất bại"));
             }
+
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Lỗi: " + e.getMessage()));
         }
     }
+
 
     @GetMapping("/getOrderByUser/{userId}")
     public ResponseEntity<?> getOrderByUser(@PathVariable("userId") int userId) {
