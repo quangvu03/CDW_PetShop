@@ -1,3 +1,4 @@
+// src/pages/user/OrderDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getOrderDetail, cancelOrder, updateAddress } from '../../services/orderService';
@@ -21,10 +22,10 @@ export default function OrderDetail() {
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedWard, setSelectedWard] = useState('');
   const [street, setStreet] = useState('');
-  const [ratings, setRatings] = useState({}); // Lưu rating đã gửi cho mỗi petId
-  const [pendingRatings, setPendingRatings] = useState({}); // Lưu rating tạm thời
-  const [hoverRatings, setHoverRatings] = useState({}); // Lưu trạng thái hover
-  const [reviews, setReviews] = useState({}); // Lưu reviewId cho mỗi petId
+  const [ratings, setRatings] = useState({});
+  const [pendingRatings, setPendingRatings] = useState({});
+  const [hoverRatings, setHoverRatings] = useState({});
+  const [reviews, setReviews] = useState({});
 
   useEffect(() => {
     fetchOrderDetails();
@@ -37,10 +38,16 @@ export default function OrderDetail() {
     try {
       setLoading(true);
       const response = await getOrderDetail(orderId);
-      setOrder(response.data.result);
+      console.log('API response:', response.data); // Debug
+      if (response.data && response.data.result) {
+        setOrder(response.data.result);
+      } else {
+        throw new Error('Không tìm thấy chi tiết đơn hàng');
+      }
     } catch (error) {
-      console.error('Error fetching order details:', error);
-      toast.error('Không thể tải thông tin đơn hàng');
+      console.error('Lỗi khi lấy chi tiết đơn hàng:', error);
+      toast.error(error.message || 'Không thể tải thông tin đơn hàng');
+      setOrder(null);
     } finally {
       setLoading(false);
     }
@@ -51,6 +58,7 @@ export default function OrderDetail() {
       const res = await getCurrentUser();
       setUserInfo(res.data);
     } catch (err) {
+      console.error('Lỗi khi lấy thông tin người dùng:', err);
       setUserInfo(null);
     }
   };
@@ -60,7 +68,7 @@ export default function OrderDetail() {
       const response = await axios.get('https://provinces.open-api.vn/api/?depth=3');
       setProvinces(response.data);
     } catch (error) {
-      console.error('Error fetching provinces:', error);
+      console.error('Lỗi khi lấy danh sách tỉnh/thành:', error);
       toast.error('Không thể tải danh sách tỉnh/thành');
     }
   };
@@ -72,7 +80,7 @@ export default function OrderDetail() {
 
       const response = await getReviewsByUserId(userId);
       const userReviews = response.data;
-      console.log('User reviews:', userReviews);
+      console.log('Danh sách đánh giá:', userReviews);
       const ratingsMap = {};
       const reviewsMap = {};
       userReviews.forEach((review) => {
@@ -86,8 +94,8 @@ export default function OrderDetail() {
       setRatings(ratingsMap);
       setReviews(reviewsMap);
     } catch (error) {
-      console.error('Error fetching user reviews:', error);
-      toast.error('Không thể tải danh sách đánh giá.');
+      console.error('Lỗi khi lấy danh sách đánh giá:', error);
+      toast.error('Không thể tải danh sách đánh giá');
     }
   };
 
@@ -122,8 +130,8 @@ export default function OrderDetail() {
           toast.success('Hủy đơn hàng thành công');
           await fetchOrderDetails();
         } catch (error) {
-          console.error('Error cancelling order:', error);
-          toast.error('Không thể hủy đơn hàng');
+          console.error('Lỗi khi hủy đơn hàng:', error);
+          toast.error(error.message || 'Không thể hủy đơn hàng');
         }
       }
     });
@@ -165,8 +173,8 @@ export default function OrderDetail() {
         toast.error(response.data.message || 'Cập nhật địa chỉ thất bại');
       }
     } catch (error) {
-      console.error('Error updating address:', error);
-      toast.error(error.response?.data?.message || 'Không thể cập nhật địa chỉ');
+      console.error('Lỗi khi cập nhật địa chỉ:', error);
+      toast.error(error.message || 'Không thể cập nhật địa chỉ');
     }
   };
 
@@ -214,13 +222,13 @@ export default function OrderDetail() {
       setRatings((prev) => ({ ...prev, [petId]: rating }));
       setPendingRatings((prev) => ({ ...prev, [petId]: undefined }));
     } catch (error) {
-      console.error('Error submitting review:', error);
+      console.error('Lỗi khi gửi/cập nhật đánh giá:', error);
       if (error.response?.status === 401 || error.response?.status === 403) {
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         localStorage.clear();
         navigate('/auth/login');
       } else {
-        toast.error('Không thể gửi/cập nhật đánh giá. Vui lòng thử lại.');
+        toast.error(error.message || 'Không thể gửi/cập nhật đánh giá');
       }
     }
   };
@@ -641,7 +649,6 @@ export default function OrderDetail() {
           </div>
         </div>
       )}
-      {/* Inline CSS cho ngôi sao */}
       <style>
         {`
           .fa-star {
