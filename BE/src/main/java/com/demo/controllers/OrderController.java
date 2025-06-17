@@ -1,5 +1,4 @@
 package com.demo.controllers;
-
 import com.demo.dtos.OrderItemDto;
 import com.demo.dtos.OrdersDto;
 import com.demo.dtos.requests.CreatePaymentLinkRequest;
@@ -25,7 +24,8 @@ import vn.payos.type.CheckoutResponseData;
 import vn.payos.type.ItemData;
 import vn.payos.type.PaymentData;
 
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,20 +34,24 @@ import java.util.Map;
 @RequestMapping("/api/order")
 @CrossOrigin(origins = "*")
 public class OrderController {
-    @Autowired
-    private OrderService orderService;
+    private final OrderService orderService;
+    private final CartService cartService;
+    private final OrderItemService orderItemService;
+    private final ShippingService shippingService;
+    private final PayOS payOS;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    private CartService cartService;
-
-    @Autowired
-    private OrderItemService orderItemService;
-
-    @Autowired
-    private ShippingService shippingService;
-
-    @Autowired
-    private PayOS payOS;
+    public OrderController(OrderService orderService, CartService cartService,
+                           OrderItemService orderItemService, ShippingService shippingService,
+                           PayOS payOS, ObjectMapper objectMapper) {
+        this.orderService = orderService;
+        this.cartService = cartService;
+        this.orderItemService = orderItemService;
+        this.shippingService = shippingService;
+        this.payOS = payOS;
+        this.objectMapper = objectMapper;
+    }
 
     @PostMapping("/saveOrder")
     public ResponseEntity<?> saveOrder(@RequestBody OrderRequest orderRequest) {
@@ -78,11 +82,10 @@ public class OrderController {
     public ResponseEntity<?> getOrderByUser(@PathVariable("userId") int userId) {
         try {
             List<OrdersDto> ordersDtoList = orderService.findByUserIdOrderByOrderDateDesc(userId);
-
             if (!ordersDtoList.isEmpty()) {
                 return ResponseEntity.ok(ordersDtoList);
             } else {
-                return ResponseEntity.ok(new ApiResponse(true, "Bạn chưa có đơn đặt hàng nào!")); // Không có đơn hàng
+                return ResponseEntity.ok(new ApiResponse(true, "Bạn chưa có đơn đặt hàng nào!"));
             }
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -93,7 +96,8 @@ public class OrderController {
     public ResponseEntity<?> getDetailOrder(@PathVariable("idOrder") int idOrder) {
         try {
             OrderItemDto orderItemDto = orderItemService.findOrderItemByOrderId(idOrder);
-            return ResponseEntity.ok(Map.of("result", orderItemDto));
+            OrdersDto orderDto = orderService.findById(idOrder);
+            return ResponseEntity.ok(Map.of("result", orderItemDto, "order", orderDto));
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -117,14 +121,10 @@ public class OrderController {
             UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest();
             updateOrderRequest.setOrderId(orderId);
             updateOrderRequest.setShippingAddress(shippingAddress);
-
             OrdersDto updatedOrder = orderService.updateOrder(updateOrderRequest);
-
-            if (updatedOrder != null) {
-                return ResponseEntity.ok(new ApiResponse(true, "Cập nhật địa chỉ giao hàng thành công"));
-            } else {
-                return ResponseEntity.badRequest().body(new ApiResponse(false, "Cập nhật địa chỉ giao hàng thất bại"));
-            }
+            return updatedOrder != null
+                    ? ResponseEntity.ok(new ApiResponse(true, "Cập nhật địa chỉ giao hàng thành công"))
+                    : ResponseEntity.badRequest().body(new ApiResponse(false, "Cập nhật địa chỉ giao hàng thất bại"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Lỗi: " + e.getMessage()));
         }
@@ -146,7 +146,6 @@ public class OrderController {
 
     @PostMapping("/createPaymentLink")
     public ResponseEntity<?> createPaymentLink(@RequestBody CreatePaymentLinkRequest request) {
-        ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode response = objectMapper.createObjectNode();
         try {
             OrdersDto order = orderService.findById(request.getOrderId());
@@ -157,7 +156,7 @@ public class OrderController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            String currentTimeString = String.valueOf(new Date().getTime());
+            String currentTimeString = String.valueOf(System.currentTimeMillis());
             long orderCode = Long.parseLong(currentTimeString.substring(currentTimeString.length() - 6));
 
             ItemData item = ItemData.builder()
@@ -166,22 +165,34 @@ public class OrderController {
                     .quantity(1)
                     .build();
 
+            // Sử dụng múi giờ UTC+7 để tính toán thời gian
+            Instant now = Instant.now().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant();
+            long expiryTimeInSeconds = now.getEpochSecond() + 6 * 60 * 60; // 6 giờ
+
             PaymentData paymentData = PaymentData.builder()
                     .orderCode(orderCode)
                     .description(request.getDescription())
-                    .amount(request.getPrice())
+//                    .amount(request.getPrice())
+                    .amount(2000)
                     .item(item)
                     .returnUrl(request.getReturnUrl())
                     .cancelUrl(request.getCancelUrl())
+                    .expiredAt(expiryTimeInSeconds)
                     .build();
 
             CheckoutResponseData data = payOS.createPaymentLink(paymentData);
 
-            orderService.updatePaymentStatus(request.getOrderId(), "PENDING", orderCode);
+            OrdersDto updatedOrder = orderService.updatePayOSDetails(
+                    request.getOrderId(),
+                    data.getCheckoutUrl(),
+                    Instant.ofEpochSecond(data.getExpiredAt()),
+                    orderCode
+            );
 
             response.put("error", 0);
             response.put("message", "Tạo liên kết thanh toán thành công");
             response.set("data", objectMapper.valueToTree(data));
+            response.set("order", objectMapper.valueToTree(updatedOrder));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -191,6 +202,30 @@ public class OrderController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @PutMapping("/updateOrderStatus")
+    public ResponseEntity<?> updateOrderStatus(@RequestParam("orderId") int orderId,
+                                               @RequestParam("status") String status,
+                                               @RequestParam(value = "paymentStatus", required = false) String paymentStatus) {
+        try {
+            UpdateOrderRequest updateRequest = new UpdateOrderRequest();
+            updateRequest.setOrderId(orderId);
+            updateRequest.setStatus(status);
+            if(paymentStatus != null && !paymentStatus.isEmpty()) {
+                // Map the status to one of the allowed values for the payment_status ENUM column
+                String mappedStatus;
+                if ("paid".equalsIgnoreCase(paymentStatus) ||
+                        "PAID".equalsIgnoreCase(paymentStatus)) {
+                    mappedStatus = "paid";
+                } else {
+                    // For any other status, use "unpaid"
+                    mappedStatus = "unpaid";
+                }
+                updateRequest.setPaymentStatus(mappedStatus);
+            }
+            return ResponseEntity.ok(Map.of("result", orderService.updateOrder(updateRequest)));
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 }
-
-

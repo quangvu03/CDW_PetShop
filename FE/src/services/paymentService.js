@@ -7,15 +7,20 @@ export const createPaymentLink = async (paymentData) => {
     if (response.data.error !== 0) {
       throw new Error(response.data.message || 'Tạo liên kết thanh toán thất bại');
     }
+    // Response chứa data (PayOS) và order (OrdersDto với checkoutUrl, expiredAt, phoneNumber, shippingName)
     return {
       ...response.data,
-      expiryDateTime: response.data.expiryDateTime
+      checkoutUrl: response.data.data.checkoutUrl, // Lấy checkoutUrl từ PayOS response
+      expiredAt: response.data.order.expiredAt, // Lấy expiredAt từ OrdersDto
+      phoneNumber: response.data.order.phoneNumber, // Lấy phoneNumber từ OrdersDto
+      shippingName: response.data.order.shippingName, // Lấy shippingName từ OrdersDto
     };
   } catch (error) {
     console.error('Lỗi khi tạo liên kết thanh toán:', error);
     throw error.response?.data?.message || error.message || 'Không thể tạo liên kết thanh toán';
   }
 };
+
 
 export const updatePaymentStatus = async (orderId, status) => {
   try {
@@ -30,4 +35,4 @@ export const updatePaymentStatus = async (orderId, status) => {
   }
 };
 
-export default { createPaymentLink, updatePaymentStatus };
+// export default { createPaymentLink, updatePaymentStatus };

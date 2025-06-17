@@ -19,6 +19,7 @@ public class OrderRequest {
     String shippingAddress;
     int shippingMethodId;
     List<OrderItemRequest> orderRequestList;
-
+    String phoneNumber;
+    String shippingName;
 
 }
