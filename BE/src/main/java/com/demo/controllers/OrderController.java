@@ -15,9 +15,11 @@ import com.demo.services.OrderService;
 import com.demo.services.ShippingService;
 import com.demo.entities.ShippingMethod;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,22 +42,31 @@ public class OrderController {
     private ShippingService shippingService;
 
     @PostMapping("/saveOrder")
-    public ResponseEntity<?> saveOrder(@RequestBody OrderRequest orderRequest) {
-        try {
-            List<OrderItemRequest> orderItemRequestList = orderRequest.getOrderRequestList();
+    public ResponseEntity<?> saveOrder(@Valid @RequestBody OrderRequest orderRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            List<String> errors = bindingResult.getFieldErrors().stream()
+                    .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                    .toList();
+            return ResponseEntity.badRequest().body(errors);
+        }
 
+        try {
             Order order = orderService.saveOrder(orderRequest);
             cartService.clearCartByUser(orderRequest.getUserId());
-            List<OrderItem> listOrderItem = orderItemService.saveListOrderItem(orderItemRequestList, order);
+            List<OrderItem> listOrderItem = orderItemService.saveListOrderItem(orderRequest.getOrderRequestList(), order);
+
             if (!listOrderItem.isEmpty()) {
                 return ResponseEntity.ok(new ApiResponse(true, "Đặt hàng thành công"));
             } else {
                 return ResponseEntity.badRequest().body(new ApiResponse(false, "Đặt hàng thất bại"));
             }
+
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Lỗi: " + e.getMessage()));
         }
     }
+
 
     @GetMapping("/getOrderByUser/{userId}")
     public ResponseEntity<?> saveOrder(@PathVariable("userId") int userId) {
