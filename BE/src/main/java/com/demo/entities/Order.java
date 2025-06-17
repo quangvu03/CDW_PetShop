@@ -53,5 +53,18 @@ public class Order {
     private ShippingMethod shippingMethod;
 
     @Column(name = "payos_order_code")
-    private Long payosOrderCode; // Thêm trường này
+    private Long payosOrderCode;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber; // Thêm trường phone_number
+
+    @Lob
+    @Column(name = "name")
+    private String name; // Thêm trường name
+
+    @Column(name = "checkout_url", length = 255)
+    private String checkoutUrl; // Thêm trường checkout_url
+
+    @Column(name = "expired_at")
+    private Instant expiredAt; // Thêm trường expired_at
 }

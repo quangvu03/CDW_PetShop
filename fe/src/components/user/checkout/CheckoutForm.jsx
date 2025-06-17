@@ -111,6 +111,8 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
         paymentMethod: paymentMethod,
         shippingAddress: `${userInfo.address}, ${userInfo.ward}, ${userInfo.district}, ${userInfo.country}`,
         shippingMethodId: selectedShipping.id,
+        phoneNumber: userInfo.phoneNumber,
+        shippingName: userInfo.fullName,
         orderRequestList: cartItems.map(item => ({
           productId: item.product?.id ? Number(item.product.id) : 0,
           petId: item.pet?.id ? Number(item.pet.id) : 0,
@@ -123,24 +125,26 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
 
       const orderResponse = await createOrder(orderRequest);
       console.log('Order response:', orderResponse);
-      console.log('Order response data:', orderResponse.data);
 
-      if (orderResponse.data.success) {
+      if (orderResponse.success) {
         if (paymentMethod === 'PAYOS') {
           const paymentData = {
-            productName: 'Đơn hàng thú cưng',
-            description: 'Thanh toán đơn hàng',
-            returnUrl: 'http://localhost:3000/success',
-            cancelUrl: 'http://localhost:3000/cancel',
+            productName: `Đơn hàng thú cưng ${orderResponse.data.orderId}`,
+            description: `Thanh toán đơn hàng #${orderResponse.data.orderId}`,
+            returnUrl: `http://localhost:3000/user/payment-callback?status=success&orderId=${orderResponse.data.orderId}`,
+            cancelUrl: `http://localhost:3000/user/payment-callback?status=cancelled&orderId=${orderResponse.data.orderId}`,
             price: Math.round(totalItemPrice + shippingFee),
-            orderId: orderResponse.data.data.orderId
+            orderId: orderResponse.data.orderId
           };
 
           const paymentResponse = await createPaymentLink(paymentData);
           if (paymentResponse.error === 0) {
-            const expiryDateTime = new Date(paymentResponse.expiryDateTime);
-            toast.info(`Liên kết thanh toán sẽ hết hạn vào ${expiryDateTime.toLocaleString('vi-VN')} (1 giờ từ khi tạo)`);
-            window.location.href = paymentResponse.data.checkoutUrl;
+            const expiryDateTime = new Date(paymentResponse.expiredAt);
+            const expiryDateTimeLocal = new Date(expiryDateTime.getTime() + (7 * 60 * 60 * 1000)); // Điều chỉnh múi giờ UTC+7
+            toast.info(`Liên kết thanh toán sẽ hết hạn vào ${expiryDateTimeLocal.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} (6 giờ từ khi tạo)`);
+            window.location.href = paymentResponse.checkoutUrl;
+            localStorage.removeItem('checkout_items');
+            window.dispatchEvent(new Event('cart-updated'));
           } else {
             toast.error(paymentResponse.message || 'Không thể tạo liên kết thanh toán');
           }
@@ -151,7 +155,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
           navigate('/user/order-history');
         }
       } else {
-        toast.error(orderResponse.data.message || 'Đặt hàng thất bại');
+        toast.error(orderResponse.message || 'Đặt hàng thất bại');
       }
     } catch (error) {
       console.error('Lỗi khi đặt hàng:', error);

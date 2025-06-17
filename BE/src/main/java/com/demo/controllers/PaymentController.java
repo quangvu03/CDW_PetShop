@@ -34,15 +34,16 @@ public class PaymentController {
             response.set("data", null);
 
             WebhookData data = payOS.verifyPaymentWebhookData(webhookBody);
-            String status = "PENDING";
+            String status = "pending";
+            System.out.println("|Data|: " + data);
             if ("00".equals(data.getCode()) && "Thành công".equalsIgnoreCase(data.getDesc())) {
-                status = "PAID";
-            } else if ("CANCELLED".equalsIgnoreCase(data.getDesc())) {
-                status = "CANCELLED";
+                status = "paid";
+            } else if ("cancelled".equalsIgnoreCase(data.getDesc())) {
+                status = "cancelled";
             }
 
             Long payosOrderCode = data.getOrderCode();
-            orderService.updatePaymentStatusByOrderCode(payosOrderCode, status); // Sử dụng service
+            orderService.updatePaymentStatusByOrderCode(payosOrderCode, status); // Cập nhật trạng thái
 
             return response;
         } catch (Exception e) {

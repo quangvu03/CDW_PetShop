@@ -30,6 +30,10 @@ public class OrderRequest {
     @NotBlank(message = "Địa chỉ giao hàng không được để trống")
     String shippingAddress;
 
+    List<OrderItemRequest> orderRequestList;
+    String phoneNumber;
+    String shippingName;
+
     @Positive(message = "ID phương thức vận chuyển không hợp lệ")
     int shippingMethodId;
 
