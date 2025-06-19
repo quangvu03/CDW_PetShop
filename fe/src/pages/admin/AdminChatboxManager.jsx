@@ -14,8 +14,29 @@ const AdminChatboxManager = () => {
   }, [startDate, endDate]);
 
   useEffect(() => {
-    $('#chatboxTable').DataTable();
+    if ($.fn.DataTable.isDataTable('#chatboxTable')) {
+      $('#chatboxTable').DataTable().destroy();
+    }
+  
+    $('#chatboxTable').DataTable({
+      language: {
+        emptyTable: 'Không có dữ liệu để hiển thị',
+        lengthMenu: 'Hiển thị _MENU_ dòng',
+        zeroRecords: 'Không tìm thấy kết quả phù hợp',
+        info: '',
+        infoEmpty: '',
+        infoFiltered: '',
+        search: 'Tìm kiếm:',
+        paginate: {
+          previous: '‹',
+          next: '›',
+          first: '«',
+          last: '»',
+        },
+      },
+    });
   }, [messages]);
+  
 
   const fetchMessages = async () => {
     try {

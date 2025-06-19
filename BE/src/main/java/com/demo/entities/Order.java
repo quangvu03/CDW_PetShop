@@ -3,13 +3,11 @@ package com.demo.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@ToString
 @Getter
 @Setter
 @Entity
@@ -52,19 +50,4 @@ public class Order {
     @JoinColumn(name = "shipping_method_id")
     private ShippingMethod shippingMethod;
 
-    @Column(name = "payos_order_code")
-    private Long payosOrderCode;
-
-    @Column(name = "phone_number", length = 20)
-    private String phoneNumber; // Thêm trường phone_number
-
-    @Lob
-    @Column(name = "name")
-    private String name; // Thêm trường name
-
-    @Column(name = "checkout_url", length = 255)
-    private String checkoutUrl; // Thêm trường checkout_url
-
-    @Column(name = "expired_at")
-    private Instant expiredAt; // Thêm trường expired_at
 }

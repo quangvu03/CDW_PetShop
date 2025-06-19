@@ -26,7 +26,5 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("UPDATE Order o SET o.status = 'cancelled' WHERE o.id = :orderId")
     int cancelledOrder(@Param("orderId") int orderId);
 
-    Optional<Order> findByPayosOrderCode(Long payosOrderCode);
-
 
 }

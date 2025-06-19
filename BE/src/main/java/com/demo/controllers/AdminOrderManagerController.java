@@ -57,17 +57,8 @@ public class AdminOrderManagerController {
             UpdateOrderRequest updateRequest = new UpdateOrderRequest();
             updateRequest.setOrderId(orderId);
             updateRequest.setStatus(status);
-            if(paymentStatus != null && !paymentStatus.isEmpty()) {
-                // Map the status to one of the allowed values for the payment_status ENUM column
-                String mappedStatus;
-                if ("paid".equalsIgnoreCase(paymentStatus) || 
-                    "PAID".equalsIgnoreCase(paymentStatus)) {
-                    mappedStatus = "paid";
-                } else {
-                    // For any other status, use "unpaid"
-                    mappedStatus = "unpaid";
-                }
-                updateRequest.setPaymentStatus(mappedStatus);
+            if( paymentStatus != null && !paymentStatus.isEmpty()) {
+                updateRequest.setPaymentStatus(paymentStatus);
             }
             return ResponseEntity.ok(Map.of("result", orderService.updateOrder(updateRequest)));
         } catch (Exception e) {

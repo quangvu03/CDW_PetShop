@@ -1,10 +1,9 @@
-// src/pages/user/Checkout.jsx
+// ✅ src/pages/user/Checkout.jsx
 import React, { useEffect, useState } from 'react';
 import CheckoutForm from '../../components/user/checkout/CheckoutForm';
 import CartSummary from '../../components/user/checkout/CartSummary';
 import PaymentMethod from '../../components/user/checkout/PaymentMethod';
 import { getShippingMethods } from '../../services/shippingService';
-import { toast } from 'react-toastify';
 
 export default function Checkout() {
   const [checkoutItems, setCheckoutItems] = useState([]);
@@ -12,18 +11,6 @@ export default function Checkout() {
   const [selectedShipping, setSelectedShipping] = useState(null);
   const [total, setTotal] = useState(0);
   const [shippingFee, setShippingFee] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState('COD');
-  const [userInfo, setUserInfo] = useState({
-    userId: Number(localStorage.getItem('userId')) || 1,
-    fullName: '',
-    phoneNumber: '',
-    email: '',
-    country: '',
-    district: '',
-    ward: '',
-    address: '',
-    note: ''
-  });
 
   useEffect(() => {
     const items = JSON.parse(localStorage.getItem('checkout_items')) || [];
@@ -33,10 +20,8 @@ export default function Checkout() {
       try {
         const res = await getShippingMethods();
         setShippingMethods(res.data);
-        console.log('Shipping methods:', res.data); // Debug
       } catch (err) {
-        console.error('Lỗi khi lấy phương thức giao hàng:', err);
-        toast.error('Không thể tải phương thức giao hàng');
+        console.error('Lỗi khi lấy phương thức giao hàng', err);
       }
     };
     fetchShipping();
@@ -44,7 +29,7 @@ export default function Checkout() {
 
   useEffect(() => {
     const subtotal = checkoutItems.reduce(
-      (sum, item) => sum + ((item.pet?.price || item.product?.price || 0) * (item.quantity || 1)),
+      (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
       0
     );
     setTotal(subtotal + shippingFee);
@@ -55,22 +40,15 @@ export default function Checkout() {
     setShippingFee(method.price || 0);
   };
 
-  const handlePaymentMethodChange = (method) => {
-    setPaymentMethod(method);
-  };
-
   return (
     <section className="shop checkout section">
       <div className="container">
         <div className="row">
           <div className="col-lg-8 col-12">
-            <CheckoutForm
+            <CheckoutForm 
               cartItems={checkoutItems}
               totalAmount={total}
               selectedShipping={selectedShipping}
-              userInfo={userInfo}
-              setUserInfo={setUserInfo}
-              paymentMethod={paymentMethod}
             />
           </div>
           <div className="col-lg-4 col-12">
@@ -83,10 +61,7 @@ export default function Checkout() {
               setTotal={setTotal}
               shippingFee={shippingFee}
             />
-            <PaymentMethod
-              selectedMethod={paymentMethod}
-              onMethodChange={handlePaymentMethodChange}
-            />
+            <PaymentMethod />
           </div>
         </div>
       </div>

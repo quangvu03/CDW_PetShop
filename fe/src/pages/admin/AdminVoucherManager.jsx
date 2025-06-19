@@ -5,8 +5,25 @@ import DateRangePicker from '../../components/common/DateRangePicker';
 
 const AdminVoucherManager = () => {
   useEffect(() => {
-    $('#voucherTable').DataTable();
+    $('#voucherTable').DataTable({
+      language: {
+        emptyTable: 'Không có dữ liệu để hiển thị',
+        lengthMenu: 'Hiển thị _MENU_ dòng',
+        zeroRecords: 'Không tìm thấy kết quả phù hợp',
+        info: '',
+        infoEmpty: '',
+        infoFiltered: '',
+        search: 'Tìm kiếm:',
+        paginate: {
+          previous: '‹',
+          next: '›',
+          first: '«',
+          last: '»',
+        },
+      },
+    });
   }, []);
+  
 
   return (
     <div className="content-wrapper">

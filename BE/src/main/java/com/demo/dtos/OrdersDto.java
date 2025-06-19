@@ -1,5 +1,4 @@
 package com.demo.dtos;
-
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -17,7 +16,5 @@ public class OrdersDto {
     private String paymentStatus;
     private String shippingAddress;
     private String shippingName;
-    private String phoneNumber;
-    private String checkoutUrl;
-    private Instant expiredAt;
+
 }

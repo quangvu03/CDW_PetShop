@@ -16,6 +16,4 @@ public class UpdateOrderRequest {
     String paymentMethod;
     String shippingAddress;
     int shippingMethodId;
-    String phoneNumber;
-    String shippingName;
 }

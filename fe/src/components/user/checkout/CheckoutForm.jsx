@@ -1,24 +1,35 @@
-// src/components/user/checkout/CheckoutForm.jsx
 import React, { useState, useEffect } from 'react';
 import { getCurrentUser } from '../../../services/userService';
 import { createOrder } from '../../../services/orderService';
-import { createPaymentLink } from '../../../services/paymentService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
-export default function CheckoutForm({ cartItems = [], totalAmount = 0, selectedShipping = null, userInfo, setUserInfo, paymentMethod }) {
+export default function CheckoutForm({ cartItems = [], totalAmount = 0, selectedShipping = null }) {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phoneNumber: '',
+    email: '',
+    country: '',
+    district: '',
+    ward: '',
+    address: '',
+    note: ''
+  });
+
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
+  // Fetch current user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await getCurrentUser();
         const userData = response.data;
         if (userData) {
+          // Split address into parts
           let addressParts = [];
           if (userData.address) {
             addressParts = userData.address.split(',').map(part => part.trim());
@@ -29,25 +40,38 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
           const ward = addressParts[1] || '';
           const address = addressParts[0] || '';
 
-          setUserInfo(prev => ({
+          // Find and set the selected province
+          const selectedProvince = provinces.find(p => p.name === country);
+          if (selectedProvince) {
+            setDistricts(selectedProvince.districts);
+          }
+
+          // Find and set the selected district
+          if (selectedProvince) {
+            const selectedDistrict = selectedProvince.districts.find(d => d.name === district);
+            if (selectedDistrict) {
+              setWards(selectedDistrict.wards);
+            }
+          }
+          
+          setFormData(prev => ({
             ...prev,
-            userId: userData.id || prev.userId,
             fullName: userData.fullName || '',
             phoneNumber: userData.phone || '',
             email: userData.email || '',
-            country,
-            district,
-            ward,
-            address
+            country: country,
+            district: district,
+            ward: ward,
+            address: address
           }));
         }
       } catch (error) {
-        console.error('Lỗi khi lấy thông tin người dùng:', error);
+        console.error('Error fetching user data:', error);
       }
     };
 
     fetchUserData();
-  }, [provinces, setUserInfo]);
+  }, [provinces]); // Add provinces as dependency since we need it for finding districts and wards
 
   useEffect(() => {
     fetch('https://provinces.open-api.vn/api/?depth=3')
@@ -55,42 +79,46 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
       .then(data => setProvinces(data));
   }, []);
 
+  // Update districts when country changes
   useEffect(() => {
-    const selectedProvince = provinces.find(p => p.name === userInfo.country);
+    const selectedProvince = provinces.find(p => p.name === formData.country);
     setDistricts(selectedProvince ? selectedProvince.districts : []);
     if (!selectedProvince) {
-      setUserInfo(prev => ({ ...prev, district: '', ward: '' }));
+      setFormData(prev => ({ ...prev, district: '', ward: '' }));
     }
-  }, [userInfo.country, provinces, setUserInfo]);
+  }, [formData.country, provinces]);
 
+  // Update wards when district changes
   useEffect(() => {
-    const selectedDistrict = districts.find(d => d.name === userInfo.district);
+    const selectedDistrict = districts.find(d => d.name === formData.district);
     setWards(selectedDistrict ? selectedDistrict.wards : []);
     if (!selectedDistrict) {
-      setUserInfo(prev => ({ ...prev, ward: '' }));
+      setFormData(prev => ({ ...prev, ward: '' }));
     }
-  }, [userInfo.district, districts, setUserInfo]);
+  }, [formData.district, districts]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserInfo(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submit form:', { cartItems, totalAmount, selectedShipping, paymentMethod });
-
-    if (!userInfo.fullName || !userInfo.phoneNumber || !userInfo.email || 
-        !userInfo.country || !userInfo.district || !userInfo.ward || !userInfo.address) {
+    
+    // Validate form
+    if (!formData.fullName || !formData.phoneNumber || !formData.email || 
+        !formData.country || !formData.district || !formData.ward || !formData.address) {
       toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
 
+    // Validate cart items
     if (!cartItems || cartItems.length === 0) {
       toast.error('Giỏ hàng trống');
       return;
     }
 
+    // Validate shipping method
     if (!selectedShipping) {
       toast.error('Vui lòng chọn phương thức giao hàng');
       return;
@@ -98,68 +126,56 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
 
     try {
       setIsSubmitting(true);
-
+      
+      // Tính tổng giá trị các item (lấy đúng giá từ pet hoặc product)
       const totalItemPrice = cartItems.reduce(
-        (sum, item) => sum + ((item.pet?.price || item.product?.price || 0) * (item.quantity || 1)),
+        (sum, item) =>
+          sum + ((item.pet?.price || item.product?.price || 0) * (item.quantity || 1)),
         0
       );
+      // Lấy phí shipping (nếu có)
       const shippingFee = selectedShipping?.price ? Number(selectedShipping.price) : 0;
-
+      // Tạo orderRequest đúng với backend, mỗi item chỉ có 1 trong 2 trường productId hoặc petId có giá trị, trường còn lại là 0
       const orderRequest = {
-        userId: userInfo.userId,
-        totalPrice: totalItemPrice + shippingFee,
-        paymentMethod: paymentMethod,
-        shippingAddress: `${userInfo.address}, ${userInfo.ward}, ${userInfo.district}, ${userInfo.country}`,
-        shippingMethodId: selectedShipping.id,
-        phoneNumber: userInfo.phoneNumber,
-        shippingName: userInfo.fullName,
+        userId: Number(localStorage.getItem('userId')),
+        totalPrice: totalItemPrice + shippingFee, // Tổng giá trị đơn hàng + phí ship
+        paymentMethod: selectedShipping?.paymentMethod || 'COD',
+        paymentStatus: 'PENDING',
+        shippingAddress: `${formData.address}, ${formData.ward}, ${formData.district}, ${formData.country}`,
+        shippingMethodId: selectedShipping?.id || 1,
         orderRequestList: cartItems.map(item => ({
+          // Nếu là sản phẩm, productId có giá trị, petId = 0
+          // Nếu là thú cưng, petId có giá trị, productId = 0
           productId: item.product?.id ? Number(item.product.id) : 0,
           petId: item.pet?.id ? Number(item.pet.id) : 0,
           quantity: item.quantity ? Number(item.quantity) : 1,
-          price: item.pet?.price || item.product?.price || 0
+          price: item.pet?.price || item.product?.price || 0 // Lưu giá tại thời điểm đặt hàng
         }))
       };
+      console.log('orderRequest gửi lên:', orderRequest);
 
-      console.log('Order request:', orderRequest);
-
-      const orderResponse = await createOrder(orderRequest);
-      console.log('Order response:', orderResponse);
-
-      if (orderResponse.success) {
-        if (paymentMethod === 'PAYOS') {
-          const paymentData = {
-            productName: `Đơn hàng thú cưng ${orderResponse.data.orderId}`,
-            description: `Thanh toán đơn hàng #${orderResponse.data.orderId}`,
-            returnUrl: `http://localhost:3000/user/payment-callback?status=success&orderId=${orderResponse.data.orderId}`,
-            cancelUrl: `http://localhost:3000/user/payment-callback?status=cancelled&orderId=${orderResponse.data.orderId}`,
-            price: Math.round(totalItemPrice + shippingFee),
-            orderId: orderResponse.data.orderId
-          };
-
-          const paymentResponse = await createPaymentLink(paymentData);
-          if (paymentResponse.error === 0) {
-            const expiryDateTime = new Date(paymentResponse.expiredAt);
-            const expiryDateTimeLocal = new Date(expiryDateTime.getTime() + (7 * 60 * 60 * 1000)); // Điều chỉnh múi giờ UTC+7
-            toast.info(`Liên kết thanh toán sẽ hết hạn vào ${expiryDateTimeLocal.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} (6 giờ từ khi tạo)`);
-            window.location.href = paymentResponse.checkoutUrl;
-            localStorage.removeItem('checkout_items');
-            window.dispatchEvent(new Event('cart-updated'));
-          } else {
-            toast.error(paymentResponse.message || 'Không thể tạo liên kết thanh toán');
-          }
-        } else {
-          toast.success('Đặt hàng thành công!');
-          localStorage.removeItem('checkout_items');
-          window.dispatchEvent(new Event('cart-updated'));
-          navigate('/user/order-history');
-        }
+      // Call API to create order
+      const response = await createOrder(orderRequest);
+      
+      if (response.data.success) {
+        // Show success message
+        toast.success('Đặt hàng thành công!');
+        
+        // Clear cart
+        localStorage.removeItem('checkout_items');
+        
+        // Dispatch event to update cart in header
+        window.dispatchEvent(new Event('cart-updated'));
+        
+        // Redirect to order history
+        navigate('/user/order-history');
       } else {
-        toast.error(orderResponse.message || 'Đặt hàng thất bại');
+        toast.error(response.data.message || 'Có lỗi xảy ra khi đặt hàng');
       }
+      
     } catch (error) {
-      console.error('Lỗi khi đặt hàng:', error);
-      toast.error(error || 'Có lỗi xảy ra khi đặt hàng');
+      console.error('Error creating order:', error);
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng');
     } finally {
       setIsSubmitting(false);
     }
@@ -178,7 +194,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                 <input 
                   type="text" 
                   name="fullName" 
-                  value={userInfo.fullName}
+                  value={formData.fullName}
                   onChange={handleChange}
                   required 
                   className="form-control"
@@ -190,11 +206,11 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                 <label>Số điện thoại<span>*</span></label>
                 <input 
                   type="tel" 
+                  className="form-control" 
                   name="phoneNumber" 
-                  value={userInfo.phoneNumber}
+                  value={formData.phoneNumber}
                   onChange={handleChange}
                   required 
-                  className="form-control"
                 />
               </div>
             </div>
@@ -203,11 +219,11 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                 <label>Email<span>*</span></label>
                 <input 
                   type="email" 
+                  className="form-control" 
                   name="email" 
-                  value={userInfo.email}
+                  value={formData.email}
                   onChange={handleChange}
                   required 
-                  className="form-control"
                 />
               </div>
             </div>
@@ -216,10 +232,10 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                 <label>Tỉnh/Thành Phố<span>*</span></label>
                 <select 
                   name="country" 
-                  value={userInfo.country}
+                  className="form-control"
+                  value={formData.country}
                   onChange={handleChange}
                   required
-                  className="form-control"
                 >
                   <option value="">Chọn tỉnh/thành</option>
                   {provinces.map((province) => (
@@ -235,11 +251,11 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                 <label>Quận/Huyện<span>*</span></label>
                 <select 
                   name="district" 
-                  value={userInfo.district}
+                  className="form-control"
+                  value={formData.district}
                   onChange={handleChange}
                   required
-                  disabled={!userInfo.country}
-                  className="form-control"
+                  disabled={!formData.country}
                 >
                   <option value="">Chọn quận/huyện</option>
                   {districts.map((district) => (
@@ -255,11 +271,11 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                 <label>Xã/Phường<span>*</span></label>
                 <select 
                   name="ward" 
-                  value={userInfo.ward}
+                  className="form-control"
+                  value={formData.ward}
                   onChange={handleChange}
                   required
-                  disabled={!userInfo.district}
-                  className="form-control"
+                  disabled={!formData.district}
                 >
                   <option value="">Chọn xã/phường</option>
                   {wards.map((ward) => (
@@ -275,11 +291,11 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                 <label>Địa chỉ cụ thể<span>*</span></label>
                 <input 
                   type="text" 
+                  className="form-control" 
                   name="address" 
-                  value={userInfo.address}
+                  value={formData.address}
                   onChange={handleChange}
                   required 
-                  className="form-control"
                 />
               </div>
             </div>
@@ -289,11 +305,11 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                 <textarea 
                   name="note" 
                   rows="12" 
+                  className="form-control"
                   style={{ minHeight: '200px' }}
                   placeholder="Điền các thông tin cần ghi chú vào đây"
-                  value={userInfo.note}
+                  value={formData.note}
                   onChange={handleChange}
-                  className="form-control"
                 ></textarea>
               </div>
             </div>
@@ -301,7 +317,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
               <button 
                 type="submit" 
                 className="btn btn-primary"
-                disabled={isSubmitting || !cartItems.length}
+                disabled={isSubmitting || !cartItems?.length}
               >
                 {isSubmitting ? 'Đang xử lý...' : 'Đặt hàng'}
               </button>

@@ -17,7 +17,6 @@ import SearchResult from '../pages/user/SearchResult';
 import Contact from '../pages/user/Contact';
 import BlogDetail from '../pages/user/BlogDetail';
 import Unauthorized from '../pages/error/Unauthorized';
-import PaymentCallback from '../pages/user/paymentCallBack';
 
 export default function UserRoutes() {
   return (
@@ -32,7 +31,6 @@ export default function UserRoutes() {
         <Route path="/checkout/success" element={<PaymentSuccess />} />
         <Route path="/order-history" element={<OrderStatus />} />
         <Route path="/order-detail/:orderId" element={<OrderDetail />} />
-        <Route path="/payment-callback" element={<PaymentCallback />} />
         <Route path="/profile" element={<PersonalInfo />} />
         <Route path="/wishlist" element={<WishlistPet />} />
         <Route path="/orders" element={<ShowBill />} />

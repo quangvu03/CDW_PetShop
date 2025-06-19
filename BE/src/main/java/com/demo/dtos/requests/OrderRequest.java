@@ -4,13 +4,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@ToString
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderRequest {
@@ -29,10 +27,6 @@ public class OrderRequest {
 
     @NotBlank(message = "Địa chỉ giao hàng không được để trống")
     String shippingAddress;
-
-    String phoneNumber;
-    
-    String shippingName;
 
     @Positive(message = "ID phương thức vận chuyển không hợp lệ")
     int shippingMethodId;

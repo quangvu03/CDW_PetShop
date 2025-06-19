@@ -1,4 +1,3 @@
-// src/pages/user/OrderStatus.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getOrdersByUser } from '../../services/orderService';
@@ -26,36 +25,23 @@ export default function OrderStatus() {
         return;
       }
 
-      const data = await getOrdersByUser(userId);
-      console.log('API response data:', data); // Debug
-
-      // Kiểm tra response
-      if (Array.isArray(data)) {
-        // Trường hợp trả về mảng đơn hàng
-        setOrders(data);
-        filterOrdersByTab('all', data, searchTerm);
-      } else if (data && typeof data === 'object') {
-        // Trường hợp trả về object
-        if (data.success !== undefined || data.message === 'Bạn chưa có đơn đặt hàng nào!') {
-          setOrders([]);
-          setFilteredOrders([]);
-        } else {
-          throw new Error('Định dạng phản hồi API không mong đợi');
-        }
+      const response = await getOrdersByUser(userId);
+      if (response.data.success === false) {
+        setOrders([]);
+        setFilteredOrders([]);
       } else {
-        throw new Error('Phản hồi API không hợp lệ');
+        setOrders(response.data);
+        filterOrdersByTab('all', response.data, searchTerm);
       }
     } catch (error) {
-      console.error('Lỗi khi lấy đơn hàng:', error);
+      console.error('Error fetching orders:', error);
       if (error.response?.status === 401 || error.response?.status === 403) {
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         localStorage.clear();
         navigate('/auth/login');
       } else {
-        toast.error(error.message || 'Không thể tải danh sách đơn hàng');
+        toast.error('Không thể tải danh sách đơn hàng');
       }
-      setOrders([]);
-      setFilteredOrders([]);
     } finally {
       setLoading(false);
     }
@@ -75,8 +61,7 @@ export default function OrderStatus() {
           order.status?.toLowerCase().includes(term) ||
           order.shippingAddress?.toLowerCase().includes(term) ||
           order.paymentMethod?.toLowerCase().includes(term) ||
-          order.shippingName?.toLowerCase().includes(term) ||
-          order.phoneNumber?.toLowerCase().includes(term)
+          order.shippingName?.toLowerCase().includes(term)
       );
     }
     setFilteredOrders(filtered);
@@ -112,31 +97,17 @@ export default function OrderStatus() {
   };
 
   const formatDate = (dateString) => {
-    return dateString ? new Date(dateString).toLocaleString('vi-VN', {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-    }) : '---';
-  };
-
-  const isPaymentLinkValid = (expiredAt) => {
-    if (!expiredAt) return false;
-    const expiryDate = new Date(expiredAt);
-    return expiryDate > new Date();
+    });
   };
 
   const handleViewDetails = (orderId) => {
     navigate(`/user/order-detail/${orderId}`);
-  };
-
-  const handlePayNow = (checkoutUrl) => {
-    if (checkoutUrl) {
-      window.location.href = checkoutUrl;
-    } else {
-      toast.error('Không có liên kết thanh toán');
-    }
   };
 
   if (loading) {
@@ -214,7 +185,7 @@ export default function OrderStatus() {
             <input
               type="text"
               className="form-control"
-              placeholder="Tìm kiếm đơn hàng (mã, trạng thái, địa chỉ, tên, số điện thoại...)"
+              placeholder="Tìm kiếm đơn hàng (mã, trạng thái, địa chỉ...)"
               value={searchTerm}
               onChange={handleSearch}
             />
@@ -230,9 +201,7 @@ export default function OrderStatus() {
                   <th>Phương thức thanh toán</th>
                   <th>Trạng thái thanh toán</th>
                   <th>Địa chỉ giao hàng</th>
-                  <th>Tên người nhận</th>
-                  <th>Số điện thoại</th>
-                  <th>Thanh toán</th>
+                  <th>Phương thức giao hàng</th>
                   <th>Chi tiết</th>
                 </tr>
               </thead>
@@ -263,26 +232,8 @@ export default function OrderStatus() {
                         {order.paymentStatus === 'unpaid' ? 'Chưa thanh toán' : 'Đã thanh toán'}
                       </span>
                     </td>
-                    <td>{order.shippingAddress || '---'}</td>
+                    <td>{order.shippingAddress}</td>
                     <td>{order.shippingName || '---'}</td>
-                    <td>{order.phoneNumber || '---'}</td>
-<td>
-  {order.status === 'cancelled' ? (
-    '---'
-  ) : order.paymentMethod === 'PAYOS' && order.paymentStatus === 'unpaid' && isPaymentLinkValid(order.expiredAt) ? (
-    <button
-      className="btn btn-outline-success"
-      style={{ fontSize: '12px', padding: '2px 8px' }}
-      onClick={() => handlePayNow(order.checkoutUrl)}
-    >
-      Thanh toán ngay
-    </button>
-  ) : order.paymentMethod === 'PAYOS' && order.paymentStatus === 'unpaid' ? (
-    <span className="text-danger">Link thanh toán đã hết hạn</span>
-  ) : (
-    '---'
-  )}
-</td>
                     <td>
                       <button
                         className="btn btn-outline-primary"

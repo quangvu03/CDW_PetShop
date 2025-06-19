@@ -11,7 +11,6 @@ export default function OrderDetail() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
-  const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState(null);
   const [provinces, setProvinces] = useState([]);
@@ -22,10 +21,10 @@ export default function OrderDetail() {
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedWard, setSelectedWard] = useState('');
   const [street, setStreet] = useState('');
-  const [ratings, setRatings] = useState({});
-  const [pendingRatings, setPendingRatings] = useState({});
-  const [hoverRatings, setHoverRatings] = useState({});
-  const [reviews, setReviews] = useState({});
+  const [ratings, setRatings] = useState({}); // Lưu rating đã gửi cho mỗi petId
+  const [pendingRatings, setPendingRatings] = useState({}); // Lưu rating tạm thời
+  const [hoverRatings, setHoverRatings] = useState({}); // Lưu trạng thái hover
+  const [reviews, setReviews] = useState({}); // Lưu reviewId cho mỗi petId
 
   useEffect(() => {
     fetchOrderDetails();
@@ -38,18 +37,10 @@ export default function OrderDetail() {
     try {
       setLoading(true);
       const response = await getOrderDetail(orderId);
-      console.log('API response:', response); // Debug toàn bộ response
-      if (response && response.result && response.order) {
-        setOrderDetails(response.result); // OrderItemDto
-        setOrder(response.order); // OrdersDto
-      } else {
-        throw new Error('Không tìm thấy chi tiết đơn hàng');
-      }
+      setOrder(response.data.result);
     } catch (error) {
-      console.error('Lỗi khi lấy chi tiết đơn hàng:', error);
-      toast.error(error.message || 'Không thể tải thông tin đơn hàng');
-      setOrder(null);
-      setOrderDetails(null);
+      console.error('Error fetching order details:', error);
+      toast.error('Không thể tải thông tin đơn hàng');
     } finally {
       setLoading(false);
     }
@@ -60,7 +51,6 @@ export default function OrderDetail() {
       const res = await getCurrentUser();
       setUserInfo(res.data);
     } catch (err) {
-      console.error('Lỗi khi lấy thông tin người dùng:', err);
       setUserInfo(null);
     }
   };
@@ -70,7 +60,7 @@ export default function OrderDetail() {
       const response = await axios.get('https://provinces.open-api.vn/api/?depth=3');
       setProvinces(response.data);
     } catch (error) {
-      console.error('Lỗi khi lấy danh sách tỉnh/thành:', error);
+      console.error('Error fetching provinces:', error);
       toast.error('Không thể tải danh sách tỉnh/thành');
     }
   };
@@ -82,7 +72,7 @@ export default function OrderDetail() {
 
       const response = await getReviewsByUserId(userId);
       const userReviews = response.data;
-      console.log('Danh sách đánh giá:', userReviews);
+      console.log('User reviews:', userReviews);
       const ratingsMap = {};
       const reviewsMap = {};
       userReviews.forEach((review) => {
@@ -91,11 +81,13 @@ export default function OrderDetail() {
           reviewsMap[review.petId] = review.id;
         }
       });
+      console.log('Ratings map:', ratingsMap);
+      console.log('Reviews map:', reviewsMap);
       setRatings(ratingsMap);
       setReviews(reviewsMap);
     } catch (error) {
-      console.error('Lỗi khi lấy danh sách đánh giá:', error);
-      toast.error('Không thể tải danh sách đánh giá');
+      console.error('Error fetching user reviews:', error);
+      toast.error('Không thể tải danh sách đánh giá.');
     }
   };
 
@@ -130,8 +122,8 @@ export default function OrderDetail() {
           toast.success('Hủy đơn hàng thành công');
           await fetchOrderDetails();
         } catch (error) {
-          console.error('Lỗi khi hủy đơn hàng:', error);
-          toast.error(error.message || 'Không thể hủy đơn hàng');
+          console.error('Error cancelling order:', error);
+          toast.error('Không thể hủy đơn hàng');
         }
       }
     });
@@ -165,20 +157,21 @@ export default function OrderDetail() {
     const newAddress = `${street}, ${wardName}, ${districtName}, ${provinceName}`;
     try {
       const response = await updateAddress(orderId, encodeURIComponent(newAddress));
-      if (response.success) {
-        toast.success(response.message || 'Cập nhật địa chỉ thành công');
+      if (response.data.success) {
+        toast.success(response.data.message || 'Cập nhật địa chỉ thành công');
         await fetchOrderDetails();
         setShowAddressModal(false);
       } else {
-        toast.error(response.message || 'Cập nhật địa chỉ thất bại');
+        toast.error(response.data.message || 'Cập nhật địa chỉ thất bại');
       }
     } catch (error) {
-      console.error('Lỗi khi cập nhật địa chỉ:', error);
-      toast.error(error.message || 'Không thể cập nhật địa chỉ');
+      console.error('Error updating address:', error);
+      toast.error(error.response?.data?.message || 'Không thể cập nhật địa chỉ');
     }
   };
 
   const handleStarClick = (petId, star) => {
+    console.log(`Star clicked: petId=${petId}, star=${star}`);
     setPendingRatings((prev) => ({ ...prev, [petId]: star }));
   };
 
@@ -221,13 +214,13 @@ export default function OrderDetail() {
       setRatings((prev) => ({ ...prev, [petId]: rating }));
       setPendingRatings((prev) => ({ ...prev, [petId]: undefined }));
     } catch (error) {
-      console.error('Lỗi khi gửi/cập nhật đánh giá:', error);
+      console.error('Error submitting review:', error);
       if (error.response?.status === 401 || error.response?.status === 403) {
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         localStorage.clear();
         navigate('/auth/login');
       } else {
-        toast.error(error.message || 'Không thể gửi/cập nhật đánh giá');
+        toast.error('Không thể gửi/cập nhật đánh giá. Vui lòng thử lại.');
       }
     }
   };
@@ -255,27 +248,13 @@ export default function OrderDetail() {
   };
 
   const formatDate = (dateString) => {
-    return dateString ? new Date(dateString).toLocaleString('vi-VN', {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-    }) : '---';
-  };
-
-  const isPaymentLinkValid = (expiredAt) => {
-    if (!expiredAt) return false;
-    const expiryDate = new Date(expiredAt);
-    return expiryDate > new Date();
-  };
-
-  const handlePayNow = (checkoutUrl) => {
-    if (checkoutUrl) {
-      window.location.href = checkoutUrl;
-    } else {
-      toast.error('Không có liên kết thanh toán');
-    }
+    });
   };
 
   const canCancelOrder = order && order.status?.toLowerCase() === 'pending';
@@ -294,7 +273,7 @@ export default function OrderDetail() {
     );
   }
 
-  if (!order || !orderDetails) {
+  if (!order) {
     return (
       <div className="container mt-4">
         <div className="alert alert-danger">Không tìm thấy thông tin đơn hàng</div>
@@ -306,7 +285,7 @@ export default function OrderDetail() {
     <div className="container mt-4">
       <div className="card">
         <div className="card-header d-flex justify-content-between align-items-center">
-          <h3 className="mb-0">Chi tiết đơn hàng #{order.id}</h3>
+          <h3 className="mb-0">Chi tiết đơn hàng #{order.orderId || order.id}</h3>
           <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
             {canCancelOrder && (
               <button
@@ -326,15 +305,6 @@ export default function OrderDetail() {
                 Thay đổi địa chỉ
               </button>
             )}
-            {order.paymentMethod === 'PAYOS' && order.paymentStatus === 'unpaid' && isPaymentLinkValid(order.expiredAt) && (
-              <button
-                className="btn btn-success btn-sm d-flex align-items-center justify-content-center"
-                style={{ minWidth: '120px', height: '36px' }}
-                onClick={() => handlePayNow(order.checkoutUrl)}
-              >
-                Thanh toán ngay
-              </button>
-            ) && order.status === 'pending'}
             <span
               className={`badge ${getStatusBadgeClass(order.status)} d-flex align-items-center justify-content-center`}
               style={{ minWidth: '120px', height: '36px', fontSize: '0.875rem', marginLeft: '10px' }}
@@ -357,35 +327,54 @@ export default function OrderDetail() {
           <div className="row mb-4">
             <div className="col-md-6">
               <h5>Thông tin khách hàng</h5>
-              <p><strong>Họ tên:</strong> {order.shippingName || userInfo?.fullName || '---'}</p>
-              <p><strong>Số điện thoại:</strong> {order.phoneNumber || userInfo?.phone || '---'}</p>
-              <p><strong>Email:</strong> {userInfo?.email || '---'}</p>
-              <p><strong>Địa chỉ:</strong> {order.shippingAddress || '---'}</p>
+              <p>
+                <strong>Họ tên:</strong>{' '}
+                {order.fullName || order.user?.fullName || userInfo?.fullName || '---'}
+              </p>
+              <p>
+                <strong>Số điện thoại:</strong>{' '}
+                {order.phoneNumber ||
+                  order.user?.phoneNumber ||
+                  order.user?.phone ||
+                  userInfo?.phone ||
+                  userInfo?.phoneNumber ||
+                  '---'}
+              </p>
+              <p>
+                <strong>Email:</strong>{' '}
+                {order.email || order.user?.email || userInfo?.email || '---'}
+              </p>
+              <p>
+                <strong>Địa chỉ:</strong>{' '}
+                {order.shippingAddress || order.address || order.user?.address || userInfo?.address || '---'}
+              </p>
             </div>
             <div className="col-md-6">
               <h5>Thông tin đơn hàng</h5>
-              <p><strong>Ngày đặt:</strong> {formatDate(order.orderDate)}</p>
-              <p><strong>Phương thức thanh toán:</strong> {order.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' : order.paymentMethod}</p>
+              <p>
+                <strong>Ngày đặt:</strong> {formatDate(order.orderDate)}
+              </p>
+              <p>
+                <strong>Phương thức thanh toán:</strong>{' '}
+                {order.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' : order.paymentMethod}
+              </p>
               <p>
                 <strong>Trạng thái thanh toán:</strong>{' '}
-                <span className={`badge ${order.paymentStatus === 'unpaid' ? 'bg-warning' : 'bg-success'}`}>
+                <span
+                  className={`badge ${order.paymentStatus === 'unpaid' ? 'bg-warning' : 'bg-success'}`}
+                >
                   {order.paymentStatus === 'unpaid' ? 'Chưa thanh toán' : 'Đã thanh toán'}
                 </span>
               </p>
-              {order.paymentMethod === 'PAYOS' && order.paymentStatus === 'unpaid' && (
-                <p>
-                  <strong>Link thanh toán:</strong>{' '}
-                  {isPaymentLinkValid(order.expiredAt) ? (
-                    <a href={order.checkoutUrl} target="_blank" rel="noopener noreferrer">Truy cập</a>
-                  ) : (
-                    'Hết hạn'
-                  )}
-                </p>
-              )}
-              <p><strong>Hết hạn thanh toán:</strong> {formatDate(order.expiredAt)}</p>
-              <p><strong>Phương thức giao hàng:</strong> {orderDetails?.shippingName || '---'}</p>
-              <p><strong>Phí giao hàng:</strong> {(orderDetails?.priceShipping ?? 0).toLocaleString('vi-VN')}đ</p>
-              <p><strong>Ghi chú:</strong> {orderDetails?.note || 'Không có'}</p>
+              <p>
+                <strong>Phương thức giao hàng:</strong> {order.shippingName || '---'}
+              </p>
+              <p>
+                <strong>Phí giao hàng:</strong> {(order.priceShipping ?? 0).toLocaleString('vi-VN')}đ
+              </p>
+              <p>
+                <strong>Ghi chú:</strong> {order.note || 'Không có'}
+              </p>
             </div>
           </div>
 
@@ -403,8 +392,8 @@ export default function OrderDetail() {
                 </tr>
               </thead>
               <tbody>
-                {orderDetails?.petDtoList && orderDetails.petDtoList.length > 0 ? (
-                  orderDetails.petDtoList.map((item, idx) => (
+                {order.petDtoList && order.petDtoList.length > 0 ? (
+                  order.petDtoList.map((item, idx) => (
                     <tr key={item.id || idx}>
                       <td>
                         {item.imageUrl ? (
@@ -433,7 +422,10 @@ export default function OrderDetail() {
                       {canReview && (
                         <td>
                           <div className="d-flex gap-2 align-items-center">
-                            <div className="star-rating" style={{ minWidth: '120px', flexGrow: 1 }}>
+                            <div
+                              className="star-rating"
+                              style={{ minWidth: '120px', flexGrow: 1 }}
+                            >
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <i
                                   key={star}
@@ -445,11 +437,17 @@ export default function OrderDetail() {
                                   onClick={() => handleStarClick(item.id, star)}
                                   onMouseEnter={() => handleStarHover(item.id, star)}
                                   onMouseLeave={() => handleStarLeave(item.id)}
-                                  style={{ cursor: 'pointer', fontSize: '16px', margin: '0 3px' }}
+                                  style={{
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                    margin: '0 3px',
+                                  }}
                                 ></i>
                               ))}
                               {(pendingRatings[item.id] || ratings[item.id]) && (
-                                <p style={{ fontSize: '12px', marginTop: '5px', color: '#000', fontWeight: 'bold' }}></p>
+                                <p style={{ fontSize: '12px', marginTop: '5px', color: '#000', fontWeight: 'bold' }}>
+                                  {/* Bạn đã chọn {pendingRatings[item.id] || ratings[item.id]} sao */}
+                                </p>
                               )}
                             </div>
                             <button
@@ -488,7 +486,7 @@ export default function OrderDetail() {
                   </td>
                   <td>
                     <strong>
-                      {((order.totalPrice ?? 0) - (orderDetails?.priceShipping ?? 0)).toLocaleString('vi-VN')}đ
+                      {((order.totalPrice ?? 0) - (order.priceShipping ?? 0)).toLocaleString('vi-VN')}đ
                     </strong>
                   </td>
                 </tr>
@@ -497,7 +495,7 @@ export default function OrderDetail() {
                     <strong>Phí giao hàng:</strong>
                   </td>
                   <td>
-                    <strong>{(orderDetails?.priceShipping ?? 0).toLocaleString('vi-VN')}đ</strong>
+                    <strong>{(order.priceShipping ?? 0).toLocaleString('vi-VN')}đ</strong>
                   </td>
                 </tr>
                 <tr>
@@ -643,6 +641,7 @@ export default function OrderDetail() {
           </div>
         </div>
       )}
+      {/* Inline CSS cho ngôi sao */}
       <style>
         {`
           .fa-star {

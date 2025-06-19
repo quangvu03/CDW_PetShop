@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.8.4",
     "chart.js": "^4.4.9",
+    "choices.js": "^11.1.0",
     "datatables.net": "^2.3.1",
     "datatables.net-bs4": "^2.3.2",
     "datatables.net-bs5": "^2.3.2",

@@ -20,20 +20,40 @@ const AdminReviewManager = () => {
         setComments([]);
         toast.error('Lỗi khi tải dữ liệu bình luận!');
       })
-      .finally(() => {
-        if ($.fn.DataTable.isDataTable('#reviewTable')) {
-          $('#reviewTable').DataTable().destroy();
-        }
-        $('#reviewTable').DataTable({
-          pageLength: 10,
-          searching: true,
-          ordering: true,
-          language: {
-            emptyTable: 'Không có dữ liệu để hiển thị',
-          },
-        });
-      });
   }, []);
+  useEffect(() => {
+    if (comments.length === 0) return;
+  
+    // Nếu bảng đã được khởi tạo => hủy trước
+    if ($.fn.DataTable.isDataTable('#reviewTable')) {
+      $('#reviewTable').DataTable().destroy();
+    }
+  
+    // Đợi DOM cập nhật xong mới khởi tạo lại DataTable
+    setTimeout(() => {
+      $('#reviewTable').DataTable({
+        pageLength: 10,
+        searching: true,
+        ordering: true,
+        language: {
+          emptyTable: 'Không có dữ liệu để hiển thị',
+          lengthMenu: 'Hiển thị _MENU_ dòng',
+          zeroRecords: 'Không tìm thấy kết quả phù hợp',
+          info: '',
+          infoEmpty: '',
+          search: 'Tìm kiếm:',
+          paginate: {
+            previous: '‹',
+            next: '›',
+            first: '«',
+            last: '»',
+          },
+        },
+      });
+      
+      
+    }, 100);
+  }, [comments]);
 
   const handleCheck = (commentId) => {
     unreportComment(commentId)
@@ -86,28 +106,61 @@ const AdminReviewManager = () => {
   return (
     <div className="content-wrapper">
       <div className="container-fluid">
-        <form id="filterForm" onSubmit={handleFilterSubmit}>
-          <DateRangePicker />
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="form-control ml-2 mt-4"
-            style={{ width: '150px' }}
-          >
-            <option value="all">Tất cả</option>
-            <option value="pending">Chờ xử lý</option>
-            <option value="resolved">Đã xử lý</option>
-          </select>
-          <button type="submit" className="btn btn-primary ml-2 mt-4">
-            Lọc
-          </button>
-        </form>
+      <form id="filterForm" onSubmit={handleFilterSubmit}>
+  <DateRangePicker />
+
+  <div
+    className="d-flex mt-3"
+    style={{
+      width: '472px',
+      gap: '8px',
+    }}
+  >
+    {/* Ô TẤT CẢ */}
+    <div style={{ flex: '0 0 384px' }}>
+      <select
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
+        className="form-control"
+        style={{
+          backgroundColor: '#3d9a94',
+          color: '#fff',
+          border: '1px solid #2f807a',
+          borderRadius: '4px',
+          fontSize: '15px',
+        }}
+      >
+        <option value="all">Tất cả</option>
+        <option value="pending">Chờ xử lý</option>
+        <option value="resolved">Đã xử lý</option>
+      </select>
+    </div>
+
+    {/* NÚT LỌC */}
+    <div style={{ flex: '0 0 100px', alignSelf: 'stretch', marginLeft:'20px', height: '39px' }}>
+      <button
+        type="submit"
+        className="btn w-100 h-100"
+        style={{
+          backgroundColor: '#3d9a94',
+          color: '#fff',
+          border: '1px solid #2f807a',
+          borderRadius: '4px',
+          fontSize: '12px',
+        }}
+      >
+        Lọc
+      </button>
+    </div>
+  </div>
+</form>
+
 
         <div className="card mt-3">
           <div className="card-body">
             <h5 className="card-title">Danh sách bình luận bị báo cáo</h5>
             <div className="table-responsive">
-              <table id="reviewTable" className="table table-striped">
+              <table id="reviewTable" className="table table-striped admin-review-table">
                 <thead>
                   <tr>
                     <th>#</th>

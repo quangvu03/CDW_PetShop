@@ -48,5 +48,21 @@
     color: #fff;
     border-color: #007bff;
   }
+  /* Trang review */
+/* Tùy biến riêng cho dropdown của admin table */
+.my-review-datatable_wrapper .dataTables_length select {
+  background-color: #3d9a94;
+  color: #fff;
+  border: 1px solid #2f807a;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 15px;
+  height: 40px;
+}
+
+
+
+
+
   
   

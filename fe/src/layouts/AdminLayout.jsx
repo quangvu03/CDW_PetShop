@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import{ useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import '../assets/admin/js/admin-imports.js';
-import '../assets/admin/css/custom.css';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminRightSidebar from '../components/admin/AdminRightSidebar';
@@ -28,6 +27,7 @@ const AdminLayout = () => {
       '/assets/admin/plugins/summernote/dist/summernote-bs4.css',
       '//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css',
       '/assets/admin/resources/demos/style.css',
+      '/assets/admin/css/custom.css'
     ];
 
     const cssPromises = cssFiles.map(href => {

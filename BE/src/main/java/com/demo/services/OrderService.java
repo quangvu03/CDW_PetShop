@@ -23,14 +23,4 @@ public interface OrderService {
 
     List<OrdersDto> findCompletedOrdersByDateRange(Instant startDate, Instant endDate);
 
-    OrdersDto findById(int orderId);
-
-    void updatePaymentStatus(int orderId, String status, Long payosOrderCode);
-
-    void updatePaymentStatusByOrderId(int orderId, String status);
-
-    void updatePaymentStatusByOrderCode(Long payosOrderCode, String status);
-
-    // Thêm phương thức để cập nhật thông tin PayOS
-    OrdersDto updatePayOSDetails(int orderId, String checkoutUrl, Instant expiredAt, Long payosOrderCode);
 }
