@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../../assets/user/css/User.css';
-
 import {
   getCartByUser,
   updateCartItemQuantity,
@@ -10,35 +10,34 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 export default function Cart() {
+  const { t } = useTranslation();
   const [cartItems, setCartItems] = useState([]);
   const navigate = useNavigate();
-
 
   useEffect(() => {
     fetchCart();
   }, []);
-  // Khi click vào nút thanh toán
-const handleCheckout = () => {
-  localStorage.setItem('checkout_items', JSON.stringify(cartItems));
-  navigate('/user/checkout'); // hoặc <Link to="/checkout" />
-};
 
+  const handleCheckout = () => {
+    localStorage.setItem('checkout_items', JSON.stringify(cartItems));
+    navigate('/user/checkout');
+  };
 
   const getFullImageUrl = (path) => {
     if (!path || typeof path !== 'string') return '/assets/user/images/default-pet-placeholder.png';
     if (path.startsWith('http')) return path;
     return `http://localhost:8080${path.startsWith('/') ? '' : '/'}${path}`;
   };
-  
 
   const fetchCart = async () => {
     try {
       const data = await getCartByUser();
       setCartItems(data);
     } catch (err) {
-      toast.error('Lỗi khi lấy giỏ hàng');
+      toast.error(t('cart_fetch_error', { defaultValue: 'Lỗi khi lấy giỏ hàng' }));
     }
   };
+
   const handleQuantityChange = async (itemId, newQty) => {
     try {
       await updateCartItemQuantity(itemId, newQty);
@@ -49,7 +48,7 @@ const handleCheckout = () => {
         )
       );
     } catch (err) {
-      toast.error('Cập nhật số lượng thất bại');
+      toast.error(t('cart_update_quantity_error', { defaultValue: 'Cập nhật số lượng thất bại' }));
     }
   };
 
@@ -59,11 +58,11 @@ const handleCheckout = () => {
         petId: item.pet?.id,
         productId: item.product?.id
       });
-      toast.success('Xoá sản phẩm khỏi giỏ hàng thành công');
+      toast.success(t('cart_remove_success', { defaultValue: 'Xoá sản phẩm khỏi giỏ hàng thành công' }));
       window.dispatchEvent(new Event('cart-updated'));
       setCartItems((prev) => prev.filter((i) => i.id !== item.id));
     } catch (err) {
-      toast.error('Xoá khỏi giỏ thất bại');
+      toast.error(t('cart_remove_error', { defaultValue: 'Xoá khỏi giỏ thất bại' }));
     }
   };
 
@@ -80,16 +79,16 @@ const handleCheckout = () => {
         <div className="row">
           <div className="col-12">
             {cartItems.length === 0 ? (
-              <p className="text-center py-5">🛒 Giỏ hàng của bạn đang trống.</p>
+              <p className="text-center py-5">{t('cart_empty', { defaultValue: '🛒 Giỏ hàng của bạn đang trống.' })}</p>
             ) : (
               <table className="table shopping-summery">
                 <thead>
                   <tr className="main-hading">
-                    <th>Hình</th>
-                    <th>Tên</th>
-                    <th className="text-center">Giá</th>
-                    <th className="text-center">Số lượng</th>
-                    <th className="text-center">Tổng</th>
+                    <th>{t('cart_table_image', { defaultValue: 'Hình' })}</th>
+                    <th>{t('cart_table_name', { defaultValue: 'Tên' })}</th>
+                    <th className="text-center">{t('cart_table_price', { defaultValue: 'Giá' })}</th>
+                    <th className="text-center">{t('cart_table_quantity', { defaultValue: 'Số lượng' })}</th>
+                    <th className="text-center">{t('cart_table_total', { defaultValue: 'Tổng' })}</th>
                     <th className="text-center">
                       <i className="ti-trash remove-icon"></i>
                     </th>
@@ -97,7 +96,7 @@ const handleCheckout = () => {
                 </thead>
                 <tbody>
                   {cartItems.map((item) => {
-                    const name = item.pet?.name || item.product?.name || 'Không rõ';
+                    const name = item.pet?.name || item.product?.name || t('cart_unknown', { defaultValue: 'Không rõ' });
                     const image = item.pet?.imageUrl || item.product?.imageUrl || '/assets/user/images/logopetshop.jpg';
                     const price = item.pet?.price || item.product?.price || 0;
                     const total = price * item.quantity;
@@ -109,69 +108,69 @@ const handleCheckout = () => {
                         </td>
                         <td className="product-des">
                           <p className="product-name">{name}</p>
-                          <p className="product-des">Sản phẩm trong giỏ</p>
+                          <p className="product-des">{t('cart_in_cart', { defaultValue: 'Sản phẩm trong giỏ' })}</p>
                         </td>
                         <td className="price text-center">
-                          <span>{price.toLocaleString('vi-VN')} VNĐ</span>
+                          <span>{price.toLocaleString('vi-VN')} {t('cart_vnd', { defaultValue: 'VNĐ' })}</span>
                         </td>
                         <td className="qty text-center">
-  <div className="d-flex align-items-center justify-content-center gap-2">
-    <button
-      className="btn btn-sm btn-outline-secondary px-2 py-1"
-      onClick={() => {
-        const newQty = item.quantity - 1;
-        if (newQty < 1) {
-          toast.warning("⚠️ Số lượng tối thiểu là 1!");
-          return;
-        }
-        handleQuantityChange(item.id, newQty);
-      }}
-    >
-      −
-    </button>
+                          <div className="d-flex align-items-center justify-content-center gap-2">
+                            <button
+                              className="btn btn-sm btn-outline-secondary px-2 py-1"
+                              onClick={() => {
+                                const newQty = item.quantity - 1;
+                                if (newQty < 1) {
+                                  toast.warning(t('cart_min_quantity_warning', { defaultValue: '⚠️ Số lượng tối thiểu là 1!' }));
+                                  return;
+                                }
+                                handleQuantityChange(item.id, newQty);
+                              }}
+                            >
+                              −
+                            </button>
 
-    <input
-      type="number"
-      value={item.quantity}
-      min="1"
-      max={item.pet?.quantity || 99}
-      onChange={(e) => {
-        const val = parseInt(e.target.value, 10);
-        const max = item.pet?.quantity || 99;
+                            <input
+                              type="number"
+                              value={item.quantity}
+                              min="1"
+                              max={item.pet?.quantity || 99}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value, 10);
+                                const max = item.pet?.quantity || 99;
 
-        if (isNaN(val) || val < 1) {
-          toast.warning("⚠️ Số lượng không hợp lệ!");
-          return;
-        }
-        if (val > max) {
-          toast.warning("🚫 Vượt quá số lượng tồn kho!");
-          handleQuantityChange(item.id, max);
-        } else {
-          handleQuantityChange(item.id, val);
-        }
-      }}
-      className="form-control text-center"
-      style={{ width: '60px', height: '32px', padding: '0 5px' }}
-    />
+                                if (isNaN(val) || val < 1) {
+                                  toast.warning(t('cart_invalid_quantity', { defaultValue: '⚠️ Số lượng không hợp lệ!' }));
+                                  return;
+                                }
+                                if (val > max) {
+                                  toast.warning(t('cart_out_of_stock', { defaultValue: '🚫 Vượt quá số lượng tồn kho!' }));
+                                  handleQuantityChange(item.id, max);
+                                } else {
+                                  handleQuantityChange(item.id, val);
+                                }
+                              }}
+                              className="form-control text-center"
+                              style={{ width: '60px', height: '32px', padding: '0 5px' }}
+                            />
 
-    <button
-      className="btn btn-sm btn-outline-secondary px-2 py-1"
-      onClick={() => {
-        const max = item.pet?.quantity || 99;
-        const newQty = item.quantity + 1;
-        if (newQty > max) {
-          toast.warning("🚫 Đã đạt số lượng tối đa trong kho!");
-          return;
-        }
-        handleQuantityChange(item.id, newQty);
-      }}
-    >
-      +
-    </button>
-  </div>
-</td>
+                            <button
+                              className="btn btn-sm btn-outline-secondary px-2 py-1"
+                              onClick={() => {
+                                const max = item.pet?.quantity || 99;
+                                const newQty = item.quantity + 1;
+                                if (newQty > max) {
+                                  toast.warning(t('cart_max_quantity_warning', { defaultValue: '🚫 Đã đạt số lượng tối đa trong kho!' }));
+                                  return;
+                                }
+                                handleQuantityChange(item.id, newQty);
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
                         <td className="total-amount text-center">
-                          <span>{total.toLocaleString('vi-VN')} VNĐ</span>
+                          <span>{total.toLocaleString('vi-VN')} {t('cart_vnd', { defaultValue: 'VNĐ' })}</span>
                         </td>
                         <td className="action text-center">
                           <a href="#" onClick={(e) => {
@@ -200,20 +199,20 @@ const handleCheckout = () => {
                     <div className="right">
                       <ul>
                         <li>
-                          Tổng giỏ hàng
-                          <span>{calculateTotal().toLocaleString('vi-VN')} VNĐ</span>
+                          {t('cart_subtotal', { defaultValue: 'Tổng giỏ hàng' })}
+                          <span>{calculateTotal().toLocaleString('vi-VN')} {t('cart_vnd', { defaultValue: 'VNĐ' })}</span>
                         </li>
                         <li className="last">
-                          Tổng
-                          <span>{calculateTotal().toLocaleString('vi-VN')} VNĐ</span>
+                          {t('cart_total', { defaultValue: 'Tổng' })}
+                          <span>{calculateTotal().toLocaleString('vi-VN')} {t('cart_vnd', { defaultValue: 'VNĐ' })}</span>
                         </li>
                       </ul>
                       <div className="button5">
                         <a href="#" onClick={handleCheckout} className="btn btn-success">
-                          Thanh toán
+                          {t('cart_checkout', { defaultValue: 'Thanh toán' })}
                         </a>
                         <a href="/" className="btn btn-success">
-                          Tiếp tục mua hàng
+                          {t('cart_continue_shopping', { defaultValue: 'Tiếp tục mua hàng' })}
                         </a>
                       </div>
                     </div>

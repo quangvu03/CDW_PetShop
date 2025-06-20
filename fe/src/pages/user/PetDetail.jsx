@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getPetById } from '../../services/petService';
-import { addToCart, getCartByUser } from '../../services/cartService'; // Thêm getCartByUser
+import { addToCart, getCartByUser } from '../../services/cartService';
 import { getCommentsByPetId, addComment, deleteComment, reportComment } from '../../services/commentService';
 import { toast } from 'react-toastify';
 import { getReviewsByPetId } from '../../services/ratingService';
 import '../../assets/user/css/User.css';
 
 const RatingComponent = ({ averageRating, totalReviews, ratingData }) => {
+  const { t } = useTranslation();
+
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
       <span
@@ -22,12 +25,12 @@ const RatingComponent = ({ averageRating, totalReviews, ratingData }) => {
 
   return (
     <div className="card p-3 mb-4">
-      <h2 className="card-title h5 mb-3 text-dark">Đánh giá chung</h2>
+      <h2 className="card-title h5 mb-3 text-dark">{t('detail_rating_title', { defaultValue: 'Đánh giá chung' })}</h2>
       <div className="row">
         <div className="col-md-4 col-12 text-center">
           <div className="h3 font-weight-bold text-dark mb-1">{averageRating.toFixed(1)}</div>
           <div className="mb-1">{renderStars(averageRating)}</div>
-          <div className="text-muted small">{totalReviews} đánh giá</div>
+          <div className="text-muted small">{totalReviews}{t('detail_rating_count', { defaultValue: ' đánh giá' })}</div>
         </div>
         <div className="col-md-8 col-12">
           {ratingData.map((item) => (
@@ -53,21 +56,33 @@ const RatingComponent = ({ averageRating, totalReviews, ratingData }) => {
   );
 };
 
-const getTimeAgo = (createdAt) => {
+const getTimeAgo = (createdAt, t) => {
   const now = new Date();
   const commentDate = new Date(createdAt);
   const diffMs = now - commentDate;
   const diffMins = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
 
-  if (diffHours >= 24) return `${Math.floor(diffHours / 24)} ngày trước`;
-  if (diffHours >= 1) return `${diffHours} giờ trước`;
-  if (diffMins >= 1) return `${diffMins} phút trước`;
-  return 'Vài giây trước';
+  if (diffDays >= 1) {
+    return `${diffDays}${t('detail_time_days_ago', { defaultValue: ' ngày trước' })}`;
+  }
+
+  if (diffHours >= 1) {
+    return `${diffHours}${t('detail_time_hours_ago', { defaultValue: ' giờ trước' })}`;
+  }
+
+  if (diffMins >= 1) {
+    return `${diffMins}${t('detail_time_minutes_ago', { defaultValue: ' phút trước' })}`;
+  }
+
+  return t('detail_time_seconds_ago', { defaultValue: ' Vài giây trước' });
 };
 
+
 export default function PetDetail() {
-const { id } = useParams();
+  const { t } = useTranslation();
+  const { id } = useParams();
   const [pet, setPet] = useState(null);
   const [mainImage, setMainImage] = useState('');
   const [averageRating, setAverageRating] = useState(0);
@@ -82,9 +97,8 @@ const { id } = useParams();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [replyStates, setReplyStates] = useState({});
-  const [cartItems, setCartItems] = useState([]); // Thêm state để lưu giỏ hàng
+  const [cartItems, setCartItems] = useState([]);
 
-  // Thêm useEffect để lấy giỏ hàng khi component mount
   useEffect(() => {
     const fetchPetAndReviews = async () => {
       try {
@@ -115,12 +129,11 @@ const { id } = useParams();
         const commentResponse = await getCommentsByPetId(id);
         setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
 
-        // Lấy giỏ hàng
         const cartResponse = await getCartByUser();
         setCartItems(Array.isArray(cartResponse.data) ? cartResponse.data : []);
       } catch (err) {
         console.error('Error fetching data:', err);
-        toast.error('Không thể tải dữ liệu');
+        toast.error(t('detail_fetch_error', { defaultValue: 'Không thể tải dữ liệu' }));
       }
     };
     fetchPetAndReviews();
@@ -137,24 +150,20 @@ const { id } = useParams();
     return `http://localhost:8080/uploads/avatars/${avatarPath}`;
   };
 
-const handleAddToCart = async () => {
+  const handleAddToCart = async () => {
     try {
-      // Kiểm tra số lượng trong giỏ hàng so với tồn kho
       const existingItem = cartItems?.find((item) => item.pet?.id === parseInt(id));
       const currentQty = existingItem?.quantity || 0;
       const stock = pet?.quantity || 0;
 
-      // Kiểm tra nếu số lượng mới (currentQty + 1) vượt quá tồn kho
       if (currentQty + 1 > stock) {
-        toast.warning('🚫 Số lượng vượt quá tồn kho!');
+        toast.warning(t('detail_out_of_stock', { defaultValue: '🚫 Số lượng vượt quá tồn kho!' }));
         return;
       }
 
-      // Thêm vào giỏ hàng nếu không vượt quá tồn kho
       await addToCart({ petId: parseInt(id), quantity: 1 });
-      toast.success('Đã thêm vào giỏ hàng!');
+      toast.success(t('detail_cart_added', { defaultValue: 'Đã thêm vào giỏ hàng!' }));
 
-      // Cập nhật giỏ hàng sau khi thêm
       const updatedCart = await getCartByUser();
       setCartItems(Array.isArray(updatedCart.data) ? updatedCart.data : []);
 
@@ -162,8 +171,7 @@ const handleAddToCart = async () => {
       window.dispatchEvent(new Event('cart-updated'));
     } catch (err) {
       console.error('Lỗi khi thêm vào giỏ hàng:', err);
-              toast.warning('🚫 Số lượng vượt quá tồn kho!');
-
+      toast.error(t('detail_cart_error', { defaultValue: 'Lỗi khi thêm vào giỏ hàng!' }));
     }
   };
 
@@ -171,7 +179,7 @@ const handleAddToCart = async () => {
     if (!content.trim()) return;
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      toast.error('Vui lòng đăng nhập để bình luận!');
+      toast.error(t('detail_login_required', { defaultValue: 'Vui lòng đăng nhập để bình luận!' }));
       return;
     }
     try {
@@ -193,9 +201,9 @@ const handleAddToCart = async () => {
       }
       const commentResponse = await getCommentsByPetId(id);
       setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
-      toast.success('Đã đăng bình luận!');
+      toast.success(t('detail_comment_posted', { defaultValue: 'Đã đăng bình luận!' }));
     } catch (err) {
-      toast.error('Lỗi khi đăng bình luận');
+      toast.error(t('detail_comment_error', { defaultValue: 'Lỗi khi đăng bình luận' }));
     }
   };
 
@@ -218,14 +226,14 @@ const handleAddToCart = async () => {
 
   const handleDeleteComment = async (commentId) => {
     if (!commentId) return;
-    if (!window.confirm('Bạn có chắc muốn xóa bình luận này?')) return;
+    if (!window.confirm(t('detail_confirm_delete', { defaultValue: 'Bạn có chắc muốn xóa bình luận này?' }))) return;
     try {
       await deleteComment(commentId);
-      toast.success('Xóa bình luận thành công!');
+      toast.success(t('detail_comment_deleted', { defaultValue: 'Xóa bình luận thành công!' }));
       const commentResponse = await getCommentsByPetId(id);
       setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
     } catch (err) {
-      toast.error('Lỗi khi xóa bình luận');
+      toast.error(t('detail_comment_delete_error', { defaultValue: 'Lỗi khi xóa bình luận' }));
     }
   };
 
@@ -233,30 +241,26 @@ const handleAddToCart = async () => {
     if (!commentId) return;
     try {
       await reportComment(commentId);
-      toast.success('Báo cáo bình luận thành công!');
+      toast.success(t('detail_comment_reported', { defaultValue: 'Báo cáo bình luận thành công!' }));
       const commentResponse = await getCommentsByPetId(id);
       setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
     } catch (err) {
-      toast.error('Lỗi khi báo cáo bình luận');
+      toast.error(t('detail_comment_report_error', { defaultValue: 'Lỗi khi báo cáo bình luận' }));
     }
   };
 
-  // Build nested comment structure
   const buildCommentTree = (comments) => {
     if (!Array.isArray(comments)) return [];
     const commentMap = {};
     const tree = [];
 
-    // Create a map of comments by ID and initialize replies from commentsResponses
     comments.forEach((comment) => {
       comment.replies = Array.isArray(comment.commentsResponses) ? comment.commentsResponses : [];
       commentMap[comment.id] = comment;
     });
 
-    // Build the tree by linking replies based on parentId
     comments.forEach((comment) => {
       if (comment.parentId && commentMap[comment.parentId]) {
-        // Avoid duplicate replies
         if (!commentMap[comment.parentId].replies.find((r) => r.id === comment.id)) {
           commentMap[comment.parentId].replies.push(comment);
         }
@@ -287,7 +291,7 @@ const handleAddToCart = async () => {
             <h4 style={{ fontWeight: 'bold', marginBottom: '15px' }}>{comment.username}</h4>
             <p>{comment.content}</p>
             <div className="d-flex align-items-center gap-3">
-              <small className="text-muted">{getTimeAgo(comment.createdAt)}</small>
+              <small className="text-muted">{getTimeAgo(comment.createdAt, t)}</small>
               {depth === 0 && (
                 <a
                   href="#"
@@ -298,7 +302,7 @@ const handleAddToCart = async () => {
                     handleReplyClick(comment.id);
                   }}
                 >
-                  <i className="fa fa-reply" aria-hidden="true"></i> Reply
+                  <i className="fa fa-reply" aria-hidden="true"></i> {t('detail_reply', { defaultValue: 'Reply' })}
                 </a>
               )}
               {parseInt(localStorage.getItem('userId')) === comment.userId && (
@@ -311,7 +315,7 @@ const handleAddToCart = async () => {
                     handleDeleteComment(comment.id);
                   }}
                 >
-                  <i className="fa fa-trash" aria-hidden="true"></i> Xóa
+                  <i className="fa fa-trash" aria-hidden="true"></i> {t('detail_delete', { defaultValue: 'Xóa' })}
                 </a>
               )}
               <a
@@ -323,7 +327,7 @@ const handleAddToCart = async () => {
                   handleReportComment(comment.id);
                 }}
               >
-                <i className="fa fa-flag" aria-hidden="true"></i> Báo cáo
+                <i className="fa fa-flag" aria-hidden="true"></i> {t('detail_report', { defaultValue: 'Báo cáo' })}
               </a>
             </div>
             {replyStates[comment.id]?.isReplying && (
@@ -332,7 +336,7 @@ const handleAddToCart = async () => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Viết phản hồi..."
+                    placeholder={t('detail_reply_placeholder', { defaultValue: 'Viết phản hồi...' })}
                     value={replyStates[comment.id]?.content || ''}
                     onChange={(e) => handleReplyChange(comment.id, e.target.value)}
                   />
@@ -341,14 +345,14 @@ const handleAddToCart = async () => {
                     type="button"
                     onClick={() => handlePostComment(replyStates[comment.id]?.content || '', comment.id)}
                   >
-                    Post Reply
+                    {t('detail_post_reply', { defaultValue: 'Post Reply' })}
                   </button>
                   <button
                     className="btn btn-secondary"
                     type="button"
                     onClick={() => handleReplyClick(comment.id)}
                   >
-                    Close
+                    {t('detail_close', { defaultValue: 'Close' })}
                   </button>
                 </div>
               </div>
@@ -361,7 +365,7 @@ const handleAddToCart = async () => {
     ));
   };
 
-  if (!pet) return <div className="container py-5">Đang tải dữ liệu...</div>;
+  if (!pet) return <div className="container py-5">{t('detail_loading', { defaultValue: 'Đang tải dữ liệu...' })}</div>;
 
   return (
     <section className="blog-single section">
@@ -375,7 +379,7 @@ const handleAddToCart = async () => {
                     <div className="main-image mb-3" style={{ width: '100%', maxWidth: '700px' }}>
                       <img
                         src={getFullImageUrl(mainImage)}
-                        alt="Main"
+                        alt={t('detail_main_image_alt', { defaultValue: 'Main' })}
                         style={{
                           width: '100%',
                           height: 'auto',
@@ -391,7 +395,7 @@ const handleAddToCart = async () => {
                         <img
                           key={i}
                           src={getFullImageUrl(url)}
-                          alt={`Thumbnail ${i}`}
+                          alt={t('detail_thumbnail_alt', { defaultValue: `Thumbnail ${i}` })}
                           onClick={() => setMainImage(url)}
                           style={{
                             width: '70px',
@@ -413,33 +417,33 @@ const handleAddToCart = async () => {
                     <div className="blog-meta">
                       <span className="author">
                         <a href="#">
-                          <i className="fa fa-user"></i>Số lượng: {pet.quantity}
+                          <i className="fa fa-user"></i>{t('detail_quantity', { defaultValue: 'Số lượng:' })} {pet.quantity}
                         </a>
                         <a href="#">
-                          <i className="fa fa-calendar"></i>Tuổi: {pet.age} tháng
+                          <i className="fa fa-calendar"></i>{t('detail_age', { defaultValue: 'Tuổi:' })} {pet.age} {t('detail_months', { defaultValue: 'tháng' })}
                         </a>
                         <a href="#">
-                          <i className="fa fa-comments"></i>Bình luận({comments.length})
+                          <i className="fa fa-comments"></i>{t('detail_comments_count', { defaultValue: 'Bình luận:' })} {`(${comments.length})`}
                         </a>
                       </span>
                       <button className="blog-meta-buy" onClick={handleAddToCart}>
                         <i className="ti-bag"></i>
-                        Thêm vào giỏ hàng
+                        {t('detail_add_to_cart', { defaultValue: 'Thêm vào giỏ hàng' })}
                       </button>
                     </div>
                     <div className="content">
                       <div className="content-infomation">
                         <div className="content-infomation-child">
-                          <span>Giới tính: {pet.gender}</span>
-                          <span>Kích thước: {pet.size}</span>
+                          <span>{t('detail_gender', { defaultValue: 'Giới tính:' })} {pet.gender}</span>
+                          <span>{t('detail_size', { defaultValue: 'Kích thước:' })} {pet.size}</span>
                         </div>
                         <div className="content-infomation-child">
-                          <span>Xuất xứ: {pet.origin}</span>
-                          <span>Chủng loại: {pet.breed}</span>
+                          <span>{t('detail_origin', { defaultValue: 'Xuất xứ:' })} {pet.origin}</span>
+                          <span>{t('detail_breed', { defaultValue: 'Chủng loại:' })} {pet.breed}</span>
                         </div>
                       </div>
                       <blockquote>
-                        <i className="fa fa-quote-left"></i> Mô tả: {pet.description}
+                        <i className="fa fa-quote-left"></i> {t('detail_description_label', { defaultValue: 'Mô tả:' })} {pet.description}
                       </blockquote>
                     </div>
                   </div>
@@ -447,13 +451,13 @@ const handleAddToCart = async () => {
                     <div className="row">
                       <div className="col-12">
                         <div className="content-tags">
-                          <h4>Thẻ:</h4>
+                          <h4>{t('detail_tags', { defaultValue: 'Thẻ:' })}</h4>
                           <ul className="tag-inner">
                             <li>
-                              <a href="#">Cho</a>
+                              <a href="#">{t('detail_tag_dog', { defaultValue: 'Cho' })}</a>
                             </li>
                             <li>
-                              <a href="#">Meo</a>
+                              <a href="#">{t('detail_tag_cat', { defaultValue: 'Meo' })}</a>
                             </li>
                           </ul>
                         </div>
@@ -468,14 +472,14 @@ const handleAddToCart = async () => {
                   <div className="col-12">
                     <div className="comments">
                       <h3 className="comment-title" id="comment-size">
-                        Bình luận({comments.length})
+                        {t('detail_comments_count', { defaultValue: 'Bình luận', })} {`(${comments.length})`}
                       </h3>
                       <div className="reply">
                         <div className="input-group mb-3">
                           <input
                             type="text"
                             className="form-control"
-                            placeholder="Viết một bình luận..."
+                            placeholder={t('detail_comment_placeholder', { defaultValue: 'Viết một bình luận...' })}
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
                           />
@@ -484,7 +488,7 @@ const handleAddToCart = async () => {
                             type="button"
                             onClick={() => handlePostComment(newComment)}
                           >
-                            Post Comment
+                            {t('detail_post_comment', { defaultValue: 'Post Comment' })}
                           </button>
                         </div>
                       </div>
@@ -499,25 +503,25 @@ const handleAddToCart = async () => {
             <div className="main-sidebar">
               <div className="single-widget search">
                 <div className="form">
-                  <input type="email" placeholder="Tìm kiếm..." />
+                  <input type="email" placeholder={t('detail_search_placeholder', { defaultValue: 'Tìm kiếm...' })} />
                   <a className="button" href="#">
                     <i className="fa fa-search"></i>
                   </a>
                 </div>
               </div>
               <div className="single-widget category">
-                <h3 className="title">Danh mục thú cưng</h3>
+                <h3 className="title">{t('detail_categories_title', { defaultValue: 'Danh mục thú cưng' })}</h3>
                 <ul className="categor-list">
                   <li>
-                    <a href="">Meo</a>
+                    <a href="#">{t('detail_category_cat', { defaultValue: 'Meo' })}</a>
                   </li>
                   <li>
-                    <a href="">Cho</a>
+                    <a href="#">{t('detail_category_dog', { defaultValue: 'Cho' })}</a>
                   </li>
                 </ul>
               </div>
               <div className="single-widget recent-post">
-                <h3 className="title">Bài đăng gần đây</h3>
+                <h3 className="title">{t('detail_recent_posts_title', { defaultValue: 'Bài đăng gần đây' })}</h3>
                 {[1, 2, 3].map((i) => (
                   <div className="single-post" key={i}>
                     <div className="image">
@@ -525,14 +529,14 @@ const handleAddToCart = async () => {
                     </div>
                     <div className="content">
                       <h5>
-                        <a href="#">Top 10 Beautyful Women Dress in the world</a>
+                        <a href="#">{t('detail_recent_post_title', { defaultValue: 'Top 10 Beautyful Women Dress in the world' })}</a>
                       </h5>
                       <ul className="comment">
                         <li>
-                          <i className="fa fa-calendar" aria-hidden="true"></i>Jan 11, 2020
+                          <i className="fa fa-calendar" aria-hidden="true"></i>{t('detail_recent_post_date', { defaultValue: 'Jan 11, 2020' })}
                         </li>
                         <li>
-                          <i className="fa fa-commenting-o" aria-hidden="true"></i>35
+                          <i className="fa fa-commenting-o" aria-hidden="true"></i>{t('detail_recent_post_comments', { defaultValue: '35' })}
                         </li>
                       </ul>
                     </div>
@@ -540,7 +544,7 @@ const handleAddToCart = async () => {
                 ))}
               </div>
               <div className="single-widget side-tags">
-                <h3 className="title">Tags</h3>
+                <h3 className="title">{t('detail_tags_title', { defaultValue: 'Tags' })}</h3>
                 <ul className="tag">
                   {['business', 'wordpress', 'html', 'multipurpose', 'education', 'template', 'Ecommerce'].map(
                     (tag) => (
@@ -552,14 +556,14 @@ const handleAddToCart = async () => {
                 </ul>
               </div>
               <div className="single-widget newsletter">
-                <h3 className="title">Newslatter</h3>
+                <h3 className="title">{t('detail_newsletter_title', { defaultValue: 'Newslatter' })}</h3>
                 <div className="letter-inner">
                   <h4>
-                    Subscribe & get news <br /> latest updates.
+                    {t('detail_newsletter_subscribe', { defaultValue: 'Subscribe & get news <br /> latest updates.' })}
                   </h4>
                   <div className="form-inner">
-                    <input type="email" placeholder="Enter your email" />
-                    <a href="#">Submit</a>
+                    <input type="email" placeholder={t('detail_newsletter_placeholder', { defaultValue: 'Enter your email' })} />
+                    <a href="#">{t('detail_newsletter_submit', { defaultValue: 'Submit' })}</a>
                   </div>
                 </div>
               </div>

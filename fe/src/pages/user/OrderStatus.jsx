@@ -1,10 +1,11 @@
-// src/pages/user/OrderStatus.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getOrdersByUser } from '../../services/orderService';
 import { toast } from 'react-toastify';
 
 export default function OrderStatus() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -21,38 +22,35 @@ export default function OrderStatus() {
       setLoading(true);
       const userId = localStorage.getItem('userId');
       if (!userId) {
-        toast.error('Vui lòng đăng nhập để xem đơn hàng');
+        toast.error(t('order_status_login_required', { defaultValue: 'Vui lòng đăng nhập để xem đơn hàng' }));
         navigate('/auth/login');
         return;
       }
 
       const data = await getOrdersByUser(userId);
-      console.log('API response data:', data); // Debug
+      console.log(t('order_status_api_response_log', { defaultValue: 'API response data:' }), data);
 
-      // Kiểm tra response
       if (Array.isArray(data)) {
-        // Trường hợp trả về mảng đơn hàng
         setOrders(data);
         filterOrdersByTab('all', data, searchTerm);
       } else if (data && typeof data === 'object') {
-        // Trường hợp trả về object
         if (data.success !== undefined || data.message === 'Bạn chưa có đơn đặt hàng nào!') {
           setOrders([]);
           setFilteredOrders([]);
         } else {
-          throw new Error('Định dạng phản hồi API không mong đợi');
+          throw new Error(t('order_status_api_format_error', { defaultValue: 'Định dạng phản hồi API không mong đợi' }));
         }
       } else {
-        throw new Error('Phản hồi API không hợp lệ');
+        throw new Error(t('order_status_api_invalid_response', { defaultValue: 'Phản hồi API không hợp lệ' }));
       }
     } catch (error) {
-      console.error('Lỗi khi lấy đơn hàng:', error);
+      console.error(t('order_status_fetch_error_log', { defaultValue: 'Lỗi khi lấy đơn hàng:' }), error);
       if (error.response?.status === 401 || error.response?.status === 403) {
-        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        toast.error(t('order_status_session_expired', { defaultValue: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' }));
         localStorage.clear();
         navigate('/auth/login');
       } else {
-        toast.error(error.message || 'Không thể tải danh sách đơn hàng');
+        toast.error(error.message || t('order_status_fetch_error', { defaultValue: 'Không thể tải danh sách đơn hàng' }));
       }
       setOrders([]);
       setFilteredOrders([]);
@@ -135,7 +133,7 @@ export default function OrderStatus() {
     if (checkoutUrl) {
       window.location.href = checkoutUrl;
     } else {
-      toast.error('Không có liên kết thanh toán');
+      toast.error(t('order_status_no_payment_link', { defaultValue: 'Không có liên kết thanh toán' }));
     }
   };
 
@@ -144,7 +142,7 @@ export default function OrderStatus() {
       <div className="container-fluid mt-4">
         <div className="text-center">
           <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">{t('order_status_loading', { defaultValue: 'Loading...' })}</span>
           </div>
         </div>
       </div>
@@ -153,7 +151,7 @@ export default function OrderStatus() {
 
   return (
     <div className="container-fluid mt-4">
-      <h2 className="mb-4">Lịch sử đơn hàng</h2>
+      <h2 className="mb-4">{t('order_status_title', { defaultValue: 'Lịch sử đơn hàng' })}</h2>
 
       <ul className="nav nav-tabs mb-4">
         <li className="nav-item">
@@ -161,7 +159,7 @@ export default function OrderStatus() {
             className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
             onClick={() => handleTabChange('all')}
           >
-            Tất cả
+            {t('order_status_all', { defaultValue: 'Tất cả' })}
           </button>
         </li>
         <li className="nav-item">
@@ -169,7 +167,7 @@ export default function OrderStatus() {
             className={`nav-link ${activeTab === 'pending' ? 'active' : ''}`}
             onClick={() => handleTabChange('pending')}
           >
-            Chờ xác nhận
+            {t('order_status_pending', { defaultValue: 'Chờ xác nhận' })}
           </button>
         </li>
         <li className="nav-item">
@@ -177,7 +175,7 @@ export default function OrderStatus() {
             className={`nav-link ${activeTab === 'confirmed' ? 'active' : ''}`}
             onClick={() => handleTabChange('confirmed')}
           >
-            Đã xác nhận
+            {t('order_status_confirmed', { defaultValue: 'Đã xác nhận' })}
           </button>
         </li>
         <li className="nav-item">
@@ -185,7 +183,7 @@ export default function OrderStatus() {
             className={`nav-link ${activeTab === 'shipped' ? 'active' : ''}`}
             onClick={() => handleTabChange('shipped')}
           >
-            Đang giao hàng
+            {t('order_status_shipped', { defaultValue: 'Đang giao hàng' })}
           </button>
         </li>
         <li className="nav-item">
@@ -193,7 +191,7 @@ export default function OrderStatus() {
             className={`nav-link ${activeTab === 'completed' ? 'active' : ''}`}
             onClick={() => handleTabChange('completed')}
           >
-            Hoàn thành
+            {t('order_status_completed', { defaultValue: 'Hoàn thành' })}
           </button>
         </li>
         <li className="nav-item">
@@ -201,20 +199,20 @@ export default function OrderStatus() {
             className={`nav-link ${activeTab === 'cancelled' ? 'active' : ''}`}
             onClick={() => handleTabChange('cancelled')}
           >
-            Đã hủy
+            {t('order_status_cancelled', { defaultValue: 'Đã hủy' })}
           </button>
         </li>
       </ul>
 
       {orders.length === 0 ? (
-        <div className="alert alert-info">Bạn chưa có đơn hàng nào</div>
+        <div className="alert alert-info">{t('order_status_no_orders', { defaultValue: 'Bạn chưa có đơn hàng nào' })}</div>
       ) : (
         <>
           <div className="mb-3">
             <input
               type="text"
               className="form-control"
-              placeholder="Tìm kiếm đơn hàng (mã, trạng thái, địa chỉ, tên, số điện thoại...)"
+              placeholder={t('order_status_search_placeholder', { defaultValue: 'Tìm kiếm đơn hàng (mã, trạng thái, địa chỉ, tên, số điện thoại...)' })}
               value={searchTerm}
               onChange={handleSearch}
             />
@@ -223,17 +221,17 @@ export default function OrderStatus() {
             <table className="table table-hover">
               <thead className="table-light">
                 <tr>
-                  <th>Mã đơn hàng</th>
-                  <th>Ngày đặt</th>
-                  <th>Tổng tiền</th>
-                  <th>Trạng thái đơn hàng</th>
-                  <th>Phương thức thanh toán</th>
-                  <th>Trạng thái thanh toán</th>
-                  <th>Địa chỉ giao hàng</th>
-                  <th>Tên người nhận</th>
-                  <th>Số điện thoại</th>
-                  <th>Thanh toán</th>
-                  <th>Chi tiết</th>
+                  <th>{t('order_status_order_id', { defaultValue: 'Mã đơn hàng' })}</th>
+                  <th>{t('order_status_order_date', { defaultValue: 'Ngày đặt' })}</th>
+                  <th>{t('order_status_total', { defaultValue: 'Tổng tiền' })}</th>
+                  <th>{t('order_status_status', { defaultValue: 'Trạng thái đơn hàng' })}</th>
+                  <th>{t('order_status_payment_method', { defaultValue: 'Phương thức thanh toán' })}</th>
+                  <th>{t('order_status_payment_status', { defaultValue: 'Trạng thái thanh toán' })}</th>
+                  <th>{t('order_status_shipping_address', { defaultValue: 'Địa chỉ giao hàng' })}</th>
+                  <th>{t('order_status_shipping_name', { defaultValue: 'Tên người nhận' })}</th>
+                  <th>{t('order_status_phone', { defaultValue: 'Số điện thoại' })}</th>
+                  <th>{t('order_status_payment', { defaultValue: 'Thanh toán' })}</th>
+                  <th>{t('order_status_details', { defaultValue: 'Chi tiết' })}</th>
                 </tr>
               </thead>
               <tbody>
@@ -245,51 +243,51 @@ export default function OrderStatus() {
                     <td>
                       <span className={`badge ${getStatusBadgeClass(order.status)}`}>
                         {order.status === 'pending'
-                          ? 'Chờ xác nhận'
+                          ? t('order_status_pending', { defaultValue: 'Chờ xác nhận' })
                           : order.status === 'confirmed'
-                          ? 'Đã xác nhận'
-                          : order.status === 'shipped'
-                          ? 'Đang giao hàng'
-                          : order.status === 'completed'
-                          ? 'Hoàn thành'
-                          : order.status === 'cancelled'
-                          ? 'Đã hủy'
-                          : order.status}
+                            ? t('order_status_confirmed', { defaultValue: 'Đã xác nhận' })
+                            : order.status === 'shipped'
+                              ? t('order_status_shipped', { defaultValue: 'Đang giao hàng' })
+                              : order.status === 'completed'
+                                ? t('order_status_completed', { defaultValue: 'Hoàn thành' })
+                                : order.status === 'cancelled'
+                                  ? t('order_status_cancelled', { defaultValue: 'Đã hủy' })
+                                  : order.status}
                       </span>
                     </td>
-                    <td>{order.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' : order.paymentMethod}</td>
+                    <td>{order.paymentMethod === 'COD' ? t('order_status_cod', { defaultValue: 'Thanh toán khi nhận hàng' }) : order.paymentMethod}</td>
                     <td>
                       <span className={`badge ${order.paymentStatus === 'unpaid' ? 'bg-warning' : 'bg-success'}`}>
-                        {order.paymentStatus === 'unpaid' ? 'Chưa thanh toán' : 'Đã thanh toán'}
+                        {order.paymentStatus === 'unpaid' ? t('order_status_unpaid', { defaultValue: 'Chưa thanh toán' }) : t('order_status_paid', { defaultValue: 'Đã thanh toán' })}
                       </span>
                     </td>
                     <td>{order.shippingAddress || '---'}</td>
                     <td>{order.shippingName || '---'}</td>
                     <td>{order.phoneNumber || '---'}</td>
-<td>
-  {order.status === 'cancelled' ? (
-    '---'
-  ) : order.paymentMethod === 'PAYOS' && order.paymentStatus === 'unpaid' && isPaymentLinkValid(order.expiredAt) ? (
-    <button
-      className="btn btn-outline-success"
-      style={{ fontSize: '12px', padding: '2px 8px' }}
-      onClick={() => handlePayNow(order.checkoutUrl)}
-    >
-      Thanh toán ngay
-    </button>
-  ) : order.paymentMethod === 'PAYOS' && order.paymentStatus === 'unpaid' ? (
-    <span className="text-danger">Link thanh toán đã hết hạn</span>
-  ) : (
-    '---'
-  )}
-</td>
+                    <td>
+                      {order.status === 'cancelled' ? (
+                        '---'
+                      ) : order.paymentMethod === 'PAYOS' && order.paymentStatus === 'unpaid' && isPaymentLinkValid(order.expiredAt) ? (
+                        <button
+                          className="btn btn-outline-success"
+                          style={{ fontSize: '12px', padding: '2px 8px' }}
+                          onClick={() => handlePayNow(order.checkoutUrl)}
+                        >
+                          {t('order_status_pay_now', { defaultValue: 'Thanh toán ngay' })}
+                        </button>
+                      ) : order.paymentMethod === 'PAYOS' && order.paymentStatus === 'unpaid' ? (
+                        <span className="text-danger">{t('order_status_payment_expired', { defaultValue: 'Link thanh toán đã hết hạn' })}</span>
+                      ) : (
+                        '---'
+                      )}
+                    </td>
                     <td>
                       <button
                         className="btn btn-outline-primary"
                         style={{ fontSize: '12px', padding: '2px 8px' }}
                         onClick={() => handleViewDetails(order.id)}
                       >
-                        Xem chi tiết
+                        {t('order_status_view_details', { defaultValue: 'Xem chi tiết' })}
                       </button>
                     </td>
                   </tr>
@@ -298,7 +296,7 @@ export default function OrderStatus() {
             </table>
             {filteredOrders.length === 0 && (
               <div className="alert alert-info mt-3">
-                Không tìm thấy đơn hàng nào trong tab này
+                {t('order_status_no_results', { defaultValue: 'Không tìm thấy đơn hàng nào trong tab này' })}
               </div>
             )}
           </div>

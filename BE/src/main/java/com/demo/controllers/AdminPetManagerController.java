@@ -30,7 +30,7 @@ public class AdminPetManagerController {
 
     @PutMapping("/petUpdate/{id}")
     public ResponseEntity<?> updatePet(@PathVariable Integer id, @RequestBody PetDto petDto) {
-        try {
+        try {   
             PetDto updatedPet = petService.updatePet(id, petDto);
             return ResponseEntity.ok(updatedPet);
         } catch (Exception e) {

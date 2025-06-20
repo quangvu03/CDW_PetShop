@@ -51,7 +51,7 @@ public class PetDto {
             this.imageUrl = pet.getImages().get(0).getImageUrl();
             this.imageUrls = pet.getImages().stream()
                     .map(PetImage::getImageUrl)
-                    .collect(Collectors.toList());// <-- chính chỗ này
+                    .collect(Collectors.toList());
         }
     }
 }

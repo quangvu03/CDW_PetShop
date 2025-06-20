@@ -1,5 +1,5 @@
-// src/pages/user/Checkout.jsx
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CheckoutForm from '../../components/user/checkout/CheckoutForm';
 import CartSummary from '../../components/user/checkout/CartSummary';
 import PaymentMethod from '../../components/user/checkout/PaymentMethod';
@@ -7,6 +7,7 @@ import { getShippingMethods } from '../../services/shippingService';
 import { toast } from 'react-toastify';
 
 export default function Checkout() {
+  const { t } = useTranslation();
   const [checkoutItems, setCheckoutItems] = useState([]);
   const [shippingMethods, setShippingMethods] = useState([]);
   const [selectedShipping, setSelectedShipping] = useState(null);
@@ -33,10 +34,10 @@ export default function Checkout() {
       try {
         const res = await getShippingMethods();
         setShippingMethods(res.data);
-        console.log('Shipping methods:', res.data); // Debug
+        console.log('Shipping methods:', res.data);
       } catch (err) {
-        console.error('Lỗi khi lấy phương thức giao hàng:', err);
-        toast.error('Không thể tải phương thức giao hàng');
+        console.error(t('checkout_shipping_error_log', { defaultValue: 'Lỗi khi lấy phương thức giao hàng:' }), err);
+        toast.error(t('checkout_shipping_error', { defaultValue: 'Không thể tải phương thức giao hàng' }));
       }
     };
     fetchShipping();

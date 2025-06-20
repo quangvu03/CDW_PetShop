@@ -1,5 +1,5 @@
-// src/components/user/checkout/CheckoutForm.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getCurrentUser } from '../../../services/userService';
 import { createOrder } from '../../../services/orderService';
 import { createPaymentLink } from '../../../services/paymentService';
@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 export default function CheckoutForm({ cartItems = [], totalAmount = 0, selectedShipping = null, userInfo, setUserInfo, paymentMethod }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [provinces, setProvinces] = useState([]);
@@ -42,7 +43,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
           }));
         }
       } catch (error) {
-        console.error('Lỗi khi lấy thông tin người dùng:', error);
+        console.error(t('checkout_form_user_error_log', { defaultValue: 'Lỗi khi lấy thông tin người dùng:' }), error);
       }
     };
 
@@ -82,17 +83,17 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
 
     if (!userInfo.fullName || !userInfo.phoneNumber || !userInfo.email || 
         !userInfo.country || !userInfo.district || !userInfo.ward || !userInfo.address) {
-      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+      toast.error(t('checkout_form_required_fields', { defaultValue: 'Vui lòng điền đầy đủ thông tin bắt buộc' }));
       return;
     }
 
     if (!cartItems || cartItems.length === 0) {
-      toast.error('Giỏ hàng trống');
+      toast.error(t('checkout_form_empty_cart', { defaultValue: 'Giỏ hàng trống' }));
       return;
     }
 
     if (!selectedShipping) {
-      toast.error('Vui lòng chọn phương thức giao hàng');
+      toast.error(t('checkout_form_no_shipping', { defaultValue: 'Vui lòng chọn phương thức giao hàng' }));
       return;
     }
 
@@ -121,16 +122,16 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
         }))
       };
 
-      console.log('Order request:', orderRequest);
+      console.log(t('checkout_form_order_request_log', { defaultValue: 'Order request:' }), orderRequest);
 
       const orderResponse = await createOrder(orderRequest);
-      console.log('Order response:', orderResponse);
+      console.log(t('checkout_form_order_response_log', { defaultValue: 'Order response:' }), orderResponse);
 
       if (orderResponse.success) {
         if (paymentMethod === 'PAYOS') {
           const paymentData = {
-            productName: `Đơn hàng thú cưng ${orderResponse.data.orderId}`,
-            description: `Thanh toán đơn hàng #${orderResponse.data.orderId}`,
+            productName: t('checkout_form_payment_product', { defaultValue: `Đơn hàng thú cưng ${orderResponse.data.orderId}` }),
+            description: t('checkout_form_payment_description', { defaultValue: `Thanh toán đơn hàng #${orderResponse.data.orderId}` }),
             returnUrl: `http://localhost:3000/user/payment-callback?status=success&orderId=${orderResponse.data.orderId}`,
             cancelUrl: `http://localhost:3000/user/payment-callback?status=cancelled&orderId=${orderResponse.data.orderId}`,
             price: Math.round(totalItemPrice + shippingFee),
@@ -140,26 +141,26 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
           const paymentResponse = await createPaymentLink(paymentData);
           if (paymentResponse.error === 0) {
             const expiryDateTime = new Date(paymentResponse.expiredAt);
-            const expiryDateTimeLocal = new Date(expiryDateTime.getTime() + (7 * 60 * 60 * 1000)); // Điều chỉnh múi giờ UTC+7
-            toast.info(`Liên kết thanh toán sẽ hết hạn vào ${expiryDateTimeLocal.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} (6 giờ từ khi tạo)`);
+            const expiryDateTimeLocal = new Date(expiryDateTime.getTime() + (7 * 60 * 60 * 1000));
+            toast.info(t('checkout_form_payment_expiry', { defaultValue: `Liên kết thanh toán sẽ hết hạn vào ${expiryDateTimeLocal.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} (6 giờ từ khi tạo)` }));
             window.location.href = paymentResponse.checkoutUrl;
             localStorage.removeItem('checkout_items');
             window.dispatchEvent(new Event('cart-updated'));
           } else {
-            toast.error(paymentResponse.message || 'Không thể tạo liên kết thanh toán');
+            toast.error(t('checkout_form_payment_error', { defaultValue: paymentResponse.message || 'Không thể tạo liên kết thanh toán' }));
           }
         } else {
-          toast.success('Đặt hàng thành công!');
+          toast.success(t('checkout_form_order_success', { defaultValue: 'Đặt hàng thành công!' }));
           localStorage.removeItem('checkout_items');
           window.dispatchEvent(new Event('cart-updated'));
           navigate('/user/order-history');
         }
       } else {
-        toast.error(orderResponse.message || 'Đặt hàng thất bại');
+        toast.error(t('checkout_form_order_failure', { defaultValue: orderResponse.message || 'Đặt hàng thất bại' }));
       }
     } catch (error) {
-      console.error('Lỗi khi đặt hàng:', error);
-      toast.error(error || 'Có lỗi xảy ra khi đặt hàng');
+      console.error(t('checkout_form_order_error_log', { defaultValue: 'Lỗi khi đặt hàng:' }), error);
+      toast.error(t('checkout_form_order_error', { defaultValue: error || 'Có lỗi xảy ra khi đặt hàng' }));
     } finally {
       setIsSubmitting(false);
     }
@@ -168,13 +169,13 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
   return (
     <div className="col-lg-10 col-12 pe-lg-4">
       <div className="checkout-form">
-        <h2>Thanh toán của bạn</h2>
-        <p>Vui lòng điền thông tin</p>
+        <h2>{t('checkout_form_title', { defaultValue: 'Thanh toán của bạn' })}</h2>
+        <p>{t('checkout_form_instruction', { defaultValue: 'Vui lòng điền thông tin' })}</p>
         <form className="form" onSubmit={handleSubmit}>
           <div className="row g-3">
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
-                <label>Họ và tên<span>*</span></label>
+                <label>{t('checkout_form_full_name', { defaultValue: 'Họ và tên' })}<span>*</span></label>
                 <input 
                   type="text" 
                   name="fullName" 
@@ -187,7 +188,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
             </div>
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
-                <label>Số điện thoại<span>*</span></label>
+                <label>{t('checkout_form_phone', { defaultValue: 'Số điện thoại' })}<span>*</span></label>
                 <input 
                   type="tel" 
                   name="phoneNumber" 
@@ -200,7 +201,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
             </div>
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
-                <label>Email<span>*</span></label>
+                <label>{t('checkout_form_email', { defaultValue: 'Email' })}<span>*</span></label>
                 <input 
                   type="email" 
                   name="email" 
@@ -213,7 +214,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
             </div>
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
-                <label>Tỉnh/Thành Phố<span>*</span></label>
+                <label>{t('checkout_form_province', { defaultValue: 'Tỉnh/Thành Phố' })}<span>*</span></label>
                 <select 
                   name="country" 
                   value={userInfo.country}
@@ -221,7 +222,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                   required
                   className="form-control"
                 >
-                  <option value="">Chọn tỉnh/thành</option>
+                  <option value="">{t('checkout_form_select_province', { defaultValue: 'Chọn tỉnh/thành' })}</option>
                   {provinces.map((province) => (
                     <option key={province.code} value={province.name}>
                       {province.name}
@@ -232,7 +233,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
             </div>
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
-                <label>Quận/Huyện<span>*</span></label>
+                <label>{t('checkout_form_district', { defaultValue: 'Quận/Huyện' })}<span>*</span></label>
                 <select 
                   name="district" 
                   value={userInfo.district}
@@ -241,7 +242,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                   disabled={!userInfo.country}
                   className="form-control"
                 >
-                  <option value="">Chọn quận/huyện</option>
+                  <option value="">{t('checkout_form_select_district', { defaultValue: 'Chọn quận/huyện' })}</option>
                   {districts.map((district) => (
                     <option key={district.code} value={district.name}>
                       {district.name}
@@ -252,7 +253,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
             </div>
             <div className="col-lg-6 col-md-6 col-12">
               <div className="form-group">
-                <label>Xã/Phường<span>*</span></label>
+                <label>{t('checkout_form_ward', { defaultValue: 'Xã/Phường' })}<span>*</span></label>
                 <select 
                   name="ward" 
                   value={userInfo.ward}
@@ -261,7 +262,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                   disabled={!userInfo.district}
                   className="form-control"
                 >
-                  <option value="">Chọn xã/phường</option>
+                  <option value="">{t('checkout_form_select_ward', { defaultValue: 'Chọn xã/phường' })}</option>
                   {wards.map((ward) => (
                     <option key={ward.code} value={ward.name}>
                       {ward.name}
@@ -272,7 +273,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
             </div>
             <div className="col-12">
               <div className="form-group">
-                <label>Địa chỉ cụ thể<span>*</span></label>
+                <label>{t('checkout_form_address', { defaultValue: 'Địa chỉ cụ thể' })}<span>*</span></label>
                 <input 
                   type="text" 
                   name="address" 
@@ -285,12 +286,12 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
             </div>
             <div className="col-12">
               <div className="form-group">
-                <label>Ghi chú khác</label>
+                <label>{t('checkout_form_note', { defaultValue: 'Ghi chú khác' })}</label>
                 <textarea 
                   name="note" 
                   rows="12" 
                   style={{ minHeight: '200px' }}
-                  placeholder="Điền các thông tin cần ghi chú vào đây"
+                  placeholder={t('checkout_form_note_placeholder', { defaultValue: 'Điền các thông tin cần ghi chú vào đây' })}
                   value={userInfo.note}
                   onChange={handleChange}
                   className="form-control"
@@ -303,7 +304,7 @@ export default function CheckoutForm({ cartItems = [], totalAmount = 0, selected
                 className="btn btn-primary"
                 disabled={isSubmitting || !cartItems.length}
               >
-                {isSubmitting ? 'Đang xử lý...' : 'Đặt hàng'}
+                {isSubmitting ? t('checkout_form_submitting', { defaultValue: 'Đang xử lý...' }) : t('checkout_form_submit', { defaultValue: 'Đặt hàng' })}
               </button>
             </div>
           </div>
