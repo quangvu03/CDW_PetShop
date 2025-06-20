@@ -15,7 +15,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderRequest {
 
-    @Positive(message = "userId phải là số dương")
     int userId;
 
     @DecimalMin(value = "0.0", inclusive = false, message = "Tổng giá trị đơn hàng phải lớn hơn 0")
@@ -24,14 +23,16 @@ public class OrderRequest {
     @NotBlank(message = "Phương thức thanh toán không được để trống")
     String paymentMethod;
 
-    @NotBlank(message = "Trạng thái thanh toán không được để trống")
+
     String paymentStatus;
 
     @NotBlank(message = "Địa chỉ giao hàng không được để trống")
     String shippingAddress;
 
-    String phoneNumber;
-    
+    @Pattern(regexp = "^(0\\d{9}|\\+84\\d{9})$",message = "Số điện thoại không hợp lệ")
+    private String phoneNumber;
+
+    @NotBlank(message = "Tên người nhận không được để trống")
     String shippingName;
 
     @Positive(message = "ID phương thức vận chuyển không hợp lệ")

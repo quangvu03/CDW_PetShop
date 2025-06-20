@@ -2,6 +2,7 @@ package com.demo.dtos;
 
 import com.demo.entities.Pet;
 import com.demo.entities.PetImage;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PetDto {
     private int id;
     private String name;

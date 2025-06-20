@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getPetsBySpecies, getAllSpecies } from '../../../services/petService';
 import { addPetToWishlist } from '../../../services/wishlistService';
-import { addToCart, getCartByUser} from '../../../services/cartService';
+import { addToCart, getCartByUser } from '../../../services/cartService';
 import { toast } from 'react-toastify';
 import ProductDetailModal from './ProductDetailModal';
 
@@ -26,43 +26,43 @@ export default function ProductArea() {
     // --- State ---
     const [speciesList, setSpeciesList] = useState([]);
     const [selectedSpecies, setSelectedSpecies] = useState('');
-    const [allPetsForSpecies, setAllPetsForSpecies] = useState([]); 
+    const [allPetsForSpecies, setAllPetsForSpecies] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [speciesLoading, setSpeciesLoading] = useState(true);
     const [petsLoading, setPetsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [cartItems, setCartItems] = useState([]);
-// Dữ liệu pet giả định (đặt bên ngoài component hoặc ngay trong state)
-// --- DỮ LIỆU TEST VỚI ẢNH THẬT ---
-const dummyPetData = {
-    id: 999,
-    name: 'Test Pet (Ảnh Thật)',
-    species: 'Mèo',
-    breed: 'Mèo Ta Mix',
-    price: 1200000,
-    gender: 'female',
-    age: 12,
-    color: 'Vàng Trắng',
-    size: 'medium',
-    origin: 'Việt Nam',
-    description: 'Test hiển thị thumbnails với các ảnh thật từ internet. Click thumbnail để đổi ảnh chính.',
-    // Ảnh chính (lấy từ picsum)
-    imageUrl: 'https://picsum.photos/seed/maincat/600/600',
-    // Danh sách ảnh phụ (lấy từ picsum với seed khác nhau)
-    imageUrls: [
-        'https://picsum.photos/seed/catthumb1/600/600', // Trùng ảnh chính hoặc ảnh đầu list
-        'https://picsum.photos/seed/catthumb2/600/600',
-        'https://picsum.photos/seed/catthumb3/600/600',
-        'https://picsum.photos/seed/catthumb4/600/600',
-        'https://picsum.photos/seed/catthumb5/600/600',
-         '/uploads/pets/mèo_server_1.jpg'
-    ],
-};
+    // Dữ liệu pet giả định (đặt bên ngoài component hoặc ngay trong state)
+    // --- DỮ LIỆU TEST VỚI ẢNH THẬT ---
+    const dummyPetData = {
+        id: 999,
+        name: 'Test Pet (Ảnh Thật)',
+        species: 'Mèo',
+        breed: 'Mèo Ta Mix',
+        price: 1200000,
+        gender: 'female',
+        age: 12,
+        color: 'Vàng Trắng',
+        size: 'medium',
+        origin: 'Việt Nam',
+        description: 'Test hiển thị thumbnails với các ảnh thật từ internet. Click thumbnail để đổi ảnh chính.',
+        // Ảnh chính (lấy từ picsum)
+        imageUrl: 'https://picsum.photos/seed/maincat/600/600',
+        // Danh sách ảnh phụ (lấy từ picsum với seed khác nhau)
+        imageUrls: [
+            'https://picsum.photos/seed/catthumb1/600/600', // Trùng ảnh chính hoặc ảnh đầu list
+            'https://picsum.photos/seed/catthumb2/600/600',
+            'https://picsum.photos/seed/catthumb3/600/600',
+            'https://picsum.photos/seed/catthumb4/600/600',
+            'https://picsum.photos/seed/catthumb5/600/600',
+            '/uploads/pets/mèo_server_1.jpg'
+        ],
+    };
     // --- Ảnh mặc định của Frontend ---
-    const defaultImageUrl = "/assets/user/images/default-pet-placeholder.png"; 
+    const defaultImageUrl = "/assets/user/images/default-pet-placeholder.png";
 
-    const [isModalOpen, setIsModalOpen] = useState(false);        
-const [selectedPet, setSelectedPet] = useState(dummyPetData);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedPet, setSelectedPet] = useState(dummyPetData);
 
     // --- useEffect: Lấy danh sách loài ---
     useEffect(() => {
@@ -102,17 +102,17 @@ const [selectedPet, setSelectedPet] = useState(dummyPetData);
     }, []); // Chạy một lần khi mount
 
     // --- useEffect: Lấy TOÀN BỘ Pet khi selectedSpecies THAY ĐỔI ---
-     useEffect(() => {
+    useEffect(() => {
         let isMounted = true; // Cờ cleanup
-         // Chỉ fetch khi selectedSpecies có giá trị hợp lệ
-         if (selectedSpecies) {
-             setPetsLoading(true);
-             setError(null);
-             // Reset danh sách về rỗng TRƯỚC KHI fetch để hiển thị skeleton
-             setAllPetsForSpecies([]);
+        // Chỉ fetch khi selectedSpecies có giá trị hợp lệ
+        if (selectedSpecies) {
+            setPetsLoading(true);
+            setError(null);
+            // Reset danh sách về rỗng TRƯỚC KHI fetch để hiển thị skeleton
+            setAllPetsForSpecies([]);
 
-             getPetsBySpecies(selectedSpecies) // Gọi API client-side
-                 .then(response => {
+            getPetsBySpecies(selectedSpecies) // Gọi API client-side
+                .then(response => {
                     if (isMounted) {
                         // Quan trọng: Xác thực API trả về MẢNG
                         if (Array.isArray(response.data)) {
@@ -123,44 +123,44 @@ const [selectedPet, setSelectedPet] = useState(dummyPetData);
                             setAllPetsForSpecies([]); // Set mảng rỗng khi lỗi định dạng
                         }
                     }
-                 })
-                 .catch(err => {
+                })
+                .catch(err => {
                     if (isMounted) {
                         console.error(`Lỗi tải thú cưng cho loài ${selectedSpecies}:`, err);
                         setError(`Không thể tải danh sách thú cưng.`);
                         setAllPetsForSpecies([]); // Set mảng rỗng khi lỗi fetch
                     }
-                 })
-                 .finally(() => {
+                })
+                .finally(() => {
                     if (isMounted) {
                         setPetsLoading(false); // Tắt loading
                     }
-                 });
-         } else {
-              // Nếu không có loài nào được chọn (ví dụ ban đầu hoặc danh sách rỗng)
-              if (isMounted) {
-                  setAllPetsForSpecies([]); // Đảm bảo là mảng rỗng
-                  setPetsLoading(false);
-              }
-         }
-         // Cleanup function
-         return () => {
-             isMounted = false;
-         };
-     }, [selectedSpecies]); // Chỉ phụ thuộc vào selectedSpecies
+                });
+        } else {
+            // Nếu không có loài nào được chọn (ví dụ ban đầu hoặc danh sách rỗng)
+            if (isMounted) {
+                setAllPetsForSpecies([]); // Đảm bảo là mảng rỗng
+                setPetsLoading(false);
+            }
+        }
+        // Cleanup function
+        return () => {
+            isMounted = false;
+        };
+    }, [selectedSpecies]); // Chỉ phụ thuộc vào selectedSpecies
 
-     useEffect(() => {
+    useEffect(() => {
         const fetchCart = async () => {
-          try {
-            const data = await getCartByUser();
-            setCartItems(data);
-          } catch (err) {
-            console.error('Lỗi khi lấy giỏ hàng:', err);
-          }
+            try {
+                const data = await getCartByUser();
+                setCartItems(data);
+            } catch (err) {
+                console.error('Lỗi khi lấy giỏ hàng:', err);
+            }
         };
         fetchCart();
-      }, []);
-      
+    }, []);
+
 
 
     // --- Tính toán currentPets (Client-Side) ---
@@ -225,7 +225,7 @@ const [selectedPet, setSelectedPet] = useState(dummyPetData);
 
         return (
             <div className="col-12">
-                 <nav aria-label="Page navigation" className="mt-4 d-flex justify-content-center">
+                <nav aria-label="Page navigation" className="mt-4 d-flex justify-content-center">
                     <ul className="pagination">
                         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}> <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} aria-label="Previous"><span aria-hidden="true">«</span></button> </li>
                         {startPage > 1 && <li className="page-item"><button className="page-link" onClick={() => handlePageChange(1)}>1</button></li>}
@@ -322,112 +322,111 @@ const [selectedPet, setSelectedPet] = useState(dummyPetData);
                                             return (
                                                 <div key={pet.id} className="col-xl-3 col-lg-4 col-md-4 col-12 mb-4">
                                                     <div className="single-product"> {/* Cần CSS min-height */}
-                                                    <div className="product-img position-relative">
-  <a href={`/user/pet/${pet.id}`}>
-    <img
-      className="default-img"
-      src={imageSource}
-      alt={pet.name || 'Thú cưng'}
-      loading="lazy"
-      onError={(e) => {
-        if (e.target.src !== defaultImageUrl) {
-          e.target.onerror = null;
-          e.target.src = defaultImageUrl;
-        }
-      }}
-      style={{
-        aspectRatio: '1 / 1',
-        objectFit: 'cover',
-        backgroundColor: '#f5f5f5',
-      }}
-    />
-  </a>
+                                                        <div className="product-img position-relative">
+                                                            <a href={`/user/pet/${pet.id}`}>
+                                                                <img
+                                                                    className="default-img"
+                                                                    src={imageSource}
+                                                                    alt={pet.name || 'Thú cưng'}
+                                                                    loading="lazy"
+                                                                    onError={(e) => {
+                                                                        if (e.target.src !== defaultImageUrl) {
+                                                                            e.target.onerror = null;
+                                                                            e.target.src = defaultImageUrl;
+                                                                        }
+                                                                    }}
+                                                                    style={{
+                                                                        aspectRatio: '1 / 1',
+                                                                        objectFit: 'cover',
+                                                                        backgroundColor: '#f5f5f5',
+                                                                    }}
+                                                                />
+                                                            </a>
 
-  {/* Badge trạng thái đè lên ảnh */}
-  <div
-    className={`pet-status-overlay ${
-      pet.status === 'available'
-        ? 'status-available'
-        : pet.status === 'pending'
-        ? 'status-pending'
-        : 'status-sold'
-    }`}
-  >
-    {pet.status === 'available'
-      ? 'Có sẵn'
-      : pet.status === 'pending'
-      ? 'Đang nhập'
-      : 'Hết hàng'}
-  </div>
+                                                            {/* Badge trạng thái đè lên ảnh */}
+                                                            <div
+                                                                className={`pet-status-overlay ${pet.status === 'available'
+                                                                        ? 'status-available'
+                                                                        : pet.status === 'pending'
+                                                                            ? 'status-pending'
+                                                                            : 'status-sold'
+                                                                    }`}
+                                                            >
+                                                                {pet.status === 'available'
+                                                                    ? 'Có sẵn'
+                                                                    : pet.status === 'pending'
+                                                                        ? 'Đang nhập'
+                                                                        : 'Hết hàng'}
+                                                            </div>
 
-  <div className="button-head">
-    <div className="product-action">
-      <a
-        data-toggle="modal"
-        title="Quick View"
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          handleOpenModal(pet);
-        }}
-      >
-        <i className="ti-eye"></i><span>Xem chi tiết</span>
-      </a>
-      <a
-        title="Wishlist"
-        href="#"
-        onClick={async (e) => {
-          e.preventDefault();
-        //   const userId = localStorage.getItem('userId');
-          try {
-            await addPetToWishlist(pet.id);
-            toast.success("Đã thêm vào danh sách yêu thích!");
-          } catch (err) {
-            if (err.response?.status === 409) {
-              toast.info(err.response.data.message || "Sản phẩm đã có trong danh sách yêu thích.");
-            } else {
-              toast.error("Lỗi khi thêm vào danh sách yêu thích!");
-            }
-          }
-        }}
-      >
-        <i className="ti-heart"></i><span>Yêu thích</span>
-      </a>
-    </div>
-    <div className="product-action-2">
-    <a
-  title="Thêm vào giỏ hàng"
-  href="#"
-  onClick={async (e) => {
-    e.preventDefault();
-    try {
-      const existingItem = cartItems?.find((item) => item.pet?.id === pet.id);
-      const currentQty = existingItem?.quantity || 0;
-      const stock = pet.quantity;
-  
-      if (currentQty + 1 > stock) {
-        toast.warning("🚫 Số lượng vượt quá tồn kho!");
-        return;
-      }
-  
-      await addToCart({ petId: pet.id, quantity: 1 });
-      window.dispatchEvent(new Event('cart-updated'));
-      toast.success('Đã thêm vào giỏ hàng!');
-  
-      // Cập nhật giỏ sau khi thêm
-      const updated = await getCartByUser();
-      setCartItems(updated);
-    } catch (err) {
-      toast.error('Lỗi khi thêm vào giỏ hàng');
-    }
-  }}
->
-  Thêm vào giỏ hàng
-</a>
+                                                            <div className="button-head">
+                                                                <div className="product-action">
+                                                                    <a
+                                                                        data-toggle="modal"
+                                                                        title="Quick View"
+                                                                        href="#"
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            handleOpenModal(pet);
+                                                                        }}
+                                                                    >
+                                                                        <i className="ti-eye"></i><span>Xem chi tiết</span>
+                                                                    </a>
+                                                                    <a
+                                                                        title="Wishlist"
+                                                                        href="#"
+                                                                        onClick={async (e) => {
+                                                                            e.preventDefault();
+                                                                            //   const userId = localStorage.getItem('userId');
+                                                                            try {
+                                                                                await addPetToWishlist(pet.id);
+                                                                                toast.success("Đã thêm vào danh sách yêu thích!");
+                                                                            } catch (err) {
+                                                                                if (err.response?.status === 409) {
+                                                                                    toast.info(err.response.data.message || "Sản phẩm đã có trong danh sách yêu thích.");
+                                                                                } else {
+                                                                                    toast.error("Lỗi khi thêm vào danh sách yêu thích!");
+                                                                                }
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        <i className="ti-heart"></i><span>Yêu thích</span>
+                                                                    </a>
+                                                                </div>
+                                                                <div className="product-action-2">
+                                                                    <a
+                                                                        title="Thêm vào giỏ hàng"
+                                                                        href="#"
+                                                                        onClick={async (e) => {
+                                                                            e.preventDefault();
+                                                                            try {
+                                                                                const existingItem = cartItems?.find((item) => item.pet?.id === pet.id);
+                                                                                const currentQty = existingItem?.quantity || 0;
+                                                                                const stock = pet.quantity;
 
-</div>
-  </div>
-</div>
+                                                                                if (currentQty + 1 > stock) {
+                                                                                    toast.warning("🚫 Số lượng vượt quá tồn kho!");
+                                                                                    return;
+                                                                                }
+
+                                                                                await addToCart({ petId: pet.id, quantity: 1 });
+                                                                                window.dispatchEvent(new Event('cart-updated'));
+                                                                                toast.success('Đã thêm vào giỏ hàng!');
+
+                                                                                // Cập nhật giỏ sau khi thêm
+                                                                                const updated = await getCartByUser();
+                                                                                setCartItems(updated);
+                                                                            } catch (err) {
+                                                                                toast.error('Lỗi khi thêm vào giỏ hàng');
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        Thêm vào giỏ hàng
+                                                                    </a>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
 
                                                         <div className="product-content">
                                                             <h3><a href={`/pet/${pet.id}`}>{pet.name || 'Chưa có tên'}</a></h3>
@@ -463,11 +462,11 @@ const [selectedPet, setSelectedPet] = useState(dummyPetData);
                     </div>
                 </div>
             </div>
-         <ProductDetailModal
-            isOpen={isModalOpen}
-            onClose={handleCloseModal}
-            pet={selectedPet}    // <-- TRUYỀN selectedPet vào prop 'pet'
-        />
+            <ProductDetailModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                pet={selectedPet}    // <-- TRUYỀN selectedPet vào prop 'pet'
+            />
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPetById } from '../../services/petService';
-import { addToCart } from '../../services/cartService';
+import { addToCart, getCartByUser } from '../../services/cartService'; // Thêm getCartByUser
 import { getCommentsByPetId, addComment, deleteComment, reportComment } from '../../services/commentService';
 import { toast } from 'react-toastify';
 import { getReviewsByPetId } from '../../services/ratingService';
@@ -67,7 +67,7 @@ const getTimeAgo = (createdAt) => {
 };
 
 export default function PetDetail() {
-  const { id } = useParams();
+const { id } = useParams();
   const [pet, setPet] = useState(null);
   const [mainImage, setMainImage] = useState('');
   const [averageRating, setAverageRating] = useState(0);
@@ -82,7 +82,9 @@ export default function PetDetail() {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [replyStates, setReplyStates] = useState({});
+  const [cartItems, setCartItems] = useState([]); // Thêm state để lưu giỏ hàng
 
+  // Thêm useEffect để lấy giỏ hàng khi component mount
   useEffect(() => {
     const fetchPetAndReviews = async () => {
       try {
@@ -112,6 +114,10 @@ export default function PetDetail() {
 
         const commentResponse = await getCommentsByPetId(id);
         setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
+
+        // Lấy giỏ hàng
+        const cartResponse = await getCartByUser();
+        setCartItems(Array.isArray(cartResponse.data) ? cartResponse.data : []);
       } catch (err) {
         console.error('Error fetching data:', err);
         toast.error('Không thể tải dữ liệu');
@@ -131,13 +137,33 @@ export default function PetDetail() {
     return `http://localhost:8080/uploads/avatars/${avatarPath}`;
   };
 
-  const handleAddToCart = async () => {
+const handleAddToCart = async () => {
     try {
-      await addToCart({ petId: pet.id, quantity: 1 });
+      // Kiểm tra số lượng trong giỏ hàng so với tồn kho
+      const existingItem = cartItems?.find((item) => item.pet?.id === parseInt(id));
+      const currentQty = existingItem?.quantity || 0;
+      const stock = pet?.quantity || 0;
+
+      // Kiểm tra nếu số lượng mới (currentQty + 1) vượt quá tồn kho
+      if (currentQty + 1 > stock) {
+        toast.warning('🚫 Số lượng vượt quá tồn kho!');
+        return;
+      }
+
+      // Thêm vào giỏ hàng nếu không vượt quá tồn kho
+      await addToCart({ petId: parseInt(id), quantity: 1 });
       toast.success('Đã thêm vào giỏ hàng!');
+
+      // Cập nhật giỏ hàng sau khi thêm
+      const updatedCart = await getCartByUser();
+      setCartItems(Array.isArray(updatedCart.data) ? updatedCart.data : []);
+
       localStorage.setItem('cart_updated', Date.now());
+      window.dispatchEvent(new Event('cart-updated'));
     } catch (err) {
-      toast.error('Lỗi khi thêm vào giỏ hàng');
+      console.error('Lỗi khi thêm vào giỏ hàng:', err);
+              toast.warning('🚫 Số lượng vượt quá tồn kho!');
+
     }
   };
 

@@ -3,6 +3,7 @@ package com.demo.controllers;
 import com.demo.dtos.requests.AddCommentDto;
 import com.demo.dtos.responses.CommentResponse;
 import com.demo.services.CommentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class CommentController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<CommentResponse> addComment(@RequestBody AddCommentDto addCommentDto) {
+    public ResponseEntity<CommentResponse> addComment(@Valid @RequestBody AddCommentDto addCommentDto) {
         if (addCommentDto.getUserId() == null || addCommentDto.getPetId() == null ||
             addCommentDto.getContent() == null || addCommentDto.getContent().trim().isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

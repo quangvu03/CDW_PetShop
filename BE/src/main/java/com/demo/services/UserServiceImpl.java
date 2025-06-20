@@ -28,12 +28,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void register(RegisterRequest request) {
-        // ✅ Check username trùng
+
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Tên đăng nhập đã tồn tại");
         }
 
-        // ✅ Check email trùng
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email đã được sử dụng");
         }
