@@ -5,6 +5,7 @@ import com.demo.dtos.requests.RegisterRequest;
 import com.demo.dtos.responses.ApiResponse;
 import com.demo.entities.User;
 import com.demo.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class AdminUserManagerController {
     }
 
     @PostMapping("/createUser")
-    public ResponseEntity<ApiResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest request) {
         try {
             userService.register(request);
             return ResponseEntity.ok(new ApiResponse(true, "Đăng ký thành công"));

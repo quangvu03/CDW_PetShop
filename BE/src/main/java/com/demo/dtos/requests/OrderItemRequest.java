@@ -13,11 +13,9 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderItemRequest {
 
-    // Có thể gửi 1 trong 2 (pet hoặc product)
     @PositiveOrZero(message = "petId không hợp lệ")
     int petId;
 
-    @PositiveOrZero(message = "productId không hợp lệ")
     int productId;
 
     @Min(value = 1, message = "Số lượng phải lớn hơn 0")

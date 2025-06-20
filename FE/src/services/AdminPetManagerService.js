@@ -34,9 +34,11 @@ export const updatePet = async (id, petData) => {
   try {
     const response = await api.put(`/admin/petUpdate/${id}`, petData, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('accessToken')}`, // Lấy token từ localStorage
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // Lấy token từ localStorage
       },
     });
+
+    console.log('Cập nhật pet thành công:', response.data);
     return response.data;
   } catch (error) {
     if (error.response) {

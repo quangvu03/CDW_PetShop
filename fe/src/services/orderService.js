@@ -14,6 +14,8 @@ export const createOrder = async (orderData) => {
       shippingName: orderData.shippingName, // Thêm tên người nhận
       orderRequestList: orderData.orderRequestList,
     };
+    console.log('Creating order with payload:', payload); // Debug
+
     const response = await api.post('/order/saveOrder', payload);
     if (!response.data.success) {
       throw new Error(response.data.message || 'Đặt hàng thất bại');

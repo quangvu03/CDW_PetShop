@@ -134,7 +134,7 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configurationApi);
         source.registerCorsConfiguration("/uploads/**", configurationUploads); // Đăng ký riêng
-
+        source.registerCorsConfiguration("/oauth2/**", configurationApi);
         return source;
     }
 

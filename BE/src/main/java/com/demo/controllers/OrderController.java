@@ -57,6 +57,7 @@ public class OrderController {
 
     @PostMapping("/saveOrder")
     public ResponseEntity<?> saveOrder(@Valid @RequestBody OrderRequest orderRequest, BindingResult bindingResult) {
+        System.out.println("Received Order Request: " + orderRequest);
         if (bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getFieldErrors().stream()
                     .map(err -> err.getField() + ": " + err.getDefaultMessage())
@@ -185,8 +186,7 @@ public class OrderController {
             PaymentData paymentData = PaymentData.builder()
                     .orderCode(orderCode)
                     .description(request.getDescription())
-//                    .amount(request.getPrice())
-                    .amount(2000)
+                    .amount(request.getPrice())
                     .item(item)
                     .returnUrl(request.getReturnUrl())
                     .cancelUrl(request.getCancelUrl())

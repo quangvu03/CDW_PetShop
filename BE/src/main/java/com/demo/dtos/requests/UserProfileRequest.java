@@ -26,7 +26,5 @@ public class UserProfileRequest {
     @Size(max = 255, message = "Địa chỉ quá dài")
     private String address;
 
-    // File upload không bắt buộc => không cần validate thêm ở đây,
-    // nhưng có thể validate ở controller nếu muốn (loại file, dung lượng, v.v.)
     private MultipartFile avatar;
 }
