@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { getPetsBySpecies, getAllSpecies } from '../../../services/petService';
 import { addPetToWishlist } from '../../../services/wishlistService';
 import { addToCart, getCartByUser } from '../../../services/cartService';
@@ -7,11 +9,35 @@ import ProductDetailModal from './ProductDetailModal';
 
 const BACKEND_BASE_URL = 'http://localhost:8080';
 
+// --- Dữ liệu pet giả định (di chuyển ra ngoài component) ---
+const dummyPetData = {
+    id: 999,
+    name: 'Test Pet (Ảnh Thật)',
+    species: 'Mèo',
+    breed: 'Mèo Ta Mix',
+    price: 1200000,
+    gender: 'female',
+    age: 12,
+    color: 'Vàng Trắng',
+    size: 'medium',
+    origin: 'Việt Nam',
+    description: 'Test hiển thị thumbnails với các ảnh thật từ internet. Click thumbnail để đổi ảnh chính.',
+    imageUrl: 'https://picsum.photos/seed/maincat/600/600',
+    imageUrls: [
+        'https://picsum.photos/seed/catthumb1/600/600',
+        'https://picsum.photos/seed/catthumb2/600/600',
+        'https://picsum.photos/seed/catthumb3/600/600',
+        'https://picsum.photos/seed/catthumb4/600/600',
+        'https://picsum.photos/seed/catthumb5/600/600',
+        '/uploads/pets/mèo_server_1.jpg'
+    ],
+};
+
 // --- Hàm format giá ---
-const formatPrice = (price) => {
+const formatPrice = (price, t) => {
     const numericPrice = Number(price);
     if (price === null || price === undefined || isNaN(numericPrice)) {
-        return "Liên hệ";
+        return t('product_contact', { defaultValue: 'Liên hệ' });
     }
     if (numericPrice >= 1000000) {
         return `${(numericPrice / 1000000).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} triệu đồng`;
@@ -23,7 +49,8 @@ const formatPrice = (price) => {
 const ITEMS_PER_PAGE = 8; // Hoặc 9, 12 tùy layout
 
 export default function ProductArea() {
-    // --- State ---
+    const { t, i18n } = useTranslation();
+    const navigate = useNavigate();
     const [speciesList, setSpeciesList] = useState([]);
     const [selectedSpecies, setSelectedSpecies] = useState('');
     const [allPetsForSpecies, setAllPetsForSpecies] = useState([]);
@@ -32,41 +59,14 @@ export default function ProductArea() {
     const [petsLoading, setPetsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [cartItems, setCartItems] = useState([]);
-    // Dữ liệu pet giả định (đặt bên ngoài component hoặc ngay trong state)
-    // --- DỮ LIỆU TEST VỚI ẢNH THẬT ---
-    const dummyPetData = {
-        id: 999,
-        name: 'Test Pet (Ảnh Thật)',
-        species: 'Mèo',
-        breed: 'Mèo Ta Mix',
-        price: 1200000,
-        gender: 'female',
-        age: 12,
-        color: 'Vàng Trắng',
-        size: 'medium',
-        origin: 'Việt Nam',
-        description: 'Test hiển thị thumbnails với các ảnh thật từ internet. Click thumbnail để đổi ảnh chính.',
-        // Ảnh chính (lấy từ picsum)
-        imageUrl: 'https://picsum.photos/seed/maincat/600/600',
-        // Danh sách ảnh phụ (lấy từ picsum với seed khác nhau)
-        imageUrls: [
-            'https://picsum.photos/seed/catthumb1/600/600', // Trùng ảnh chính hoặc ảnh đầu list
-            'https://picsum.photos/seed/catthumb2/600/600',
-            'https://picsum.photos/seed/catthumb3/600/600',
-            'https://picsum.photos/seed/catthumb4/600/600',
-            'https://picsum.photos/seed/catthumb5/600/600',
-            '/uploads/pets/mèo_server_1.jpg'
-        ],
-    };
-    // --- Ảnh mặc định của Frontend ---
-    const defaultImageUrl = "/assets/user/images/default-pet-placeholder.png";
-
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedPet, setSelectedPet] = useState(dummyPetData);
+    const [selectedPet, setSelectedPet] = useState(dummyPetData); // Sử dụng dummyPetData đã khai báo bên ngoài
+
+    const defaultImageUrl = "/assets/user/images/default-pet-placeholder.png";
 
     // --- useEffect: Lấy danh sách loài ---
     useEffect(() => {
-        let isMounted = true; // Cờ để tránh cập nhật state nếu component unmount
+        let isMounted = true;
         setSpeciesLoading(true);
         setError(null);
         getAllSpecies()
@@ -75,7 +75,6 @@ export default function ProductArea() {
                     const fetchedSpecies = response.data || [];
                     setSpeciesList(fetchedSpecies);
                     if (fetchedSpecies.length > 0 && !selectedSpecies) {
-                        // Chỉ set lần đầu, tránh trigger effect không cần thiết nếu selectedSpecies đã có
                         setSelectedSpecies(prevSelected => prevSelected || fetchedSpecies[0]);
                     } else if (fetchedSpecies.length === 0) {
                         setSelectedSpecies('');
@@ -85,7 +84,7 @@ export default function ProductArea() {
             .catch(err => {
                 if (isMounted) {
                     console.error("Lỗi tải danh sách loài:", err);
-                    setError("Không thể tải danh sách loài.");
+                    setError(t('product_error', { defaultValue: 'Không thể tải danh sách loài.' }));
                     setSpeciesList([]);
                 }
             })
@@ -95,59 +94,49 @@ export default function ProductArea() {
                 }
             });
 
-        // Cleanup function
-        return () => {
-            isMounted = false;
-        };
-    }, []); // Chạy một lần khi mount
+        return () => { isMounted = false; };
+    }, []);
 
     // --- useEffect: Lấy TOÀN BỘ Pet khi selectedSpecies THAY ĐỔI ---
     useEffect(() => {
-        let isMounted = true; // Cờ cleanup
-        // Chỉ fetch khi selectedSpecies có giá trị hợp lệ
+        let isMounted = true;
         if (selectedSpecies) {
             setPetsLoading(true);
             setError(null);
-            // Reset danh sách về rỗng TRƯỚC KHI fetch để hiển thị skeleton
             setAllPetsForSpecies([]);
 
-            getPetsBySpecies(selectedSpecies) // Gọi API client-side
+            getPetsBySpecies(selectedSpecies)
                 .then(response => {
                     if (isMounted) {
-                        // Quan trọng: Xác thực API trả về MẢNG
                         if (Array.isArray(response.data)) {
-                            setAllPetsForSpecies(response.data); // Cập nhật với dữ liệu mới
+                            setAllPetsForSpecies(response.data);
                         } else {
                             console.error("API Lỗi định dạng: Cần trả về mảng!", response.data);
-                            setError("Lỗi định dạng dữ liệu từ máy chủ.");
-                            setAllPetsForSpecies([]); // Set mảng rỗng khi lỗi định dạng
+                            setError(t('product_error', { defaultValue: 'Lỗi định dạng dữ liệu từ máy chủ.' }));
+                            setAllPetsForSpecies([]);
                         }
                     }
                 })
                 .catch(err => {
                     if (isMounted) {
                         console.error(`Lỗi tải thú cưng cho loài ${selectedSpecies}:`, err);
-                        setError(`Không thể tải danh sách thú cưng.`);
-                        setAllPetsForSpecies([]); // Set mảng rỗng khi lỗi fetch
+                        setError(t('product_error', { defaultValue: 'Không thể tải danh sách thú cưng.' }));
+                        setAllPetsForSpecies([]);
                     }
                 })
                 .finally(() => {
                     if (isMounted) {
-                        setPetsLoading(false); // Tắt loading
+                        setPetsLoading(false);
                     }
                 });
         } else {
-            // Nếu không có loài nào được chọn (ví dụ ban đầu hoặc danh sách rỗng)
             if (isMounted) {
-                setAllPetsForSpecies([]); // Đảm bảo là mảng rỗng
+                setAllPetsForSpecies([]);
                 setPetsLoading(false);
             }
         }
-        // Cleanup function
-        return () => {
-            isMounted = false;
-        };
-    }, [selectedSpecies]); // Chỉ phụ thuộc vào selectedSpecies
+        return () => { isMounted = false; };
+    }, [selectedSpecies]);
 
     useEffect(() => {
         const fetchCart = async () => {
@@ -160,8 +149,6 @@ export default function ProductArea() {
         };
         fetchCart();
     }, []);
-
-
 
     // --- Tính toán currentPets (Client-Side) ---
     const currentPets = useMemo(() => {
@@ -177,12 +164,11 @@ export default function ProductArea() {
         return Math.ceil(allPetsForSpecies.length / ITEMS_PER_PAGE);
     }, [allPetsForSpecies]);
 
-
     // --- Event Handlers ---
     const handleSpeciesChange = (species) => {
         if (species !== selectedSpecies) {
             setSelectedSpecies(species);
-            setCurrentPage(1); // Reset về trang 1 ngay khi đổi loài
+            setCurrentPage(1);
         }
     };
 
@@ -191,7 +177,7 @@ export default function ProductArea() {
             setCurrentPage(pageNumber);
             const productContainer = document.getElementById('product-display-area');
             if (productContainer) {
-                const headerOffset = 80; // Điều chỉnh nếu header của bạn cao hơn
+                const headerOffset = 80;
                 const elementPosition = productContainer.getBoundingClientRect().top + window.pageYOffset;
                 const offsetPosition = elementPosition - headerOffset;
                 window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
@@ -199,15 +185,14 @@ export default function ProductArea() {
         }
     };
 
-    // +++ 3. THÊM VÀO ĐÂY: Hàm mở và đóng Modal +++
     const handleOpenModal = (pet) => {
-        setSelectedPet(pet); // Lưu thông tin pet được click
-        setIsModalOpen(true); // Mở modal
+        setSelectedPet(pet);
+        setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
-        setIsModalOpen(false); // Đóng modal
-        setSelectedPet(null); // Xóa thông tin pet khỏi state khi đóng
+        setIsModalOpen(false);
+        setSelectedPet(null);
     };
 
     // --- Render Phân trang ---
@@ -227,13 +212,25 @@ export default function ProductArea() {
             <div className="col-12">
                 <nav aria-label="Page navigation" className="mt-4 d-flex justify-content-center">
                     <ul className="pagination">
-                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}> <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} aria-label="Previous"><span aria-hidden="true">«</span></button> </li>
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                            <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} aria-label="Previous">
+                                <span aria-hidden="true">«</span>
+                            </button>
+                        </li>
                         {startPage > 1 && <li className="page-item"><button className="page-link" onClick={() => handlePageChange(1)}>1</button></li>}
                         {startPage > 2 && <li className="page-item disabled"><span className="page-link">...</span></li>}
-                        {pageNumbers.map(num => (<li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}> <button className="page-link" onClick={() => handlePageChange(num)}>{num}</button> </li>))}
+                        {pageNumbers.map(num => (
+                            <li key={num} className={`page-item ${currentPage === num ? 'active' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(num)}>{num}</button>
+                            </li>
+                        ))}
                         {endPage < totalPages - 1 && <li className="page-item disabled"><span className="page-link">...</span></li>}
                         {endPage < totalPages && <li className="page-item"><button className="page-link" onClick={() => handlePageChange(totalPages)}>{totalPages}</button></li>}
-                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}> <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} aria-label="Next"><span aria-hidden="true">»</span></button> </li>
+                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                            <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} aria-label="Next">
+                                <span aria-hidden="true">»</span>
+                            </button>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -248,7 +245,7 @@ export default function ProductArea() {
                 <div className="row">
                     <div className="col-12">
                         <div className="section-title">
-                            <h2>Thú cưng hot</h2>
+                            <h2>{t('product_hot_pets', { defaultValue: 'Thú cưng hot' })}</h2>
                         </div>
                     </div>
                 </div>
@@ -260,9 +257,9 @@ export default function ProductArea() {
                             {/* --- Tabs Loài --- */}
                             <div className="nav-main">
                                 <ul className="nav nav-tabs" id="myTab" role="tablist">
-                                    {speciesLoading && (<li className="nav-item"><span className="nav-link disabled">Đang tải loài...</span></li>)}
+                                    {speciesLoading && (<li className="nav-item"><span className="nav-link disabled">{t('product_loading_species', { defaultValue: 'Đang tải loài...' })}</span></li>)}
                                     {!speciesLoading && error && speciesList.length === 0 && (<li className="nav-item"><span className="nav-link text-danger">{error}</span></li>)}
-                                    {!speciesLoading && !error && speciesList.length === 0 && (<li className="nav-item"><span className="nav-link disabled">Không có loài nào.</span></li>)}
+                                    {!speciesLoading && !error && speciesList.length === 0 && (<li className="nav-item"><span className="nav-link disabled">{t('product_no_species', { defaultValue: 'Không có loài nào.' })}</span></li>)}
                                     {!speciesLoading && !error && speciesList.length > 0 && (
                                         speciesList.map(species => (
                                             <li key={species} className="nav-item" role="presentation">
@@ -285,8 +282,7 @@ export default function ProductArea() {
 
                             {/* --- Khu vực hiển thị sản phẩm --- */}
                             <div id="product-display-area" className="tab-content mt-4">
-                                <div className="row" role="tabpanel"> {/* Class row chứa các cột */}
-
+                                <div className="row" role="tabpanel">
                                     {/* 1. Hiển thị lỗi fetch pet */}
                                     {!speciesLoading && error && !petsLoading && (
                                         <div className="col-12">
@@ -298,7 +294,7 @@ export default function ProductArea() {
                                     {petsLoading && (
                                         Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
                                             <div key={`skeleton-${index}`} className="col-xl-3 col-lg-4 col-md-4 col-12 mb-4">
-                                                <div className="single-product skeleton-inline-card"> {/* Cần CSS */}
+                                                <div className="single-product skeleton-inline-card">
                                                     <div className="skeleton skeleton-img"></div>
                                                     <div className="skeleton-content">
                                                         <div className="skeleton skeleton-text skeleton-title"></div>
@@ -312,7 +308,6 @@ export default function ProductArea() {
                                     {/* 3. Hiển thị Sản phẩm thật */}
                                     {!petsLoading && !error && currentPets.length > 0 && (
                                         currentPets.map(pet => {
-                                            // Logic xác định URL ảnh
                                             let imageSource = defaultImageUrl;
                                             if (pet && pet.imageUrl && typeof pet.imageUrl === 'string' && pet.imageUrl.trim() !== '') {
                                                 const relativePath = pet.imageUrl.startsWith('/') ? pet.imageUrl.substring(1) : pet.imageUrl;
@@ -321,13 +316,13 @@ export default function ProductArea() {
 
                                             return (
                                                 <div key={pet.id} className="col-xl-3 col-lg-4 col-md-4 col-12 mb-4">
-                                                    <div className="single-product"> {/* Cần CSS min-height */}
+                                                    <div className="single-product">
                                                         <div className="product-img position-relative">
                                                             <a href={`/user/pet/${pet.id}`}>
                                                                 <img
                                                                     className="default-img"
                                                                     src={imageSource}
-                                                                    alt={pet.name || 'Thú cưng'}
+                                                                    alt={pet.name || t('unknown', { defaultValue: 'Thú cưng' })}
                                                                     loading="lazy"
                                                                     onError={(e) => {
                                                                         if (e.target.src !== defaultImageUrl) {
@@ -343,7 +338,6 @@ export default function ProductArea() {
                                                                 />
                                                             </a>
 
-                                                            {/* Badge trạng thái đè lên ảnh */}
                                                             <div
                                                                 className={`pet-status-overlay ${pet.status === 'available'
                                                                         ? 'status-available'
@@ -353,49 +347,48 @@ export default function ProductArea() {
                                                                     }`}
                                                             >
                                                                 {pet.status === 'available'
-                                                                    ? 'Có sẵn'
+                                                                    ? t('product_available', { defaultValue: 'Có sẵn' })
                                                                     : pet.status === 'pending'
-                                                                        ? 'Đang nhập'
-                                                                        : 'Hết hàng'}
+                                                                        ? t('product_pending', { defaultValue: 'Đang nhập' })
+                                                                        : t('product_sold_out', { defaultValue: 'Hết hàng' })}
                                                             </div>
 
                                                             <div className="button-head">
                                                                 <div className="product-action">
                                                                     <a
                                                                         data-toggle="modal"
-                                                                        title="Quick View"
+                                                                        title={t('product_quick_view', { defaultValue: 'Quick View' })}
                                                                         href="#"
                                                                         onClick={(e) => {
                                                                             e.preventDefault();
                                                                             handleOpenModal(pet);
                                                                         }}
                                                                     >
-                                                                        <i className="ti-eye"></i><span>Xem chi tiết</span>
+                                                                        <i className="ti-eye"></i><span>{t('product_quick_view', { defaultValue: 'Xem chi tiết' })}</span>
                                                                     </a>
                                                                     <a
-                                                                        title="Wishlist"
+                                                                        title={t('product_wishlist', { defaultValue: 'Wishlist' })}
                                                                         href="#"
                                                                         onClick={async (e) => {
                                                                             e.preventDefault();
-                                                                            //   const userId = localStorage.getItem('userId');
                                                                             try {
                                                                                 await addPetToWishlist(pet.id);
-                                                                                toast.success("Đã thêm vào danh sách yêu thích!");
+                                                                                toast.success(t('product_added_to_wishlist', { defaultValue: 'Đã thêm vào danh sách yêu thích!' }));
                                                                             } catch (err) {
                                                                                 if (err.response?.status === 409) {
-                                                                                    toast.info(err.response.data.message || "Sản phẩm đã có trong danh sách yêu thích.");
+                                                                                    toast.info(t('product_already_in_wishlist', { defaultValue: 'Sản phẩm đã có trong danh sách yêu thích.' }));
                                                                                 } else {
-                                                                                    toast.error("Lỗi khi thêm vào danh sách yêu thích!");
+                                                                                    toast.error(t('product_wishlist_error', { defaultValue: 'Lỗi khi thêm vào danh sách yêu thích!' }));
                                                                                 }
                                                                             }
                                                                         }}
                                                                     >
-                                                                        <i className="ti-heart"></i><span>Yêu thích</span>
+                                                                        <i className="ti-heart"></i><span>{t('product_wishlist', { defaultValue: 'Yêu thích' })}</span>
                                                                     </a>
                                                                 </div>
                                                                 <div className="product-action-2">
                                                                     <a
-                                                                        title="Thêm vào giỏ hàng"
+                                                                        title={t('product_add_to_cart', { defaultValue: 'Thêm vào giỏ hàng' })}
                                                                         href="#"
                                                                         onClick={async (e) => {
                                                                             e.preventDefault();
@@ -405,33 +398,31 @@ export default function ProductArea() {
                                                                                 const stock = pet.quantity;
 
                                                                                 if (currentQty + 1 > stock) {
-                                                                                    toast.warning("🚫 Số lượng vượt quá tồn kho!");
+                                                                                    toast.warning(t('product_cart_out_of_stock', { defaultValue: 'Số lượng vượt quá tồn kho!' }));
                                                                                     return;
                                                                                 }
 
                                                                                 await addToCart({ petId: pet.id, quantity: 1 });
                                                                                 window.dispatchEvent(new Event('cart-updated'));
-                                                                                toast.success('Đã thêm vào giỏ hàng!');
+                                                                                toast.success(t('product_cart_added', { defaultValue: 'Đã thêm vào giỏ hàng!' }));
 
-                                                                                // Cập nhật giỏ sau khi thêm
                                                                                 const updated = await getCartByUser();
                                                                                 setCartItems(updated);
                                                                             } catch (err) {
-                                                                                toast.error('Lỗi khi thêm vào giỏ hàng');
+                                                                                toast.error(t('product_cart_error', { defaultValue: 'Lỗi khi thêm vào giỏ hàng' }));
                                                                             }
                                                                         }}
                                                                     >
-                                                                        Thêm vào giỏ hàng
+                                                                        {t('product_add_to_cart', { defaultValue: 'Thêm vào giỏ hàng' })}
                                                                     </a>
-
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         <div className="product-content">
-                                                            <h3><a href={`/pet/${pet.id}`}>{pet.name || 'Chưa có tên'}</a></h3>
+                                                            <h3><a href={`/pet/${pet.id}`}>{pet.name || t('unknown', { defaultValue: 'Chưa có tên' })}</a></h3>
                                                             <div className="product-price">
-                                                                <span>{formatPrice(pet.price)}</span>
+                                                                <span>{formatPrice(pet.price, t)}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -441,23 +432,22 @@ export default function ProductArea() {
                                     )}
 
                                     {/* 4. Thông báo không có sản phẩm */}
-                                    {!petsLoading && !error && selectedSpecies && allPetsForSpecies.length === 0 && !speciesLoading && (
+                                    {!petsLoading && !error && currentPets.length === 0 && !speciesLoading && (
                                         <div className="col-12 text-center my-5">
-                                            <p>Không tìm thấy thú cưng nào thuộc loài "{selectedSpecies}".</p>
+                                            <p>{t('product_no_pets', { defaultValue: 'Không tìm thấy thú cưng nào thuộc loài \"{selectedSpecies}\".', selectedSpecies })}</p>
                                         </div>
                                     )}
                                     {/* 5. Thông báo khi chưa chọn loài */}
                                     {!petsLoading && !error && !selectedSpecies && speciesList.length > 0 && !speciesLoading && (
                                         <div className="col-12 text-center my-5">
-                                            <p>Vui lòng chọn một loài để xem danh sách thú cưng.</p>
+                                            <p>{t('product_select_species', { defaultValue: 'Vui lòng chọn một loài để xem danh sách thú cưng.' })}</p>
                                         </div>
                                     )}
 
                                     {/* --- Render Phân Trang --- */}
                                     {renderPagination()}
-
-                                </div> {/* Kết thúc .row */}
-                            </div> {/* Kết thúc #product-display-area */}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -465,7 +455,7 @@ export default function ProductArea() {
             <ProductDetailModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                pet={selectedPet}    // <-- TRUYỀN selectedPet vào prop 'pet'
+                pet={selectedPet}
             />
         </div>
     );

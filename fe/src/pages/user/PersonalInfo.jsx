@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../../assets/user/css/User.css';
 import { updateProfile } from '../../services/userService';
 import { toast } from 'react-toastify';
 import api from '../../services/axiosConfig';
 
 export default function PersonalInfo() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     fullName: '',
     birthday: '',
@@ -124,9 +126,9 @@ export default function PersonalInfo() {
 
     try {
       await updateProfile(data);
-      toast.success('✅ Cập nhật thông tin thành công');
+      toast.success(t('personal_info_update_success', { defaultValue: '✅ Cập nhật thông tin thành công' }));
     } catch (err) {
-      toast.error(err.response?.data.message || '❌ Có lỗi xảy ra khi cập nhật');
+      toast.error(t('personal_info_update_error', { defaultValue: err.response?.data.message || '❌ Có lỗi xảy ra khi cập nhật' }));
     }
   };
 
@@ -134,12 +136,11 @@ export default function PersonalInfo() {
     <section className="shop checkout section">
       <div className="container">
         <div className="checkout-form">
-          <h2 style={{ margin: '20px 10px' }}>Thông tin của bạn</h2>
+          <h2 style={{ margin: '20px 10px' }}>{t('personal_info_title', { defaultValue: 'Thông tin của bạn' })}</h2>
           <form className="form d-flex" onSubmit={handleSubmit} encType="multipart/form-data">
             <div className="row col-lg-8">
-              {/* fullName, birthday, gender, email, phoneNumber */}
               <div className="col-lg-6 col-md-6 col-12 form-group">
-                <label>Họ và tên<span>*</span></label>
+                <label>{t('personal_info_full_name', { defaultValue: 'Họ và tên' })}<span>*</span></label>
                 <input
                   name="fullName"
                   type="text"
@@ -150,7 +151,7 @@ export default function PersonalInfo() {
                 />
               </div>
               <div className="col-lg-6 col-md-6 col-12 form-group">
-                <label>Ngày sinh<span>*</span></label>
+                <label>{t('personal_info_birthday', { defaultValue: 'Ngày sinh' })}<span>*</span></label>
                 <input
                   name="birthday"
                   type="date"
@@ -161,7 +162,7 @@ export default function PersonalInfo() {
                 />
               </div>
               <div className="col-lg-6 col-md-6 col-12 form-group">
-                <label>Giới tính<span>*</span></label>
+                <label>{t('personal_info_gender', { defaultValue: 'Giới tính' })}<span>*</span></label>
                 <select
                   name="gender"
                   value={formData.gender}
@@ -169,14 +170,14 @@ export default function PersonalInfo() {
                   required
                   className="form-control"
                 >
-                  <option value="">Chọn giới tính</option>
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                  <option value="Khác">Khác</option>
+                  <option value="">{t('personal_info_select_gender', { defaultValue: 'Chọn giới tính' })}</option>
+                  <option value="Nam">{t('personal_info_male', { defaultValue: 'Nam' })}</option>
+                  <option value="Nữ">{t('personal_info_female', { defaultValue: 'Nữ' })}</option>
+                  <option value="Khác">{t('personal_info_other', { defaultValue: 'Khác' })}</option>
                 </select>
               </div>
               <div className="col-lg-6 col-md-6 col-12 form-group">
-                <label>Email<span>*</span></label>
+                <label>{t('personal_info_email', { defaultValue: 'Email' })}<span>*</span></label>
                 <input
                   name="email"
                   type="email"
@@ -186,7 +187,7 @@ export default function PersonalInfo() {
                 />
               </div>
               <div className="col-lg-6 col-md-6 col-12 form-group">
-                <label>Số điện thoại<span>*</span></label>
+                <label>{t('personal_info_phone', { defaultValue: 'Số điện thoại' })}<span>*</span></label>
                 <input
                   name="phoneNumber"
                   type="text"
@@ -197,36 +198,35 @@ export default function PersonalInfo() {
                 />
               </div>
 
-              {/* Địa chỉ tách 4 phần */}
               <div className="col-lg-6 col-md-6 col-12 form-group">
-                <label>Tỉnh/Thành phố<span>*</span></label>
+                <label>{t('personal_info_province', { defaultValue: 'Tỉnh/Thành phố' })}<span>*</span></label>
                 <select name="country" value={formData.country} onChange={handleChange} className="form-control" required>
-                  <option value="">Chọn tỉnh/thành phố</option>
+                  <option value="">{t('personal_info_select_province', { defaultValue: 'Chọn tỉnh/thành phố' })}</option>
                   {provinces.map((p) => (
                     <option key={p.code} value={p.name}>{p.name}</option>
                   ))}
                 </select>
               </div>
               <div className="col-lg-6 col-md-6 col-12 form-group">
-                <label>Quận/Huyện<span>*</span></label>
+                <label>{t('personal_info_district', { defaultValue: 'Quận/Huyện' })}<span>*</span></label>
                 <select name="district" value={formData.district} onChange={handleChange} className="form-control" required>
-                  <option value="">Chọn quận/huyện</option>
+                  <option value="">{t('personal_info_select_district', { defaultValue: 'Chọn quận/huyện' })}</option>
                   {districts.map((d) => (
                     <option key={d.code} value={d.name}>{d.name}</option>
                   ))}
                 </select>
               </div>
               <div className="col-lg-6 col-md-6 col-12 form-group">
-                <label>Xã/Phường<span>*</span></label>
+                <label>{t('personal_info_ward', { defaultValue: 'Xã/Phường' })}<span>*</span></label>
                 <select name="ward" value={formData.ward} onChange={handleChange} className="form-control" required>
-                  <option value="">Chọn xã/phường</option>
+                  <option value="">{t('personal_info_select_ward', { defaultValue: 'Chọn xã/phường' })}</option>
                   {wards.map((w) => (
                     <option key={w.code} value={w.name}>{w.name}</option>
                   ))}
                 </select>
               </div>
               <div className="col-12 form-group">
-                <label>Địa chỉ cụ thể<span>*</span></label>
+                <label>{t('personal_info_address', { defaultValue: 'Địa chỉ cụ thể' })}<span>*</span></label>
                 <input
                   name="address"
                   type="text"
@@ -237,14 +237,13 @@ export default function PersonalInfo() {
                 />
               </div>
               <div className="col-12 form-group">
-                <button type="submit" className="btn btn-primary">Lưu thông tin</button>
+                <button type="submit" className="btn btn-primary">{t('personal_info_save', { defaultValue: 'Lưu thông tin' })}</button>
               </div>
             </div>
 
-            {/* Avatar hiển thị */}
             <div className="col-lg-4">
               <div className="card mb-4">
-                <div className="card-header">Ảnh đại diện</div>
+                <div className="card-header">{t('personal_info_avatar_title', { defaultValue: 'Ảnh đại diện' })}</div>
                 <div className="card-body text-center">
                   <img
                     id="imgAvatar"
@@ -259,7 +258,7 @@ export default function PersonalInfo() {
                       formData.avatarPreview ||
                       '/assets/user/images/default-avatar.png'
                     }
-                    alt="avatar"
+                    alt={t('personal_info_avatar_alt', { defaultValue: 'avatar' })}
                   />
                   <input
                     type="file"
@@ -270,7 +269,7 @@ export default function PersonalInfo() {
                     hidden
                   />
                   <label htmlFor="inputAvatar" className="btn btn-outline-primary mt-2">
-                    <i className="fa-solid fa-arrow-up-from-bracket"></i> &nbsp;Tải lên
+                    <i className="fa-solid fa-arrow-up-from-bracket"></i> {t('personal_info_upload', { defaultValue: 'Tải lên' })}
                   </label>
                 </div>
               </div>

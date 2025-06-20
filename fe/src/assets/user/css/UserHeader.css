@@ -77,16 +77,102 @@
   cursor: pointer;
 }
 
+/* ========== LANGUAGE SELECT (react-select) ========== */
+.language-select {
+  margin-right: 12px;
+  min-width: 120px;
+}
+
+.react-select__control {
+  border-radius: 20px !important;
+  border: 1px solid #ddd !important;
+  padding: 2px 8px !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.react-select__control:hover {
+  background-color: #f2f2f2 !important;
+  border-color: #bbb !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2) !important;
+}
+
+.react-select__value-container {
+  padding: 0 !important;
+}
+
+.react-select__single-value {
+  color: #333 !important;
+}
+
+.react-select__menu {
+  border-radius: 8px !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15) !important;
+  font-size: 14px !important;
+  z-index: 1001 !important; /* Đảm bảo hiển thị trên các phần tử khác */
+}
+
+.react-select__option {
+  background-color: white !important;
+  color: #333 !important;
+  padding: 8px 12px !important;
+  cursor: pointer !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #f0f2f5 !important;
+}
+
+.react-select__option--is-selected {
+  background-color: #e6f0ff !important;
+  color: #007bff !important;
+}
+
 /* ========== ALIGN DROPDOWN RIGHT ========== */
 .list-main-right {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 20px;
+  gap: 10px;
 }
 
 .topbar .list-main-right span,
-.topbar .list-main-right .user-dropdown {
+.topbar .list-main-right .user-dropdown,
+.topbar .list-main-right .language-select {
   display: flex;
   align-items: center;
+}
+
+/* ========== TOPBAR RIGHT ADJUSTMENTS ========== */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-icon-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: background-color 0.2s;
+}
+
+.header-icon-label:hover {
+  background-color: #f2f2f2;
+}
+
+.header-icon-label i {
+  margin-right: 6px;
 }

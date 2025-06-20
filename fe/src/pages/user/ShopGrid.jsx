@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getPetsBySpecies, getAllSpecies, findPetByName } from '../../services/petService';
 import { addPetToWishlist } from '../../services/wishlistService';
 import { addToCart, getCartByUser } from '../../services/cartService';
@@ -8,20 +9,19 @@ import ProductDetailModal from '../../components/user/home/ProductDetailModal';
 
 const BACKEND_BASE_URL = 'http://localhost:8080';
 
-// --- Hàm format giá ---
-const formatPrice = (price) => {
+const formatPrice = (price, t) => {
   const numericPrice = Number(price);
   if (price === null || price === undefined || isNaN(numericPrice)) {
-    return 'Liên hệ';
+    return t('shop_contact_price', { defaultValue: 'Liên hệ' });
   }
   if (numericPrice >= 1000000) {
-    return `${(numericPrice / 1000000).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} triệu đồng`;
+    return `${(numericPrice / 1000000).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${t('shop_million', { defaultValue: 'triệu đồng' })}`;
   }
-  return `${numericPrice.toLocaleString('vi-VN')} đồng`;
+  return `${numericPrice.toLocaleString('vi-VN')} ${t('shop_vnd', { defaultValue: 'đồng' })}`;
 };
 
 export default function ShopGrid() {
-  // --- State ---
+  const { t } = useTranslation();
   const [filters, setFilters] = useState({
     price: '',
     sort: 'default',
@@ -36,22 +36,20 @@ export default function ShopGrid() {
   const [cartItems, setCartItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPet, setSelectedPet] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(''); // State for search query
-  const [searchResultsCount, setSearchResultsCount] = useState(0); // State to store the count of search results
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResultsCount, setSearchResultsCount] = useState(0);
   const location = useLocation();
 
   const defaultImageUrl = '/assets/user/images/default-pet-placeholder.png';
   const ITEMS_PER_PAGE = 12;
 
-  // --- Extract search query from URL ---
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const query = params.get('search') || '';
     setSearchQuery(query);
-    setCurrentPage(1); // Reset to page 1 when search query changes
+    setCurrentPage(1);
   }, [location.search]);
 
-  // --- Xử lý submit form lọc ---
   const handleFilterChange = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -62,7 +60,6 @@ export default function ShopGrid() {
     setCurrentPage(1);
   };
 
-  // --- useEffect: Lấy danh sách loài ---
   useEffect(() => {
     let isMounted = true;
     setSpeciesLoading(true);
@@ -80,7 +77,7 @@ export default function ShopGrid() {
       .catch((err) => {
         if (isMounted) {
           console.error('Lỗi tải danh sách loài:', err);
-          setError('Không thể tải danh sách loài.');
+          setError(t('shop_species_error', { defaultValue: 'Không thể tải danh sách loài.' }));
           setSpeciesList([]);
         }
       })
@@ -95,7 +92,6 @@ export default function ShopGrid() {
     };
   }, []);
 
-  // --- useEffect: Lấy danh sách pet dựa trên loài hoặc tìm kiếm ---
   useEffect(() => {
     let isMounted = true;
     if (searchQuery || selectedSpecies) {
@@ -107,11 +103,10 @@ export default function ShopGrid() {
         try {
           let filteredPets = [];
           if (searchQuery) {
-            // Fetch pets by search query
             const response = await findPetByName(searchQuery);
             filteredPets = Array.isArray(response.data) ? response.data : [];
             if (isMounted) {
-              setSearchResultsCount(filteredPets.length); // Set the count of search results
+              setSearchResultsCount(filteredPets.length);
             }
           } else if (selectedSpecies === 'all') {
             const speciesPromises = speciesList.map((species) => getPetsBySpecies(species));
@@ -124,7 +119,6 @@ export default function ShopGrid() {
             filteredPets = Array.isArray(response.data) ? response.data : [];
           }
 
-          // Áp dụng bộ lọc giá
           if (filters.price === 'below_2') {
             filteredPets = filteredPets.filter((pet) => pet.price < 2000000);
           } else if (filters.price === '2_3_5') {
@@ -133,7 +127,6 @@ export default function ShopGrid() {
             filteredPets = filteredPets.filter((pet) => pet.price > 3500000);
           }
 
-          // Áp dụng sắp xếp
           if (filters.sort === 'price_asc') {
             filteredPets.sort((a, b) => (a.price || 0) - (b.price || 0));
           } else if (filters.sort === 'price_desc') {
@@ -146,7 +139,7 @@ export default function ShopGrid() {
         } catch (err) {
           if (isMounted) {
             console.error(`Lỗi tải thú cưng:`, err);
-            setError(`Không thể tải danh sách thú cưng.`);
+            setError(t('shop_pets_error', { defaultValue: 'Không thể tải danh sách thú cưng.' }));
             setAllPetsForSpecies([]);
           }
         } finally {
@@ -174,7 +167,6 @@ export default function ShopGrid() {
     };
   }, [selectedSpecies, filters.price, filters.sort, speciesList, speciesLoading, searchQuery]);
 
-  // --- useEffect: Lấy giỏ hàng ---
   useEffect(() => {
     const fetchCart = async () => {
       try {
@@ -187,7 +179,6 @@ export default function ShopGrid() {
     fetchCart();
   }, []);
 
-  // --- Tính toán currentPets ---
   const currentPets = useMemo(() => {
     if (!Array.isArray(allPetsForSpecies)) return [];
     const firstPageIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -195,17 +186,15 @@ export default function ShopGrid() {
     return allPetsForSpecies.slice(firstPageIndex, lastPageIndex);
   }, [currentPage, allPetsForSpecies]);
 
-  // --- Tính totalPages ---
   const totalPages = useMemo(() => {
     if (!Array.isArray(allPetsForSpecies)) return 0;
     return Math.ceil(allPetsForSpecies.length / ITEMS_PER_PAGE);
   }, [allPetsForSpecies]);
 
-  // --- Event Handlers ---
   const handleSpeciesChange = (species) => {
     if (species !== selectedSpecies) {
       setSelectedSpecies(species);
-      setSearchQuery(''); // Clear search query when changing species
+      setSearchQuery('');
       setCurrentPage(1);
     }
   };
@@ -233,7 +222,6 @@ export default function ShopGrid() {
     setSelectedPet(null);
   };
 
-  // --- Render Phân trang ---
   const renderPagination = () => {
     if (totalPages <= 1 || petsLoading) return null;
     const pageNumbersToShow = 3;
@@ -259,7 +247,7 @@ export default function ShopGrid() {
                 className="page-link"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                aria-label="Previous"
+                aria-label={t('shop_previous', { defaultValue: 'Previous' })}
               >
                 <span aria-hidden="true">«</span>
               </button>
@@ -300,7 +288,7 @@ export default function ShopGrid() {
                 className="page-link"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                aria-label="Next"
+                aria-label={t('shop_next', { defaultValue: 'Next' })}
               >
                 <span aria-hidden="true">»</span>
               </button>
@@ -311,7 +299,6 @@ export default function ShopGrid() {
     );
   };
 
-  // --- JSX Return ---
   return (
     <>
       <div className="breadcrumbs">
@@ -321,15 +308,21 @@ export default function ShopGrid() {
               <div className="bread-inner">
                 <ul className="bread-list">
                   <li>
-                    <Link to="/">Trang chủ<i className="ti-arrow-right"></i></Link>
+                    <Link to="/">
+                      {t('shop_home', { defaultValue: 'Trang chủ' })}
+                      <i className="ti-arrow-right"></i>
+                    </Link>
                   </li>
                   <li className="active">
-                    {searchQuery ? `Tìm kiếm: ${searchQuery}` : 'Lọc'}
+                    {searchQuery
+                      ? `${t('shop_search_results_prefix', { defaultValue: 'Tìm kiếm: ' })}${searchQuery}`
+                      : t('shop_filter', { defaultValue: 'Lọc' })}
                   </li>
                 </ul>
                 {searchQuery && (
                   <div className="text-muted mt-2">
-                    ({searchResultsCount} kết quả dựa trên từ khóa "{searchQuery}")
+                    ({searchResultsCount}{" "}
+                    {t('shop_results_count_suffix', { defaultValue: 'kết quả dựa trên từ khóa' })} "{searchQuery}")
                   </div>
                 )}
               </div>
@@ -341,12 +334,11 @@ export default function ShopGrid() {
       <section className="product-area shop-sidebar shop section">
         <div className="container">
           <div className="row">
-            {/* Sidebar */}
             <div className="col-lg-3 col-md-4 col-12">
               <div className="shop-sidebar">
                 <form onSubmit={handleFilterChange}>
                   <div className="single-widget category">
-                    <h3 className="title">Sắp xếp</h3>
+                    <h3 className="title">{t('shop_sort_title', { defaultValue: 'Sắp xếp' })}</h3>
                     <div className="sort-list">
                       <label className="d-flex align-items-center mb-2">
                         <input
@@ -355,7 +347,7 @@ export default function ShopGrid() {
                           value="default"
                           defaultChecked={filters.sort === 'default'}
                         />
-                        <span className="ms-2">Liên quan</span>
+                        <span className="ms-2">{t('shop_sort_relevance', { defaultValue: 'Liên quan' })}</span>
                       </label>
                       <label className="d-flex align-items-center mb-2">
                         <input
@@ -364,7 +356,7 @@ export default function ShopGrid() {
                           value="price_asc"
                           defaultChecked={filters.sort === 'price_asc'}
                         />
-                        <span className="ms-2">Giá tăng dần</span>
+                        <span className="ms-2">{t('shop_sort_price_asc', { defaultValue: 'Giá tăng dần' })}</span>
                       </label>
                       <label className="d-flex align-items-center mb-2">
                         <input
@@ -373,66 +365,59 @@ export default function ShopGrid() {
                           value="price_desc"
                           defaultChecked={filters.sort === 'price_desc'}
                         />
-                        <span className="ms-2">Giá giảm dần</span>
+                        <span className="ms-2">{t('shop_sort_price_desc', { defaultValue: 'Giá giảm dần' })}</span>
                       </label>
                     </div>
                   </div>
 
                   <div className="single-widget range">
-                    <h3 className="title">Mức giá</h3>
+                    <h3 className="title">{t('shop_price_title', { defaultValue: 'Mức giá' })}</h3>
                     <ul className="check-box-list">
                       <li>
                         <label>
                           <input name="price" type="radio" value="below_2" defaultChecked={filters.price === 'below_2'} />
-                          Dưới 2 triệu
+                          {t('shop_price_below_2', { defaultValue: 'Dưới 2 triệu' })}
                         </label>
                       </li>
                       <li>
                         <label>
                           <input name="price" type="radio" value="2_3_5" defaultChecked={filters.price === '2_3_5'} />
-                          2 triệu - 3.5 triệu
+                          {t('shop_price_2_3_5', { defaultValue: '2 triệu - 3.5 triệu' })}
                         </label>
                       </li>
                       <li>
                         <label>
-                          <input
-                            name="price"
-                            type="radio"
-                            value="above_3_5"
-                            defaultChecked={filters.price === 'above_3_5'}
-                          />
-                          Hơn 3.5 triệu
+                          <input name="price" type="radio" value="above_3_5" defaultChecked={filters.price === 'above_3_5'} />
+                          {t('shop_price_above_3_5', { defaultValue: 'Hơn 3.5 triệu' })}
                         </label>
                       </li>
                       <li>
                         <label>
                           <input name="price" type="radio" value="" defaultChecked={filters.price === ''} />
-                          Mọi mức giá
+                          {t('shop_price_all', { defaultValue: 'Mọi mức giá' })}
                         </label>
                       </li>
                     </ul>
                   </div>
 
                   <button type="submit" className="btn" style={{ margin: 10 }}>
-                    Lọc giá & Sắp xếp
+                    {t('shop_filter_button', { defaultValue: 'Lọc giá & Sắp xếp' })}
                   </button>
                 </form>
               </div>
             </div>
-            {/* Product Area */}
             <div className="col-lg-9 col-md-8 col-12">
               <div className="product-area section p-3">
                 <div className="container px-0">
                   <div className="row">
                     <div className="col-12">
                       <div className="product-info">
-                        {/* Tabs Loài - Ẩn khi có searchQuery */}
                         {!searchQuery && (
                           <div className="nav-main">
                             <ul className="nav nav-tabs" id="myTab" role="tablist">
                               {speciesLoading && (
                                 <li className="nav-item">
-                                  <span className="nav-link disabled">Đang tải loài...</span>
+                                  <span className="nav-link disabled">{t('shop_loading_species', { defaultValue: 'Đang tải loài...' })}</span>
                                 </li>
                               )}
                               {!speciesLoading && error && speciesList.length === 0 && (
@@ -442,7 +427,7 @@ export default function ShopGrid() {
                               )}
                               {!speciesLoading && !error && speciesList.length === 0 && (
                                 <li className="nav-item">
-                                  <span className="nav-link disabled">Không có loài nào.</span>
+                                  <span className="nav-link disabled">{t('shop_no_species', { defaultValue: 'Không có loài nào.' })}</span>
                                 </li>
                               )}
                               {!speciesLoading && !error && (
@@ -457,7 +442,7 @@ export default function ShopGrid() {
                                       onClick={() => handleSpeciesChange('all')}
                                       disabled={petsLoading || speciesLoading}
                                     >
-                                      Tất cả
+                                      {t('shop_all', { defaultValue: 'Tất cả' })}
                                     </button>
                                   </li>
                                   {speciesList.map((species) => (
@@ -481,7 +466,6 @@ export default function ShopGrid() {
                           </div>
                         )}
 
-                        {/* Khu vực hiển thị sản phẩm */}
                         <div id="product-display-area" className="tab-content mt-4">
                           <div className="row" role="tabpanel">
                             {!speciesLoading && error && !petsLoading && (
@@ -521,7 +505,7 @@ export default function ShopGrid() {
                                           <img
                                             className="default-img"
                                             src={imageSource}
-                                            alt={pet.name || 'Thú cưng'}
+                                            alt={pet.name || t('shop_pet_alt', { defaultValue: 'Thú cưng' })}
                                             loading="lazy"
                                             onError={(e) => {
                                               if (e.target.src !== defaultImageUrl) {
@@ -546,17 +530,17 @@ export default function ShopGrid() {
                                             }`}
                                         >
                                           {pet.status === 'available'
-                                            ? 'Có sẵn'
+                                            ? t('shop_available', { defaultValue: 'Có sẵn' })
                                             : pet.status === 'pending'
-                                              ? 'Đang nhập'
-                                              : 'Hết hàng'}
+                                              ? t('shop_pending', { defaultValue: 'Đang nhập' })
+                                              : t('shop_sold_out', { defaultValue: 'Hết hàng' })}
                                         </div>
 
                                         <div className="button-head">
                                           <div className="product-action">
                                             <a
                                               data-toggle="modal"
-                                              title="Quick View"
+                                              title={t('shop_quick_view', { defaultValue: 'Quick View' })}
                                               href="#"
                                               onClick={(e) => {
                                                 e.preventDefault();
@@ -564,35 +548,34 @@ export default function ShopGrid() {
                                               }}
                                             >
                                               <i className="ti-eye"></i>
-                                              <span>Xem chi tiết</span>
+                                              <span>{t('shop_quick_view', { defaultValue: 'Xem chi tiết' })}</span>
                                             </a>
                                             <a
-                                              title="Wishlist"
+                                              title={t('shop_wishlist', { defaultValue: 'Wishlist' })}
                                               href="#"
                                               onClick={async (e) => {
                                                 e.preventDefault();
                                                 try {
                                                   await addPetToWishlist(pet.id);
-                                                  toast.success('Đã thêm vào danh sách yêu thích!');
+                                                  toast.success(t('shop_wishlist_added', { defaultValue: 'Đã thêm vào danh sách yêu thích!' }));
                                                 } catch (err) {
                                                   if (err.response?.status === 409) {
                                                     toast.info(
-                                                      err.response.data.message ||
-                                                      'Sản phẩm đã có trong danh sách yêu thích.'
+                                                      t('shop_wishlist_exists', { defaultValue: 'Sản phẩm đã có trong danh sách yêu thích.' })
                                                     );
                                                   } else {
-                                                    toast.error('Lỗi khi thêm vào danh sách yêu thích!');
+                                                    toast.error(t('shop_wishlist_error', { defaultValue: 'Lỗi khi thêm vào danh sách yêu thích!' }));
                                                   }
                                                 }
                                               }}
                                             >
                                               <i className="ti-heart"></i>
-                                              <span>Yêu thích</span>
+                                              <span>{t('shop_wishlist', { defaultValue: 'Yêu thích' })}</span>
                                             </a>
                                           </div>
                                           <div className="product-action-2">
                                             <a
-                                              title="Thêm vào giỏ hàng"
+                                              title={t('shop_add_to_cart', { defaultValue: 'Thêm vào giỏ hàng' })}
                                               href="#"
                                               onClick={async (e) => {
                                                 e.preventDefault();
@@ -604,22 +587,22 @@ export default function ShopGrid() {
                                                   const stock = pet.quantity;
 
                                                   if (currentQty + 1 > stock) {
-                                                    toast.warning('🚫 Số lượng vượt quá tồn kho!');
+                                                    toast.warning(t('shop_out_of_stock', { defaultValue: '🚫 Số lượng vượt quá tồn kho!' }));
                                                     return;
                                                   }
 
                                                   await addToCart({ petId: pet.id, quantity: 1 });
                                                   window.dispatchEvent(new Event('cart-updated'));
-                                                  toast.success('Đã thêm vào giỏ hàng!');
+                                                  toast.success(t('shop_cart_added', { defaultValue: 'Đã thêm vào giỏ hàng!' }));
 
                                                   const updated = await getCartByUser();
                                                   setCartItems(updated);
                                                 } catch (err) {
-                                                  toast.error('Lỗi khi thêm vào giỏ hàng');
+                                                  toast.error(t('shop_cart_error', { defaultValue: 'Lỗi khi thêm vào giỏ hàng' }));
                                                 }
                                               }}
                                             >
-                                              Thêm vào giỏ hàng
+                                              {t('shop_add_to_cart', { defaultValue: 'Thêm vào giỏ hàng' })}
                                             </a>
                                           </div>
                                         </div>
@@ -627,10 +610,10 @@ export default function ShopGrid() {
 
                                       <div className="product-content">
                                         <h3>
-                                          <Link to={`/pet/${pet.id}`}>{pet.name || 'Chưa có tên'}</Link>
+                                          <Link to={`/pet/${pet.id}`}>{pet.name || t('shop_unnamed', { defaultValue: 'Chưa có tên' })}</Link>
                                         </h3>
                                         <div className="product-price">
-                                          <span>{formatPrice(pet.price)}</span>
+                                          <span>{formatPrice(pet.price, t)}</span>
                                         </div>
                                       </div>
                                     </div>
@@ -643,14 +626,14 @@ export default function ShopGrid() {
                               <div className="col-12 text-center my-5">
                                 <p>
                                   {searchQuery
-                                    ? `Không tìm thấy thú cưng nào cho từ khóa "${searchQuery}".`
-                                    : `Không tìm thấy thú cưng nào thuộc danh mục "${selectedSpecies === 'all' ? 'Tất cả' : selectedSpecies}".`}
+                                    ? t('shop_no_search_results', { defaultValue: 'Không tìm thấy thú cưng nào cho từ khóa "{searchQuery}".', searchQuery: searchQuery })
+                                    : `${t('shop_no_pets', { defaultValue: 'No pets found in category .' })} ${selectedSpecies === 'all' ? t('shop_all', { defaultValue: 'Tất cả' }) : selectedSpecies}`}
                                 </p>
                               </div>
                             )}
                             {!petsLoading && !error && !selectedSpecies && speciesList.length > 0 && !speciesLoading && (
                               <div className="col-12 text-center my-5">
-                                <p>Vui lòng chọn một danh mục để xem danh sách thú cưng.</p>
+                                <p>{t('shop_select_category', { defaultValue: 'Vui lòng chọn một danh mục để xem danh sách thú cưng.' })}</p>
                               </div>
                             )}
 
