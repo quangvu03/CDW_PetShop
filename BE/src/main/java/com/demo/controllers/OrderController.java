@@ -185,8 +185,8 @@ public class OrderController {
 
             PaymentData paymentData = PaymentData.builder()
                     .orderCode(orderCode)
-                    .description(request.getDescription())
-                    .amount(request.getPrice())
+                    .description("request.getDescription()")
+                    .amount(2000)
                     .item(item)
                     .returnUrl(request.getReturnUrl())
                     .cancelUrl(request.getCancelUrl())

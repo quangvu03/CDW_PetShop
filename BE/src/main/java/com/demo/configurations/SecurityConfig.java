@@ -47,22 +47,18 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // *** SecurityFilterChain cho Tài Nguyên Tĩnh (Ưu tiên thấp hơn - chạy trước) ***
     @Bean
-    @Order(1) // Đặt thứ tự ưu tiên (số nhỏ chạy trước)
+    @Order(1)
     public SecurityFilterChain staticResourcesFilterChain(HttpSecurity http) throws Exception {
         http
-                // Chỉ áp dụng cho các request GET đến /uploads/**
                 .securityMatcher(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/uploads/**"))
-                // Vô hiệu hóa các tính năng không cần thiết cho file tĩnh
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Vẫn cần CORS
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(AbstractHttpConfigurer::disable) // Không cần session
-                .securityContext(AbstractHttpConfigurer::disable) // Không cần security context
-                .requestCache(AbstractHttpConfigurer::disable) // Không cần cache request
-                .logout(AbstractHttpConfigurer::disable) // Không cần logout
-                .anonymous(AbstractHttpConfigurer::disable) // Không cần anonymous user
-                // Cho phép tất cả request khớp với securityMatcher này
+                .sessionManagement(AbstractHttpConfigurer::disable)
+                .securityContext(AbstractHttpConfigurer::disable)
+                .requestCache(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .anonymous(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .anyRequest().permitAll()
                 );
@@ -92,13 +88,11 @@ public class SecurityConfig {
 
 
                         // các endpoint cho payments
-                        .requestMatchers(HttpMethod.POST, "/payment/payos_transfer_handler").permitAll() // Webhook không cần xác thực
-                        .requestMatchers(HttpMethod.POST, "/order/create").permitAll() // Nếu muốn public
-                        .requestMatchers(HttpMethod.GET, "/order/{orderId}").permitAll() // Nếu muốn public
-                        .requestMatchers(HttpMethod.PUT, "/order/{orderId}").authenticated() // Yêu cầu xác thực để hủy
-                        .requestMatchers(HttpMethod.POST, "/order/confirm-webhook").permitAll() // Nếu webhook confirm là public
-
-                        // Mọi request còn lại (trong phạm vi của filter chain này) cần xác thực
+                        .requestMatchers(HttpMethod.POST, "/payment/payos_transfer_handler").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/order/create").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/order/{orderId}").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/order/{orderId}").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/order/confirm-webhook").permitAll()
 
                         .anyRequest().authenticated()
                 )
@@ -114,7 +108,7 @@ public class SecurityConfig {
     }
 
 
-    // --- BEAN CẤU HÌNH CORS (Giữ nguyên) ---
+
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configurationApi = new CorsConfiguration();

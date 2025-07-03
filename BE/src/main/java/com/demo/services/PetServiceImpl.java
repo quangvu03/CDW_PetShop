@@ -2,6 +2,8 @@ package com.demo.services;
 
 import com.demo.dtos.PetDto;
 import com.demo.dtos.PetImageDto;
+import com.demo.repositories.BrowsingHistoryRepository;
+import com.demo.repositories.OrderItemRepository;
 import com.demo.repositories.PetImageRepository;
 import com.demo.repositories.PetRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -18,7 +20,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import com.demo.entities.PetImage;
@@ -31,6 +35,12 @@ public class PetServiceImpl implements PetService {
 
     @Autowired
     private PetImageRepository petImageRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private BrowsingHistoryRepository browsingHistoryRepository;
 
     @Transactional(readOnly = true)
     public List<PetDto> findAllPetsBySpecies(String species) {
@@ -68,6 +78,85 @@ public class PetServiceImpl implements PetService {
                     .collect(Collectors.toList());
         }
         return List.of();
+    }
+
+    @Override
+    public List<PetDto> findAllSortedByCreatedAtDesc() {
+        List<Pet> petList = petRepository.findAllByOrderByCreatedAtDesc();
+        if (petList != null && !petList.isEmpty()) {
+            return petList.stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PetDto> findBestSellingPets() {
+        List<Object[]> results = orderItemRepository.findBestSellingPets();
+        List<PetDto> bestSellingPets = new ArrayList<>();
+
+        for (Object[] result : results) {
+            Pet pet = (Pet) result[0];
+            bestSellingPets.add(convertToDto(pet));
+        }
+
+        return bestSellingPets;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> findBestSellingPetsWithQuantitySold() {
+        List<Object[]> results = orderItemRepository.findBestSellingPets();
+        List<Map<String, Object>> bestSellingPetsWithQuantity = new ArrayList<>();
+
+        for (Object[] result : results) {
+            Pet pet = (Pet) result[0];
+            Long quantitySold = (Long) result[1];
+
+            Map<String, Object> petWithQuantity = new HashMap<>();
+            petWithQuantity.put("pet", convertToDto(pet));
+            petWithQuantity.put("quantitySold", quantitySold);
+
+            bestSellingPetsWithQuantity.add(petWithQuantity);
+        }
+
+        return bestSellingPetsWithQuantity;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PetDto> findMostViewedPets() {
+        List<Object[]> results = browsingHistoryRepository.findMostViewedPets();
+        List<PetDto> mostViewedPets = new ArrayList<>();
+
+        for (Object[] result : results) {
+            Pet pet = (Pet) result[0];
+            mostViewedPets.add(convertToDto(pet));
+        }
+
+        return mostViewedPets;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> findMostViewedPetsWithViewCount() {
+        List<Object[]> results = browsingHistoryRepository.findMostViewedPets();
+        List<Map<String, Object>> mostViewedPetsWithViewCount = new ArrayList<>();
+
+        for (Object[] result : results) {
+            Pet pet = (Pet) result[0];
+            Long viewCount = (Long) result[1];
+
+            Map<String, Object> petWithViewCount = new HashMap<>();
+            petWithViewCount.put("pet", convertToDto(pet));
+            petWithViewCount.put("viewCount", viewCount);
+
+            mostViewedPetsWithViewCount.add(petWithViewCount);
+        }
+
+        return mostViewedPetsWithViewCount;
     }
 
     @Override

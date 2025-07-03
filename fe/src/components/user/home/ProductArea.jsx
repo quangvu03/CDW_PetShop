@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { getPetsBySpecies, getAllSpecies } from '../../../services/petService';
+import { getLatestPets, getBestSellingPets, getMostViewedPets } from '../../../services/petService';
 import { addPetToWishlist } from '../../../services/wishlistService';
 import { addToCart, getCartByUser } from '../../../services/cartService';
 import { toast } from 'react-toastify';
@@ -9,7 +9,7 @@ import ProductDetailModal from './ProductDetailModal';
 
 const BACKEND_BASE_URL = 'http://localhost:8080';
 
-// --- Dữ liệu pet giả định (di chuyển ra ngoài component) ---
+// --- Dữ liệu pet giả định ---
 const dummyPetData = {
     id: 999,
     name: 'Test Pet (Ảnh Thật)',
@@ -29,7 +29,7 @@ const dummyPetData = {
         'https://picsum.photos/seed/catthumb3/600/600',
         'https://picsum.photos/seed/catthumb4/600/600',
         'https://picsum.photos/seed/catthumb5/600/600',
-        '/uploads/pets/mèo_server_1.jpg'
+        '/Uploads/pets/mèo_server_1.jpg'
     ],
 };
 
@@ -46,97 +46,101 @@ const formatPrice = (price, t) => {
 };
 
 // --- Số sản phẩm mỗi trang ---
-const ITEMS_PER_PAGE = 8; // Hoặc 9, 12 tùy layout
+const ITEMS_PER_PAGE = 8;
 
 export default function ProductArea() {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
-    const [speciesList, setSpeciesList] = useState([]);
-    const [selectedSpecies, setSelectedSpecies] = useState('');
-    const [allPetsForSpecies, setAllPetsForSpecies] = useState([]);
+    const [allPets, setAllPets] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [speciesLoading, setSpeciesLoading] = useState(true);
     const [petsLoading, setPetsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [cartItems, setCartItems] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedPet, setSelectedPet] = useState(dummyPetData); // Sử dụng dummyPetData đã khai báo bên ngoài
+    const [selectedPet, setSelectedPet] = useState(dummyPetData);
+    const [activeTab, setActiveTab] = useState('latest'); // Tab mặc định: 'latest'
 
     const defaultImageUrl = "/assets/user/images/default-pet-placeholder.png";
 
-    // --- useEffect: Lấy danh sách loài ---
+    // --- useEffect: Lấy danh sách pets dựa trên tab ---
     useEffect(() => {
         let isMounted = true;
-        setSpeciesLoading(true);
+        setPetsLoading(true);
         setError(null);
-        getAllSpecies()
-            .then(response => {
-                if (isMounted) {
-                    const fetchedSpecies = response.data || [];
-                    setSpeciesList(fetchedSpecies);
-                    if (fetchedSpecies.length > 0 && !selectedSpecies) {
-                        setSelectedSpecies(prevSelected => prevSelected || fetchedSpecies[0]);
-                    } else if (fetchedSpecies.length === 0) {
-                        setSelectedSpecies('');
-                    }
-                }
-            })
-            .catch(err => {
-                if (isMounted) {
-                    console.error("Lỗi tải danh sách loài:", err);
-                    setError(t('product_error', { defaultValue: 'Không thể tải danh sách loài.' }));
-                    setSpeciesList([]);
-                }
-            })
-            .finally(() => {
-                if (isMounted) {
-                    setSpeciesLoading(false);
-                }
-            });
+        setAllPets([]);
 
-        return () => { isMounted = false; };
-    }, []);
-
-    // --- useEffect: Lấy TOÀN BỘ Pet khi selectedSpecies THAY ĐỔI ---
-    useEffect(() => {
-        let isMounted = true;
-        if (selectedSpecies) {
-            setPetsLoading(true);
-            setError(null);
-            setAllPetsForSpecies([]);
-
-            getPetsBySpecies(selectedSpecies)
-                .then(response => {
+        const fetchPets = async () => {
+            try {
+                let response;
+                if (activeTab === 'latest') {
+                    response = await getLatestPets();
                     if (isMounted) {
                         if (Array.isArray(response.data)) {
-                            setAllPetsForSpecies(response.data);
+                            // Thêm quantitySold và viewCount mặc định là 0 cho tab "Mới nhất"
+                            const petsWithStats = response.data.map(pet => ({
+                                ...pet,
+                                quantitySold: 0,
+                                viewCount: 0
+                            }));
+                            setAllPets(petsWithStats);
                         } else {
-                            console.error("API Lỗi định dạng: Cần trả về mảng!", response.data);
+                            console.error("API /pet/latest Lỗi định dạng: Cần trả về mảng!", response.data);
                             setError(t('product_error', { defaultValue: 'Lỗi định dạng dữ liệu từ máy chủ.' }));
-                            setAllPetsForSpecies([]);
+                            setAllPets([]);
                         }
                     }
-                })
-                .catch(err => {
+                } else if (activeTab === 'best-selling') {
+                    response = await getBestSellingPets();
                     if (isMounted) {
-                        console.error(`Lỗi tải thú cưng cho loài ${selectedSpecies}:`, err);
-                        setError(t('product_error', { defaultValue: 'Không thể tải danh sách thú cưng.' }));
-                        setAllPetsForSpecies([]);
+                        if (Array.isArray(response.data)) {
+                            // Chuyển đổi dữ liệu từ { quantitySold, pet } sang { ...pet, quantitySold, viewCount }
+                            const petsWithStats = response.data.map(item => ({
+                                ...item.pet,
+                                quantitySold: item.quantitySold || 0,
+                                viewCount: 0
+                            }));
+                            setAllPets(petsWithStats);
+                        } else {
+                            console.error("API /pet/best-selling-with-quantity Lỗi định dạng: Cần trả về mảng!", response.data);
+                            setError(t('product_error', { defaultValue: 'Lỗi định dạng dữ liệu từ máy chủ.' }));
+                            setAllPets([]);
+                        }
                     }
-                })
-                .finally(() => {
+                } else {
+                    response = await getMostViewedPets();
                     if (isMounted) {
-                        setPetsLoading(false);
+                        if (Array.isArray(response.data)) {
+                            // Chuyển đổi dữ liệu từ { viewCount, pet } sang { ...pet, quantitySold, viewCount }
+                            const petsWithStats = response.data.map(item => ({
+                                ...item.pet,
+                                quantitySold: 0,
+                                viewCount: item.viewCount || 0
+                            }));
+                            setAllPets(petsWithStats);
+                        } else {
+                            console.error("API /pet/most-viewed-with-count Lỗi định dạng: Cần trả về mảng!", response.data);
+                            setError(t('product_error', { defaultValue: 'Lỗi định dạng dữ liệu từ máy chủ.' }));
+                            setAllPets([]);
+                        }
                     }
-                });
-        } else {
-            if (isMounted) {
-                setAllPetsForSpecies([]);
-                setPetsLoading(false);
+                }
+            } catch (err) {
+                if (isMounted) {
+                    console.error(`Lỗi tải danh sách thú cưng (${activeTab}):`, err);
+                    setError(t('product_error', { defaultValue: 'Không thể tải danh sách thú cưng.' }));
+                    setAllPets([]);
+                }
+            } finally {
+                if (isMounted) {
+                    setPetsLoading(false);
+                }
             }
-        }
+        };
+
+        fetchPets();
+
         return () => { isMounted = false; };
-    }, [selectedSpecies]);
+    }, [activeTab]);
 
     useEffect(() => {
         const fetchCart = async () => {
@@ -150,25 +154,25 @@ export default function ProductArea() {
         fetchCart();
     }, []);
 
-    // --- Tính toán currentPets (Client-Side) ---
+    // --- Tính toán currentPets ---
     const currentPets = useMemo(() => {
-        if (!Array.isArray(allPetsForSpecies)) return [];
+        if (!Array.isArray(allPets)) return [];
         const firstPageIndex = (currentPage - 1) * ITEMS_PER_PAGE;
         const lastPageIndex = firstPageIndex + ITEMS_PER_PAGE;
-        return allPetsForSpecies.slice(firstPageIndex, lastPageIndex);
-    }, [currentPage, allPetsForSpecies]);
+        return allPets.slice(firstPageIndex, lastPageIndex);
+    }, [currentPage, allPets]);
 
-    // --- Tính totalPages (Client-Side) ---
+    // --- Tính totalPages ---
     const totalPages = useMemo(() => {
-        if (!Array.isArray(allPetsForSpecies)) return 0;
-        return Math.ceil(allPetsForSpecies.length / ITEMS_PER_PAGE);
-    }, [allPetsForSpecies]);
+        if (!Array.isArray(allPets)) return 0;
+        return Math.ceil(allPets.length / ITEMS_PER_PAGE);
+    }, [allPets]);
 
     // --- Event Handlers ---
-    const handleSpeciesChange = (species) => {
-        if (species !== selectedSpecies) {
-            setSelectedSpecies(species);
-            setCurrentPage(1);
+    const handleTabChange = (tab) => {
+        if (tab !== activeTab) {
+            setActiveTab(tab);
+            setCurrentPage(1); // Reset về trang 1 khi đổi tab
         }
     };
 
@@ -202,9 +206,13 @@ export default function ProductArea() {
         let startPage = Math.max(1, currentPage - Math.floor(pageNumbersToShow / 2));
         let endPage = Math.min(totalPages, startPage + pageNumbersToShow - 1);
         if (totalPages >= pageNumbersToShow && (endPage - startPage + 1) < pageNumbersToShow) {
-            if (currentPage <= Math.floor(pageNumbersToShow / 2) + 1) { endPage = Math.min(totalPages, pageNumbersToShow); }
-            else if (currentPage >= totalPages - Math.floor(pageNumbersToShow / 2)) { startPage = Math.max(1, totalPages - pageNumbersToShow + 1); }
-            else { startPage = Math.max(1, endPage - pageNumbersToShow + 1); }
+            if (currentPage <= Math.floor(pageNumbersToShow / 2) + 1) {
+                endPage = Math.min(totalPages, pageNumbersToShow);
+            } else if (currentPage >= totalPages - Math.floor(pageNumbersToShow / 2)) {
+                startPage = Math.max(1, totalPages - pageNumbersToShow + 1);
+            } else {
+                startPage = Math.max(1, endPage - pageNumbersToShow + 1);
+            }
         }
         const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
@@ -254,29 +262,48 @@ export default function ProductArea() {
                 <div className="row">
                     <div className="col-12">
                         <div className="product-info">
-                            {/* --- Tabs Loài --- */}
+                            {/* --- Tabs --- */}
                             <div className="nav-main">
                                 <ul className="nav nav-tabs" id="myTab" role="tablist">
-                                    {speciesLoading && (<li className="nav-item"><span className="nav-link disabled">{t('product_loading_species', { defaultValue: 'Đang tải loài...' })}</span></li>)}
-                                    {!speciesLoading && error && speciesList.length === 0 && (<li className="nav-item"><span className="nav-link text-danger">{error}</span></li>)}
-                                    {!speciesLoading && !error && speciesList.length === 0 && (<li className="nav-item"><span className="nav-link disabled">{t('product_no_species', { defaultValue: 'Không có loài nào.' })}</span></li>)}
-                                    {!speciesLoading && !error && speciesList.length > 0 && (
-                                        speciesList.map(species => (
-                                            <li key={species} className="nav-item" role="presentation">
-                                                <button
-                                                    className={`nav-link ${selectedSpecies === species ? 'active' : ''}`}
-                                                    id={`${species}-tab`}
-                                                    type="button"
-                                                    role="tab"
-                                                    aria-selected={selectedSpecies === species}
-                                                    onClick={() => handleSpeciesChange(species)}
-                                                    disabled={petsLoading || speciesLoading}
-                                                >
-                                                    {species}
-                                                </button>
-                                            </li>
-                                        ))
-                                    )}
+                                    <li className="nav-item" role="presentation">
+                                        <button
+                                            className={`nav-link ${activeTab === 'latest' ? 'active' : ''}`}
+                                            id="latest-tab"
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={activeTab === 'latest'}
+                                            onClick={() => handleTabChange('latest')}
+                                            disabled={petsLoading}
+                                        >
+                                            {t('product_latest', { defaultValue: 'Mới nhất' })}
+                                        </button>
+                                    </li>
+                                    <li className="nav-item" role="presentation">
+                                        <button
+                                            className={`nav-link ${activeTab === 'best-selling' ? 'active' : ''}`}
+                                            id="best-selling-tab"
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={activeTab === 'best-selling'}
+                                            onClick={() => handleTabChange('best-selling')}
+                                            disabled={petsLoading}
+                                        >
+                                            {t('product_best_selling', { defaultValue: 'Bán chạy nhất' })}
+                                        </button>
+                                    </li>
+                                    <li className="nav-item" role="presentation">
+                                        <button
+                                            className={`nav-link ${activeTab === 'most-viewed' ? 'active' : ''}`}
+                                            id="most-viewed-tab"
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={activeTab === 'most-viewed'}
+                                            onClick={() => handleTabChange('most-viewed')}
+                                            disabled={petsLoading}
+                                        >
+                                            {t('product_most_viewed', { defaultValue: 'Xem nhiều nhất' })}
+                                        </button>
+                                    </li>
                                 </ul>
                             </div>
 
@@ -284,7 +311,7 @@ export default function ProductArea() {
                             <div id="product-display-area" className="tab-content mt-4">
                                 <div className="row" role="tabpanel">
                                     {/* 1. Hiển thị lỗi fetch pet */}
-                                    {!speciesLoading && error && !petsLoading && (
+                                    {!petsLoading && error && (
                                         <div className="col-12">
                                             <div className="alert alert-danger my-4" role="alert">{error}</div>
                                         </div>
@@ -364,7 +391,8 @@ export default function ProductArea() {
                                                                             handleOpenModal(pet);
                                                                         }}
                                                                     >
-                                                                        <i className="ti-eye"></i><span>{t('product_quick_view', { defaultValue: 'Xem chi tiết' })}</span>
+                                                                        <i className="ti-eye"></i>
+                                                                        <span>{t('product_quick_view', { defaultValue: 'Xem chi tiết' })}</span>
                                                                     </a>
                                                                     <a
                                                                         title={t('product_wishlist', { defaultValue: 'Wishlist' })}
@@ -383,7 +411,8 @@ export default function ProductArea() {
                                                                             }
                                                                         }}
                                                                     >
-                                                                        <i className="ti-heart"></i><span>{t('product_wishlist', { defaultValue: 'Yêu thích' })}</span>
+                                                                        <i className="ti-heart"></i>
+                                                                        <span>{t('product_wishlist', { defaultValue: 'Yêu thích' })}</span>
                                                                     </a>
                                                                 </div>
                                                                 <div className="product-action-2">
@@ -424,6 +453,16 @@ export default function ProductArea() {
                                                             <div className="product-price">
                                                                 <span>{formatPrice(pet.price, t)}</span>
                                                             </div>
+                                                            {activeTab === 'best-selling' && pet.quantitySold > 0 && (
+                                                                <div className="product-sold">
+                                                                   <span>Đã bán {pet.quantitySold} con</span>
+                                                                </div>
+                                                            )}
+                                                            {activeTab === 'most-viewed' && pet.viewCount > 0 && (
+                                                                <div className="product-viewed">
+                                                                    <span>Lượt xem: {pet.viewCount}</span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -432,15 +471,19 @@ export default function ProductArea() {
                                     )}
 
                                     {/* 4. Thông báo không có sản phẩm */}
-                                    {!petsLoading && !error && currentPets.length === 0 && !speciesLoading && (
+                                    {!petsLoading && !error && currentPets.length === 0 && (
                                         <div className="col-12 text-center my-5">
-                                            <p>{t('product_no_pets', { defaultValue: 'Không tìm thấy thú cưng nào thuộc loài \"{selectedSpecies}\".', selectedSpecies })}</p>
+                                            <p>
+                                                {activeTab === 'latest' ? t('product_no_latest_pets', { defaultValue: 'Không có thú cưng mới nào.' }) :
+                                                 activeTab === 'best-selling' ? t('product_no_best_selling_pets', { defaultValue: 'Không có thú cưng bán chạy nào.' }) :
+                                                 t('product_no_most_viewed_pets', { defaultValue: 'Không có thú cưng được xem nhiều.' })}
+                                            </p>
                                         </div>
                                     )}
-                                    {/* 5. Thông báo khi chưa chọn loài */}
-                                    {!petsLoading && !error && !selectedSpecies && speciesList.length > 0 && !speciesLoading && (
+                                    {/* 5. Thông báo khi chưa có dữ liệu */}
+                                    {!petsLoading && !error && !allPets.length && (
                                         <div className="col-12 text-center my-5">
-                                            <p>{t('product_select_species', { defaultValue: 'Vui lòng chọn một loài để xem danh sách thú cưng.' })}</p>
+                                            <p>{t('product_no_data', { defaultValue: 'Chưa có dữ liệu thú cưng.' })}</p>
                                         </div>
                                     )}
 

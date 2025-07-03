@@ -174,46 +174,46 @@ export default function UserHeader() {
                   <span><i className="ti-location-pin"></i>{t('location', { defaultValue: 'Linh Xuân, Tp.Thủ Đức' })}</span>
                   <div className="topbar-right">
                     {/* React-Select cho ngôn ngữ */}
-<Select
-  id="language-select"
-  className="language-select"
-  classNamePrefix="react-select"
-  options={languageOptions}
-  value={languageOptions.find((option) => option.value === currentLanguage || option.value === i18n.language)}
-  onChange={handleLanguageChange}
-  isSearchable={false}
-  aria-label={t('change_language', { defaultValue: 'Change Language' })}
-  styles={{
-    control: (base) => ({
-      ...base,
-      borderRadius: '20px',
-      border: '1px solid #ddd',
-      padding: '2px 8px',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      fontSize: '14px',
-      fontWeight: '500',
-      cursor: 'pointer',
-      minWidth: '120px',
-    }),
-    menu: (base) => ({
-      ...base,
-      borderRadius: '8px',
-      boxShadow: '0 2px 12px rgba(0, 0, 0, 0.15)',
-      fontSize: '14px',
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected ? '#e6f0ff' : state.isFocused ? '#f0f2f5' : 'white',
-      color: '#333',
-      padding: '8px 12px',
-      cursor: 'pointer',
-    }),
-    // ✅ Thêm đoạn này để ẩn separator
-    indicatorSeparator: () => ({
-      display: 'none',
-    }),
-  }}
-/>
+                    <Select
+                      id="language-select"
+                      className="language-select"
+                      classNamePrefix="react-select"
+                      options={languageOptions}
+                      value={languageOptions.find((option) => option.value === currentLanguage || option.value === i18n.language)}
+                      onChange={handleLanguageChange}
+                      isSearchable={false}
+                      aria-label={t('change_language', { defaultValue: 'Change Language' })}
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          borderRadius: '20px',
+                          border: '1px solid #ddd',
+                          padding: '2px 8px',
+                          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          minWidth: '120px',
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          borderRadius: '8px',
+                          boxShadow: '0 2px 12px rgba(0, 0, 0, 0.15)',
+                          fontSize: '14px',
+                        }),
+                        option: (base, state) => ({
+                          ...base,
+                          backgroundColor: state.isSelected ? '#e6f0ff' : state.isFocused ? '#f0f2f5' : 'white',
+                          color: '#333',
+                          padding: '8px 12px',
+                          cursor: 'pointer',
+                        }),
+                        // ✅ Thêm đoạn này để ẩn separator
+                        indicatorSeparator: () => ({
+                          display: 'none',
+                        }),
+                      }}
+                    />
 
                     {isLoggedIn ? (
                       <div className="user-dropdown" ref={dropdownRef}>

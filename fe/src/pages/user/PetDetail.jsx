@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { getPetById } from '../../services/petService';
 import { addToCart, getCartByUser } from '../../services/cartService';
 import { getCommentsByPetId, addComment, deleteComment, reportComment } from '../../services/commentService';
-import { toast } from 'react-toastify';
 import { getReviewsByPetId } from '../../services/ratingService';
+import { addPetBrowsingHistory } from '../../services/browsingHistoryService';
+import { toast } from 'react-toastify';
 import '../../assets/user/css/User.css';
 
 const RatingComponent = ({ averageRating, totalReviews, ratingData }) => {
@@ -79,7 +80,6 @@ const getTimeAgo = (createdAt, t) => {
   return t('detail_time_seconds_ago', { defaultValue: ' Vài giây trước' });
 };
 
-
 export default function PetDetail() {
   const { t } = useTranslation();
   const { id } = useParams();
@@ -102,10 +102,23 @@ export default function PetDetail() {
   useEffect(() => {
     const fetchPetAndReviews = async () => {
       try {
+        // Lấy thông tin thú cưng
         const petResponse = await getPetById(id);
         setPet(petResponse.data);
         setMainImage(petResponse.data.imageUrl);
 
+        // Lưu lịch sử duyệt nếu người dùng đã đăng nhập
+        const userId = localStorage.getItem('userId');
+        if (userId && petResponse.data?.id) {
+          try {
+            await addPetBrowsingHistory(petResponse.data.id, parseInt(userId));
+          } catch (err) {
+            console.error('Lỗi khi lưu lịch sử duyệt:', err);
+            toast.error(err.message || t('detail_browsing_history_error', { defaultValue: 'Không thể lưu lịch sử duyệt' }));
+          }
+        }
+
+        // Lấy đánh giá
         const reviewResponse = await getReviewsByPetId(id);
         const reviews = reviewResponse.data;
         const total = reviews.length;
@@ -126,18 +139,20 @@ export default function PetDetail() {
           setRatingData(newRatingData);
         }
 
+        // Lấy bình luận
         const commentResponse = await getCommentsByPetId(id);
         setComments(Array.isArray(commentResponse.data) ? commentResponse.data : []);
 
+        // Lấy giỏ hàng
         const cartResponse = await getCartByUser();
         setCartItems(Array.isArray(cartResponse.data) ? cartResponse.data : []);
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error('Lỗi khi tải dữ liệu:', err);
         toast.error(t('detail_fetch_error', { defaultValue: 'Không thể tải dữ liệu' }));
       }
     };
     fetchPetAndReviews();
-  }, [id]);
+  }, [id, t]);
 
   const getFullImageUrl = (path) => {
     if (!path || typeof path !== 'string') return '/assets/user/images/default-pet-placeholder.png';
@@ -529,7 +544,7 @@ export default function PetDetail() {
                     </div>
                     <div className="content">
                       <h5>
-                        <a href="#">{t('detail_recent_post_title', { defaultValue: 'Top 10 Beautyful Women Dress in the world' })}</a>
+                        <a href="#">{t('detail_recent_post_title', { defaultValue: 'Top 10 Beautiful Women Dress in the world' })}</a>
                       </h5>
                       <ul className="comment">
                         <li>
@@ -556,7 +571,7 @@ export default function PetDetail() {
                 </ul>
               </div>
               <div className="single-widget newsletter">
-                <h3 className="title">{t('detail_newsletter_title', { defaultValue: 'Newslatter' })}</h3>
+                <h3 className="title">{t('detail_newsletter_title', { defaultValue: 'Newsletter' })}</h3>
                 <div className="letter-inner">
                   <h4>
                     {t('detail_newsletter_subscribe', { defaultValue: 'Subscribe & get news <br /> latest updates.' })}
