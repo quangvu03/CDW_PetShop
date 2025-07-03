@@ -24,22 +24,22 @@ export default function ResetPassword() {
     e.preventDefault();
 
     if (form.newPassword !== form.confirmPassword) {
-      toast.error('❌ Mật khẩu không khớp');
+      toast.error(' Mật khẩu không khớp');
       return;
     }
 
     if (!token) {
-      toast.error('❌ Không tìm thấy mã đặt lại mật khẩu');
+      toast.error(' Không tìm thấy mã đặt lại mật khẩu');
       return;
     }
 
     setLoading(true);
     try {
       const res = await resetPassword(token, form.newPassword);
-      toast.success(res.data.message || '✅ Đặt lại mật khẩu thành công!');
+      toast.success(res.data.message || 'Đặt lại mật khẩu thành công!');
       navigate('/auth/login');
     } catch (error) {
-      toast.error(error.response?.data?.message || '❌ Đặt lại mật khẩu thất bại');
+      toast.error(error.response?.data?.message || ' Đặt lại mật khẩu thất bại');
     } finally {
       setLoading(false);
     }

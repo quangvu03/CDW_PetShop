@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pet")
@@ -43,4 +44,33 @@ public class PetController {
         return ResponseEntity.ok(petList);
     }
 
+    @GetMapping("/latest")
+    public ResponseEntity<List<PetDto>> getAllPetsByLatestCreatedAt() {
+        List<PetDto> petList = petService.findAllSortedByCreatedAtDesc();
+        return ResponseEntity.ok(petList);
+    }
+
+    @GetMapping("/best-selling")
+    public ResponseEntity<List<PetDto>> getBestSellingPets() {
+        List<PetDto> petList = petService.findBestSellingPets();
+        return ResponseEntity.ok(petList);
+    }
+
+    @GetMapping("/best-selling-with-quantity")
+    public ResponseEntity<List<Map<String, Object>>> getBestSellingPetsWithQuantity() {
+        List<Map<String, Object>> petsWithQuantity = petService.findBestSellingPetsWithQuantitySold();
+        return ResponseEntity.ok(petsWithQuantity);
+    }
+
+    @GetMapping("/most-viewed")
+    public ResponseEntity<List<PetDto>> getMostViewedPets() {
+        List<PetDto> petList = petService.findMostViewedPets();
+        return ResponseEntity.ok(petList);
+    }
+
+    @GetMapping("/most-viewed-with-count")
+    public ResponseEntity<List<Map<String, Object>>> getMostViewedPetsWithCount() {
+        List<Map<String, Object>> petsWithViewCount = petService.findMostViewedPetsWithViewCount();
+        return ResponseEntity.ok(petsWithViewCount);
+    }
 }

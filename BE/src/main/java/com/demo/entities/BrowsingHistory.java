@@ -11,8 +11,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "browsing_history", indexes = {
         @Index(name = "user_id", columnList = "user_id"),
-        @Index(name = "pet_id", columnList = "pet_id"),
-        @Index(name = "product_id", columnList = "product_id")
+        @Index(name = "pet_id", columnList = "pet_id")
 })
 public class BrowsingHistory {
     @Id
@@ -27,10 +26,6 @@ public class BrowsingHistory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id")
     private Pet pet;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
 
     @ColumnDefault("current_timestamp()")
     @Column(name = "viewed_at", nullable = false)

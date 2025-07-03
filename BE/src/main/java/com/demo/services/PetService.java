@@ -5,6 +5,7 @@ import com.demo.dtos.PetImageDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface PetService {
     List<PetDto> findAllPetsBySpecies(String species);
@@ -12,6 +13,11 @@ public interface PetService {
     PetDto findPetById(Integer id);
     List<PetDto> findByName(String name);
     List<PetDto> findAll();
+    List<PetDto> findAllSortedByCreatedAtDesc();
+    List<PetDto> findBestSellingPets();
+    List<Map<String, Object>> findBestSellingPetsWithQuantitySold();
+    List<PetDto> findMostViewedPets();
+    List<Map<String, Object>> findMostViewedPetsWithViewCount();
     PetDto updatePet(Integer id, PetDto petDto);
     PetDto addPetWithImage(PetDto petDto, MultipartFile imageFile);
     List<PetImageDto> findAllImagesByPetId(Integer petId);

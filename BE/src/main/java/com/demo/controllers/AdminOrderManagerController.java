@@ -2,6 +2,7 @@ package com.demo.controllers;
 
 import com.demo.dtos.OrderItemDto;
 import com.demo.dtos.requests.UpdateOrderRequest;
+import com.demo.entities.Order;
 import com.demo.services.OrderItemService;
 import com.demo.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,9 +80,9 @@ public class AdminOrderManagerController {
     public ResponseEntity<?> getCompletedOrders() {
         try {
             List<OrderItemDto> completedOrders = new ArrayList<>();
-            List<com.demo.entities.Order> orders = orderService.findOrdersByStatus("completed");
+            List<Order> orders = orderService.findOrdersByStatus("completed");
 
-            for (com.demo.entities.Order order : orders) {
+            for (Order order : orders) {
                 OrderItemDto orderItemDto = orderItemService.findOrderItemByOrderId(order.getId());
                 completedOrders.add(orderItemDto);
             }

@@ -8,13 +8,49 @@ import { login } from '../../services/authService';
 export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: '', password: '' });
+  const [errors, setErrors] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const validateForm = () => {
+    const newErrors = { username: '', password: '' };
+    let isValid = true;
+
+    if (!form.username.trim()) {
+      newErrors.username = 'Tên đăng nhập là bắt buộc';
+      isValid = false;
+    } else if (form.username.length <= 4) {
+      newErrors.username = 'Tên đăng nhập phải có hơn 4 ký tự';
+      isValid = false;
+    }
+
+    if (!form.password) {
+      newErrors.password = 'Mật khẩu là bắt buộc';
+      isValid = false;
+    } else if (form.password.length < 6) {
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    
+    // Clear error when user starts typing
+    setErrors({ ...errors, [name]: '' });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
+
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -47,8 +83,32 @@ export default function Login() {
         <h2 className="auth-title">Đăng nhập</h2>
 
         <form onSubmit={handleSubmit}>
-          <input type="text" name="username" placeholder="Tên đăng nhập" value={form.username} onChange={handleChange} className="auth-input" required />
-          <input type="password" name="password" placeholder="Mật khẩu" value={form.password} onChange={handleChange} className="auth-input" required />
+          <div className="input-group">
+            <input
+              type="text"
+              name="username"
+              placeholder="Tên đăng nhập"
+              value={form.username}
+              onChange={handleChange}
+              className={`auth-input ${errors.username ? 'error' : ''}`}
+              required
+            />
+            {errors.username && <span className="error-message">{errors.username}</span>}
+          </div>
+          
+          <div className="input-group">
+            <input
+              type="password"
+              name="password"
+              placeholder="Mật khẩu"
+              value={form.password}
+              onChange={handleChange}
+              className={`auth-input ${errors.password ? 'error' : ''}`}
+              required
+            />
+            {errors.password && <span className="error-message">{errors.password}</span>}
+          </div>
+
           <button type="submit" className="auth-button" disabled={loading}>
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
@@ -62,14 +122,14 @@ export default function Login() {
         <div className="auth-divider">— Hoặc đăng nhập bằng —</div>
 
         <div className="auth-social-buttons">
-        <a
-  href="http://localhost:8080/oauth2/authorization/google"
-  className="auth-social google"
-  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}
->
-  <FaGoogle className="icon" />
-  Google
-</a>
+          <a
+            href="http://localhost:8080/oauth2/authorization/google"
+            className="auth-social google"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}
+          >
+            <FaGoogle className="icon" />
+            Google
+          </a>
           <button className="auth-social facebook"><FaFacebookF className="icon" /> Facebook</button>
         </div>
       </div>

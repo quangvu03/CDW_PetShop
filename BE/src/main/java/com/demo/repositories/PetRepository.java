@@ -31,6 +31,8 @@ public interface PetRepository extends JpaRepository<Pet, Integer> {
 
     List<Pet> findByNameContainingIgnoreCase(String name);
 
+    List<Pet> findAllByOrderByCreatedAtDesc();
+
     // Bỏ hoặc comment out các phương thức cũ dùng Pageable nếu không dùng nữa
     // Page<Integer> findIdsBySpeciesIgnoreCase(@Param("species") String species, Pageable pageable);
     // List<Pet> findByIdInWithImages(@Param("ids") Collection<Integer> ids);
